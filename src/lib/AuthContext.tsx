@@ -343,12 +343,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!user) throw new Error("Vous devez être connecté.");
       const trimmed = code.trim();
       if (!trimmed) throw new Error("Entrez un code promo.");
-      if (usedPromoCodes.includes(trimmed)) {
-        throw new Error("Vous avez déjà utilisé ce code promo. Chaque code n'est utilisable qu'une seule fois par personne.");
-      }
       const snap = await getDoc(doc(db, "promoCodes", trimmed));
       if (!snap.exists() || !snap.data().actif) {
         throw new Error("Code promo invalide ou expiré.");
+      }
+      // Seul un code à usage unique est limité à une utilisation. Un code
+      // "illimité" reste réutilisable autant de fois qu'on veut, y compris
+      // par la même personne.
+      if (snap.data().usageType === "unique" && usedPromoCodes.includes(trimmed)) {
+        throw new Error("Vous avez déjà utilisé ce code promo.");
       }
     },
     [user, usedPromoCodes]
@@ -364,11 +367,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (code: string) => {
       if (!user) return;
       const trimmed = code.trim();
-      if (!trimmed || usedPromoCodes.includes(trimmed)) return;
-      const nextUsed = [...usedPromoCodes, trimmed];
-      setUsedPromoCodes(nextUsed);
-      const ref = doc(db, "users", user.uid);
-      await setDoc(ref, { usedPromoCodes: nextUsed }, { merge: true });
+      if (!trimmed) return;
+      // On garde la liste (sans doublon) pour les stats admin ; elle ne
+      // bloque plus la réutilisation d'un code illimité.
+      if (!usedPromoCodes.includes(trimmed)) {
+        const nextUsed = [...usedPromoCodes, trimmed];
+        setUsedPromoCodes(nextUsed);
+        const ref = doc(db, "users", user.uid);
+        await setDoc(ref, { usedPromoCodes: nextUsed }, { merge: true });
+      }
       try {
         const snap = await getDoc(doc(db, "promoCodes", trimmed));
         const usageType = snap.exists() ? snap.data().usageType : undefined;
