@@ -7,7 +7,15 @@ import { useAuth } from "@/lib/AuthContext";
 import { Download, Loader2, CheckCircle2, ExternalLink, AlertCircle, MessageCircle, Info, LogIn, Eye, Smartphone } from "lucide-react";
 import { UI } from "@/lib/i18n";
 import LettreMotivationForm from "./LettreMotivationForm";
+import CinetPayButton from "./CinetPayButton";
 import { isTwaContext } from "@/lib/isTwa";
+import { CINETPAY_PRICES, type CinetPayPlan } from "@/lib/pricing";
+
+// Interrupteur du paiement CinetPay : tant qu'il n'est pas à "1" dans les
+// variables d'environnement, le parcours Wave actuel reste inchangé. On peut
+// l'activer d'abord uniquement sur les déploiements "Preview" pour tester en
+// sandbox, puis sur "Production" le moment venu.
+const CINETPAY_ON = process.env.NEXT_PUBLIC_CINETPAY_ENABLED === "1";
 
 // Prix unique pour tous les téléchargements, qu'il s'agisse du premier ou
 // des suivants. On réutilise volontairement les variables d'environnement
@@ -47,6 +55,7 @@ function PaymentFlow({
   confirmError,
   confirmSuccess,
   isTwa,
+  cinetpay,
 }: {
   t: (typeof UI)["fr"] | (typeof UI)["en"];
   langue: "fr" | "en";
@@ -66,6 +75,7 @@ function PaymentFlow({
   confirmError?: string;
   confirmSuccess?: boolean;
   isTwa: boolean;
+  cinetpay?: { plan: CinetPayPlan };
 }) {
   const priceInfoText =
     langue === "en" ? `Downloading your CV costs ${price} FCFA.` : `Le téléchargement de votre CV coûte ${price} FCFA.`;
@@ -98,7 +108,7 @@ function PaymentFlow({
       <div className="rounded-2xl border border-border p-3 text-xs space-y-3">
         <div className="flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-2.5 text-amber-700">
           <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
-          <span>{t.beforePayWarning}</span>
+          <span>{cinetpay ? t.cinetpayBeforePay : t.beforePayWarning}</span>
         </div>
 
         {isTwa && (
@@ -108,6 +118,10 @@ function PaymentFlow({
           </div>
         )}
 
+        {cinetpay ? (
+          <CinetPayButton t={t} langue={langue} plan={cinetpay.plan} price={price} />
+        ) : (
+        <>
         <a
           href={waveLink}
           target="_blank"
@@ -143,6 +157,8 @@ function PaymentFlow({
               <p className="text-[11px] text-emerald-600 font-medium">Parcours validé avec succès.</p>
             )}
           </div>
+        )}
+        </>
         )}
       </div>
 
@@ -203,7 +219,8 @@ export default function DownloadPanel({
   const canDownload =
     paidUnlocked || promoApplied || isAdmin || isFreeDownloadTester;
   const lettreActive = !!cv.lettreMotivation?.activee;
-  const currentPrice = lettreActive ? PACK_PRICE : PRICE;
+  const cinetpayPlan: CinetPayPlan = lettreActive ? "pack" : "cv";
+  const currentPrice = CINETPAY_ON ? CINETPAY_PRICES[cinetpayPlan] : lettreActive ? PACK_PRICE : PRICE;
   const currentWaveLink = lettreActive ? PACK_WAVE_LINK : WAVE_LINK;
 
   // Journalisation du téléchargement PDF : compteur "CV téléchargés" +
@@ -408,7 +425,10 @@ export default function DownloadPanel({
           {cv.langue === "en" ? "Log in to download" : "Se connecter pour télécharger"}
         </Link>
         <p className="text-[11px] text-foreground/50 text-center">
-          {cv.langue === "en" ? `Flat price: ${PRICE} FCFA` : `Prix unique : ${PRICE} FCFA`}
+          {(() => {
+            const shown = CINETPAY_ON ? CINETPAY_PRICES.cv : PRICE;
+            return cv.langue === "en" ? `Flat price: ${shown} FCFA` : `Prix unique : ${shown} FCFA`;
+          })()}
         </p>
       </div>
     );
@@ -442,7 +462,7 @@ export default function DownloadPanel({
           caché dès que canDownload est vrai, comme avant. */}
       {(!canDownload || isFreeDownloadTester) && (
         <>
-          <LettreMotivationForm packPrice={PACK_PRICE} />
+          <LettreMotivationForm packPrice={CINETPAY_ON ? CINETPAY_PRICES.pack : PACK_PRICE} />
           <button
             onClick={downloadFreePreview}
             className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-brand-600 text-brand-600 hover:bg-brand-50 font-medium py-3 transition"
@@ -473,6 +493,7 @@ export default function DownloadPanel({
             confirming={confirming}
             handlePaidConfirmClick={handlePaidConfirmClick}
             isTwa={isTwa}
+            cinetpay={CINETPAY_ON ? { plan: cinetpayPlan } : undefined}
           />
         </>
       )}

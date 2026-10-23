@@ -79,6 +79,8 @@ interface AuthContextValue {
   loadError: string;
   debugInfo: string;
   dataLoaded: boolean;
+  // Résultat du retour depuis la page de paiement CinetPay (null = rien en cours).
+  paymentReturn: "checking" | "pending" | "failed" | null;
   signInWithGoogle: () => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
@@ -135,6 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loadError, setLoadError] = useState("");
   const [debugInfo, setDebugInfo] = useState("");
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [paymentReturn, setPaymentReturn] = useState<"checking" | "pending" | "failed" | null>(null);
   const reset = useCVStore((s) => s.reset);
 
   useEffect(() => {
@@ -211,6 +214,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     return () => unsub();
   }, [reset]);
+
+  // Retour de la page de paiement CinetPay (?cp=<commande> ou ?cpfail=1).
+  // On attend que le profil soit chargé (sinon la lecture du document pourrait
+  // écraser le déblocage), puis on demande au serveur de vérifier le paiement
+  // auprès de CinetPay. Le déblocage lui-même est écrit par le serveur.
+  useEffect(() => {
+    if (!user || !dataLoaded || typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const tx = params.get("cp");
+    const failed = params.get("cpfail");
+    if (!tx && !failed) return;
+
+    const cleanUrl = () => {
+      const u = new URL(window.location.href);
+      u.searchParams.delete("cp");
+      u.searchParams.delete("cpfail");
+      window.history.replaceState({}, "", u.pathname + u.search + u.hash);
+    };
+
+    let cancelled = false;
+    (async () => {
+      if (failed || !tx) {
+        setPaymentReturn("failed");
+        cleanUrl();
+        return;
+      }
+      setPaymentReturn("checking");
+      for (let i = 0; i < 8 && !cancelled; i++) {
+        try {
+          const token = await user.getIdToken();
+          const res = await fetch(`/api/cinetpay/status?tx=${encodeURIComponent(tx)}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = await res.json().catch(() => null);
+          if (data?.paid) {
+            setPaidUnlocked(true);
+            setPaymentReturn(null);
+            cleanUrl();
+            return;
+          }
+          if (data?.status === "FAILED" || data?.status === "EXPIRED") {
+            setPaymentReturn("failed");
+            cleanUrl();
+            return;
+          }
+        } catch {
+          // réseau instable : on réessaie
+        }
+        await new Promise((r) => setTimeout(r, 2500));
+      }
+      if (!cancelled) setPaymentReturn("pending");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, dataLoaded]);
 
   const signInWithGoogle = useCallback(async () => {
     try {
@@ -431,6 +490,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loadError,
         debugInfo,
         dataLoaded,
+        paymentReturn,
         signInWithGoogle,
         signUpWithEmail,
         signInWithEmail,

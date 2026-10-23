@@ -83,6 +83,15 @@ export const UI = {
       "Paiement en attente de validation. Après votre paiement Wave, cela peut prendre quelques minutes le temps que ce soit vérifié.",
     payWithWave: "Payer",
     payWithWaveSuffix: "via Wave",
+    payCinetpay: "Payer",
+    payCinetpaySuffix: "par Mobile Money ou carte",
+    cinetpayStarting: "Redirection vers le paiement sécurisé…",
+    cinetpayChecking: "Vérification de votre paiement…",
+    cinetpayBeforePay:
+      "Avant de payer : vérifiez que votre CV est prêt. Vous serez redirigé vers une page de paiement sécurisée (Orange, MTN, Moov, Wave ou carte), puis vous reviendrez ici : le téléchargement se débloque automatiquement.",
+    cinetpayFailed: "Le paiement n'a pas abouti. Vous pouvez réessayer.",
+    cinetpayPending:
+      "Paiement en cours de confirmation. Si vous venez de payer, patientez quelques instants puis rechargez la page.",
     unlockDownload: "Débloquer ce téléchargement —",
     viaWave: "via Wave",
     genericError: "Une erreur est survenue. Réessayez dans un instant.",
@@ -254,6 +263,15 @@ export const UI = {
       "Payment awaiting validation. After your Wave payment, this may take a few minutes to be verified.",
     payWithWave: "Pay",
     payWithWaveSuffix: "via Wave",
+    payCinetpay: "Pay",
+    payCinetpaySuffix: "by Mobile Money or card",
+    cinetpayStarting: "Redirecting to secure payment…",
+    cinetpayChecking: "Checking your payment…",
+    cinetpayBeforePay:
+      "Before paying: make sure your CV is ready. You'll be redirected to a secure payment page (Orange, MTN, Moov, Wave or card), then you'll come back here: your download unlocks automatically.",
+    cinetpayFailed: "The payment did not go through. You can try again.",
+    cinetpayPending:
+      "Payment is being confirmed. If you just paid, wait a few moments then reload the page.",
     unlockDownload: "Unlock this download —",
     viaWave: "via Wave",
     genericError: "Something went wrong. Please try again shortly.",
