@@ -5,15 +5,24 @@ import { NextRequest, NextResponse } from "next/server";
 // Aucune dépendance payante : sans clé configurée, la route répond "non configuré".
 //
 // Variables d'environnement (Vercel) :
-//   GEMINI_API_KEY  (https://aistudio.google.com/apikey)
-//   GROQ_API_KEY    (https://console.groq.com/keys) — optionnelle, sert de secours
-//   GEMINI_MODEL / GROQ_MODEL — optionnelles, pour changer de modèle sans redéployer le code
+//   GEMINI_API_KEY      (https://aistudio.google.com/apikey)
+//   GROQ_API_KEY        (https://console.groq.com/keys)
+//   MISTRAL_API_KEY     (https://console.mistral.ai/api-keys)
+//   OPENROUTER_API_KEY  (https://openrouter.ai/keys) — modèles ":free"
+//   CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN (Workers AI, 10 000 neurons/jour)
+// Chaque clé est optionnelle : les fournisseurs sont essayés dans cet ordre et
+// on passe au suivant si l'un est saturé (429) ou en panne. Les modèles se
+// changent sans toucher au code via GEMINI_MODEL, GROQ_MODEL, MISTRAL_MODEL,
+// OPENROUTER_MODEL, CLOUDFLARE_MODEL.
 
 const DAILY_LIMIT = 10; // améliorations IA gratuites par utilisateur et par jour
 const MAX_INPUT_CHARS = 1500;
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+const MISTRAL_MODEL = process.env.MISTRAL_MODEL || "mistral-small-latest";
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct:free";
+const CLOUDFLARE_MODEL = process.env.CLOUDFLARE_MODEL || "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 
 type Kind = "profil" | "experience" | "formation" | "projets" | "lettre" | "autre";
 
@@ -88,14 +97,20 @@ async function callGemini(system: string, user: string): Promise<string | null> 
   return text || null;
 }
 
-async function callGroq(system: string, user: string): Promise<string | null> {
-  const key = process.env.GROQ_API_KEY;
+// Groq, Mistral et OpenRouter parlent tous le format "OpenAI chat completions".
+async function callOpenAICompat(
+  url: string,
+  key: string | undefined,
+  model: string,
+  system: string,
+  user: string
+): Promise<string | null> {
   if (!key) return null;
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
-      model: GROQ_MODEL,
+      model,
       temperature: 0.4,
       max_tokens: 700,
       messages: [
@@ -109,6 +124,46 @@ async function callGroq(system: string, user: string): Promise<string | null> {
   const data = await res.json();
   const text = data?.choices?.[0]?.message?.content;
   return typeof text === "string" && text.trim() ? text.trim() : null;
+}
+
+async function callCloudflare(system: string, user: string): Promise<string | null> {
+  const account = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const token = process.env.CLOUDFLARE_API_TOKEN;
+  if (!account || !token) return null;
+  const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${account}/ai/run/${CLOUDFLARE_MODEL}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      max_tokens: 700,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+    }),
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  const text = data?.result?.response;
+  return typeof text === "string" && text.trim() ? text.trim() : null;
+}
+
+const PROVIDERS: ((system: string, user: string) => Promise<string | null>)[] = [
+  callGemini,
+  (s, u) => callOpenAICompat("https://api.groq.com/openai/v1/chat/completions", process.env.GROQ_API_KEY, GROQ_MODEL, s, u),
+  (s, u) => callOpenAICompat("https://api.mistral.ai/v1/chat/completions", process.env.MISTRAL_API_KEY, MISTRAL_MODEL, s, u),
+  (s, u) => callOpenAICompat("https://openrouter.ai/api/v1/chat/completions", process.env.OPENROUTER_API_KEY, OPENROUTER_MODEL, s, u),
+  callCloudflare,
+];
+
+function hasAnyProvider(): boolean {
+  return !!(
+    process.env.GEMINI_API_KEY ||
+    process.env.GROQ_API_KEY ||
+    process.env.MISTRAL_API_KEY ||
+    process.env.OPENROUTER_API_KEY ||
+    (process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN)
+  );
 }
 
 // ---------- Authentification + quota (Firebase, sans SDK admin) ----------
@@ -170,7 +225,7 @@ async function writeUsage(idToken: string, docId: string, current: number): Prom
 
 export async function POST(req: NextRequest) {
   try {
-    if (!process.env.GEMINI_API_KEY && !process.env.GROQ_API_KEY) {
+    if (!hasAnyProvider()) {
       return NextResponse.json({ error: "not_configured" }, { status: 503 });
     }
 
@@ -205,17 +260,13 @@ export async function POST(req: NextRequest) {
 
     const { system, user: userPrompt } = buildPrompt(request);
     let result: string | null = null;
-    try {
-      result = await callGemini(system, userPrompt);
-    } catch {
-      result = null;
-    }
-    if (!result) {
+    for (const provider of PROVIDERS) {
       try {
-        result = await callGroq(system, userPrompt);
+        result = await provider(system, userPrompt);
       } catch {
         result = null;
       }
+      if (result) break;
     }
     if (!result) return NextResponse.json({ error: "ai_unavailable" }, { status: 502 });
 
