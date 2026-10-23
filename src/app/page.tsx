@@ -316,7 +316,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== FAQ — 5 questions, centré ===== */}
+      {/* ===== FAQ — 7 questions, centré ===== */}
       <section id="faq" className="px-4 sm:px-6 py-16 sm:py-20" style={{ background: `${MINT}66` }} aria-labelledby="faq-heading">
         <div className="max-w-2xl mx-auto text-center">
           <Reveal className="mb-10">
@@ -324,7 +324,7 @@ export default function Home() {
               Questions fréquentes
             </h2>
           </Reveal>
-          <FAQSection pick={[0, 5, 1, 2, 8]} />
+          <FAQSection pick={[0, 5, 1, 2, 9, 10, 8]} />
         </div>
       </section>
 

@@ -46,7 +46,15 @@ const FAQ = [
   },
   {
     q: "Mes données sont-elles en sécurité ?",
-    a: "Vos informations ne sont ni vendues ni partagées à des fins commerciales, et servent uniquement à générer votre CV. Vous pouvez demander leur suppression à tout moment via WhatsApp. Détails complets dans nos Conditions d'utilisation.",
+    a: "Vos informations ne sont ni vendues ni partagées à des fins commerciales, et servent uniquement à générer votre CV. La seule exception est la fonction IA, facultative : si vous l'utilisez, le texte concerné est envoyé à un prestataire d'IA tiers. Vous pouvez demander la suppression de vos données à tout moment via WhatsApp. Détails complets dans nos Conditions d'utilisation.",
+  },
+  {
+    q: "Puis-je importer mon ancien CV ?",
+    a: "Oui, si vous êtes connecté : à l'étape « Infos » de l'éditeur, choisissez votre CV au format PDF (exporté depuis Word ou Google Docs, pas un scan). Les rubriques se remplissent automatiquement, puis vous relisez et corrigez ce qui doit l'être. Votre email et votre téléphone ne sont pas envoyés à l'IA.",
+  },
+  {
+    q: "Y a-t-il une aide par intelligence artificielle ?",
+    a: "Oui, de façon facultative et gratuite, avec une limite quotidienne. Un bouton « Améliorer avec l'IA » reformule une description ou une lettre de motivation, sans inventer de faits. Relisez toujours le résultat : l'IA peut se tromper.",
   },
 ];
 
