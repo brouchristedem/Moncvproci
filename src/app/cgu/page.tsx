@@ -76,6 +76,19 @@ export default function CGUPage() {
             moment en nous contactant (voir section 7) ; la demande sera traitée manuellement, notre
             service ne disposant pas encore d&apos;une suppression automatique en libre-service.
           </p>
+          <p>
+            <strong className="text-foreground">Fonction « Améliorer avec l&apos;IA ».</strong> Cette
+            fonction est facultative. Lorsque vous l&apos;utilisez, le texte du champ concerné (par
+            exemple une description d&apos;expérience ou le corps d&apos;une lettre) est envoyé à un
+            prestataire d&apos;intelligence artificielle tiers (selon la disponibilité : Google Gemini,
+            Groq, Cloudflare, OpenRouter ou Mistral) afin d&apos;être reformulé. Votre email et votre
+            numéro de téléphone sont retirés avant l&apos;envoi, mais le reste du texte (noms,
+            employeurs, parcours) peut s&apos;y trouver. Selon les conditions du prestataire pour les
+            offres gratuites, ce texte peut être conservé temporairement, utilisé pour améliorer ses
+            modèles, voire lu par des relecteurs humains. N&apos;envoyez donc pas d&apos;informations
+            sensibles ou confidentielles via cette fonction. Si vous préférez éviter tout partage,
+            n&apos;utilisez simplement pas ce bouton : le reste du service fonctionne sans IA.
+          </p>
         </section>
 
         <section className="space-y-2">

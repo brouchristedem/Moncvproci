@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Sparkles, Loader2, Undo2 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { useCVStore } from "@/lib/store";
@@ -19,6 +20,9 @@ const MESSAGES = {
     unavailable: "L'IA est momentanément indisponible. Réessaie dans un instant.",
     notConfigured: "L'IA n'est pas encore activée.",
     remaining: (n: number) => `${n} restante${n > 1 ? "s" : ""} aujourd'hui`,
+    privacy:
+      "Le texte est envoyé à un service d'IA tiers, qui peut le conserver ou l'utiliser pour s'améliorer. N'y mettez pas d'infos sensibles.",
+    privacyLink: "En savoir plus",
   },
   en: {
     button: "Improve with AI",
@@ -31,6 +35,9 @@ const MESSAGES = {
     unavailable: "AI is temporarily unavailable. Try again shortly.",
     notConfigured: "AI is not enabled yet.",
     remaining: (n: number) => `${n} left today`,
+    privacy:
+      "The text is sent to a third-party AI service, which may store it or use it to improve its models. Don't include sensitive info.",
+    privacyLink: "Learn more",
   },
 };
 
@@ -121,6 +128,12 @@ export default function AiImproveButton({
         </button>
       )}
       {message && <span className="text-[11px] text-foreground/60">{message}</span>}
+      <p className="basis-full text-[10px] leading-snug text-foreground/45">
+        {m.privacy}{" "}
+        <Link href="/cgu#confidentialite" target="_blank" className="underline hover:text-foreground/70">
+          {m.privacyLink}
+        </Link>
+      </p>
     </div>
   );
 }
