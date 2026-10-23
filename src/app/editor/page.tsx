@@ -5,6 +5,7 @@ import { useAuth, saveGuestDraft } from "@/lib/AuthContext";
 import { useCVStore, mergeWithDefaults } from "@/lib/store";
 import CVPreviewFit from "@/components/templates/CVPreviewFit";
 import PersonalInfoForm from "@/components/editor/PersonalInfoForm";
+import CvImport from "@/components/editor/CvImport";
 import SectionPanel from "@/components/editor/SectionPanel";
 import TemplatePicker from "@/components/editor/TemplatePicker";
 import ColorPicker from "@/components/editor/ColorPicker";
@@ -605,7 +606,12 @@ export default function EditorPage() {
             l'ajout d'un élément en bas de liste ne fasse pas défiler toute
             la page (nav + aperçu compris) : seul ce panneau bouge. */}
         <section className="lg:w-[420px] flex-shrink-0 p-4 pb-20 lg:pb-6 lg:p-6 border-b lg:border-b-0 lg:border-r border-border overflow-y-auto max-h-[65vh] lg:max-h-none">
-          {activeId === "infos" && <PersonalInfoForm />}
+          {activeId === "infos" && (
+            <>
+              <CvImport />
+              <PersonalInfoForm />
+            </>
+          )}
 
           {activeSection && (
             <SectionPanel

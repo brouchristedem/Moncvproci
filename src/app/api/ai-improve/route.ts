@@ -1,4 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  DAILY_LIMIT,
+  callCloudflare,
+  callOpenAICompat,
+  readUsage,
+  todayUsageDocId,
+  verifyIdToken,
+  writeUsage,
+} from "@/lib/aiServer";
+import { maskPersonalData } from "@/lib/personalData";
 
 // Amélioration d'un texte de CV par IA, 100 % sur les offres gratuites :
 // Gemini en premier, Groq en secours si Gemini est indisponible ou saturé.
@@ -15,14 +25,12 @@ import { NextRequest, NextResponse } from "next/server";
 // changent sans toucher au code via GEMINI_MODEL, GROQ_MODEL, MISTRAL_MODEL,
 // OPENROUTER_MODEL, CLOUDFLARE_MODEL.
 
-const DAILY_LIMIT = 10; // améliorations IA gratuites par utilisateur et par jour
 const MAX_INPUT_CHARS = 1500;
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 const MISTRAL_MODEL = process.env.MISTRAL_MODEL || "mistral-small-latest";
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct:free";
-const CLOUDFLARE_MODEL = process.env.CLOUDFLARE_MODEL || "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 
 type Kind = "profil" | "experience" | "formation" | "projets" | "lettre" | "autre";
 
@@ -32,13 +40,6 @@ interface AiRequest {
   titre?: string;
   sousTitre?: string;
   langue: "fr" | "en";
-}
-
-function maskPersonalData(text: string): string {
-  // Le texte envoyé à l'IA ne doit jamais contenir d'email ni de numéro de téléphone.
-  return text
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email]")
-    .replace(/(?:\+|00)?\d[\d\s().-]{7,}\d/g, "[tel]");
 }
 
 function buildPrompt(r: AiRequest): { system: string; user: string } {
@@ -97,57 +98,6 @@ async function callGemini(system: string, user: string): Promise<string | null> 
   return text || null;
 }
 
-// Groq, Mistral et OpenRouter parlent tous le format "OpenAI chat completions".
-async function callOpenAICompat(
-  url: string,
-  key: string | undefined,
-  model: string,
-  system: string,
-  user: string
-): Promise<string | null> {
-  if (!key) return null;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model,
-      temperature: 0.4,
-      max_tokens: 700,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-    }),
-    signal: AbortSignal.timeout(20000),
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  const text = data?.choices?.[0]?.message?.content;
-  return typeof text === "string" && text.trim() ? text.trim() : null;
-}
-
-async function callCloudflare(system: string, user: string): Promise<string | null> {
-  const account = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const token = process.env.CLOUDFLARE_API_TOKEN;
-  if (!account || !token) return null;
-  const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${account}/ai/run/${CLOUDFLARE_MODEL}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({
-      max_tokens: 700,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-    }),
-    signal: AbortSignal.timeout(20000),
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  const text = data?.result?.response;
-  return typeof text === "string" && text.trim() ? text.trim() : null;
-}
-
 const PROVIDERS: ((system: string, user: string) => Promise<string | null>)[] = [
   callGemini,
   (s, u) => callOpenAICompat("https://api.groq.com/openai/v1/chat/completions", process.env.GROQ_API_KEY, GROQ_MODEL, s, u),
@@ -164,63 +114,6 @@ function hasAnyProvider(): boolean {
     process.env.OPENROUTER_API_KEY ||
     (process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN)
   );
-}
-
-// ---------- Authentification + quota (Firebase, sans SDK admin) ----------
-
-async function verifyIdToken(idToken: string): Promise<{ uid: string } | null> {
-  const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-  if (!apiKey) return null;
-  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ idToken }),
-    signal: AbortSignal.timeout(10000),
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  const uid = data?.users?.[0]?.localId;
-  return typeof uid === "string" ? { uid } : null;
-}
-
-function usageDocUrl(docId?: string) {
-  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-  const base = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/aiUsage`;
-  return docId ? `${base}/${docId}` : base;
-}
-
-// Lit/écrit le compteur avec le jeton de l'utilisateur : ce sont les règles
-// Firestore (aiUsage) qui empêchent de le tricher (il ne peut qu'augmenter de 1).
-async function readUsage(idToken: string, docId: string): Promise<number | null> {
-  const res = await fetch(usageDocUrl(docId), {
-    headers: { Authorization: `Bearer ${idToken}` },
-    signal: AbortSignal.timeout(10000),
-  });
-  if (res.status === 404) return 0;
-  if (!res.ok) return null;
-  const data = await res.json();
-  const n = Number(data?.fields?.count?.integerValue ?? 0);
-  return Number.isFinite(n) ? n : 0;
-}
-
-async function writeUsage(idToken: string, docId: string, current: number): Promise<void> {
-  const body = JSON.stringify({ fields: { count: { integerValue: String(current + 1) } } });
-  const headers = { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` };
-  if (current === 0) {
-    await fetch(`${usageDocUrl()}?documentId=${encodeURIComponent(docId)}`, {
-      method: "POST",
-      headers,
-      body,
-      signal: AbortSignal.timeout(10000),
-    });
-  } else {
-    await fetch(`${usageDocUrl(docId)}?updateMask.fieldPaths=count&currentDocument.exists=true`, {
-      method: "PATCH",
-      headers,
-      body,
-      signal: AbortSignal.timeout(10000),
-    });
-  }
 }
 
 export async function POST(req: NextRequest) {
@@ -250,8 +143,7 @@ export async function POST(req: NextRequest) {
     };
 
     // Quota journalier (date UTC) : document aiUsage/{uid}_{AAAA-MM-JJ}
-    const day = new Date().toISOString().slice(0, 10);
-    const docId = `${user.uid}_${day}`;
+    const docId = todayUsageDocId(user.uid);
     const used = await readUsage(idToken, docId);
     if (used === null) return NextResponse.json({ error: "quota_unavailable" }, { status: 503 });
     if (used >= DAILY_LIMIT) {
