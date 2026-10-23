@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // firebase-admin ne doit pas être regroupé par le bundler : sur Vercel, sa
+  // dépendance jwks-rsa/jose échouait au chargement (ERR_REQUIRE_ESM).
+  serverExternalPackages: ["firebase-admin"],
   /* config options here */
   async redirects() {
     return [
