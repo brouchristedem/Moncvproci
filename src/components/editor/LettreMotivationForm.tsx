@@ -2,6 +2,7 @@
 
 import { useCVStore } from "@/lib/store";
 import { FileText } from "lucide-react";
+import AiImproveButton from "./AiImproveButton";
 
 const inputClass =
   "w-full rounded-2xl border border-border bg-surface px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500/40 transition";
@@ -103,6 +104,15 @@ export default function LettreMotivationForm({ packPrice }: { packPrice: number 
               }
               className={`${inputClass} resize-y`}
             />
+            <div className="mt-1.5">
+              <AiImproveButton
+                text={l.corps}
+                kind="lettre"
+                titre={l.poste}
+                sousTitre={l.entreprise}
+                onResult={(next) => updateLettre({ corps: next })}
+              />
+            </div>
           </div>
           <p className="text-[11px] text-foreground/50">
             {isEn

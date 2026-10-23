@@ -6,6 +6,7 @@ import { EntryItem, Section } from "@/lib/types";
 import { UI } from "@/lib/i18n";
 import { parseRichRuns } from "@/lib/richText";
 import { TEMPLATE_LIST } from "@/lib/templateRegistry";
+import AiImproveButton, { AiKind } from "./AiImproveButton";
 import { Trash2, Plus, Eye, EyeOff, Pencil, Bold, Underline, ArrowUp, ArrowDown, PanelLeft, AlignLeft, MoreVertical, Copy, RotateCcw } from "lucide-react";
 
 // Doit rester synchronisé avec le SIDEBAR_TYPES de chaque modèle à 2
@@ -76,10 +77,16 @@ function DescriptionField({
   value,
   placeholder,
   onChange,
+  aiKind,
+  aiTitre,
+  aiSousTitre,
 }: {
   value: string;
   placeholder: string;
   onChange: (next: string) => void;
+  aiKind?: AiKind;
+  aiTitre?: string;
+  aiSousTitre?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [boldActive, setBoldActive] = useState(false);
@@ -162,6 +169,20 @@ function DescriptionField({
         }}
         className="w-full rounded-2xl border border-border bg-surface px-3 py-2 text-xs outline-none overflow-y-auto max-h-60 min-h-[4.5rem] whitespace-pre-wrap empty:before:content-[attr(data-placeholder)] empty:before:text-foreground/30"
       />
+      {aiKind && (
+        <AiImproveButton
+          text={value}
+          kind={aiKind}
+          titre={aiTitre}
+          sousTitre={aiSousTitre}
+          onResult={(next) => {
+            // Le champ n'est plus réécrit par React après le montage : on
+            // met donc à jour la zone éditable à la main, puis le store.
+            if (ref.current) ref.current.innerHTML = markerTextToHtml(next);
+            onChange(next);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -519,6 +540,8 @@ export default function SectionPanel({
                 placeholder={t.description}
                 value={item.description || ""}
                 onChange={(next) => updateItem(item.id, { description: next })}
+                aiKind="profil"
+                aiTitre={cv.personalInfo.titre}
               />
             ) : (
               <>
@@ -569,6 +592,13 @@ export default function SectionPanel({
                   placeholder={t.description}
                   value={item.description || ""}
                   onChange={(next) => updateItem(item.id, { description: next })}
+                  aiKind={
+                    section.type === "experience" || section.type === "formation" || section.type === "projets"
+                      ? section.type
+                      : "autre"
+                  }
+                  aiTitre={item.titre}
+                  aiSousTitre={item.sousTitre}
                 />
               </>
             )}

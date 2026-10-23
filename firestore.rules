@@ -75,6 +75,24 @@ service cloud.firestore {
         request.auth.token.email == "brouchristedem@gmail.com";
     }
 
+    // Quota d'améliorations IA gratuites : un document par utilisateur et par
+    // jour (aiUsage/{uid}_{AAAA-MM-JJ}). L'utilisateur ne peut que créer son
+    // compteur à 1, puis l'augmenter de 1 (maximum 10) : impossible de le
+    // remettre à zéro ou de lire/modifier celui d'un autre.
+    match /aiUsage/{docId} {
+      allow read: if request.auth != null &&
+        docId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}-[0-9]{2}');
+      allow create: if request.auth != null &&
+        docId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}-[0-9]{2}') &&
+        request.resource.data.keys().hasOnly(['count']) &&
+        request.resource.data.count == 1;
+      allow update: if request.auth != null &&
+        docId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}-[0-9]{2}') &&
+        request.resource.data.keys().hasOnly(['count']) &&
+        request.resource.data.count == resource.data.count + 1 &&
+        request.resource.data.count <= 10;
+    }
+
     // Avis clients : n'importe qui peut en déposer un (formulaire public,
     // sans compte), mais toujours avec displayed = false au départ — seul
     // l'admin peut ensuite choisir de l'afficher sur la page d'accueil.
