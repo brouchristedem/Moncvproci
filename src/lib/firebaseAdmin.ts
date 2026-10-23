@@ -1,11 +1,10 @@
-// Firebase Admin (serveur uniquement) : sert à vérifier l'identité de la
-// personne qui paie et à écrire le résultat d'un paiement vérifié, ce que les
-// règles Firestore interdisent volontairement au navigateur.
+// Firebase Admin (serveur uniquement) : écritures Firestore réservées au
+// serveur (paiements, déblocage). La vérification des identités passe par
+// verifyUser.ts : firebase-admin/auth n'est volontairement pas importé ici.
 //
 // Variable d'environnement requise : FIREBASE_SERVICE_ACCOUNT_JSON
 // (le contenu du fichier JSON de compte de service, brut ou encodé en base64).
 import { cert, getApps, initializeApp } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 
 function adminApp() {
@@ -26,5 +25,4 @@ function adminApp() {
   });
 }
 
-export const adminAuth = () => getAuth(adminApp());
 export const adminDb = () => getFirestore(adminApp());

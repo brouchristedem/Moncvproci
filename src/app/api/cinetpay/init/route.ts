@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { FieldValue } from "firebase-admin/firestore";
-import { adminAuth, adminDb } from "@/lib/firebaseAdmin";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { verifyUser } from "@/lib/verifyUser";
 import { initPayment, PAYMENTS_COLLECTION } from "@/lib/cinetpay";
 import { CINETPAY_PRICES, isCinetPayPlan } from "@/lib/pricing";
 
@@ -21,10 +22,8 @@ export async function POST(req: NextRequest) {
     const idToken = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
     if (!idToken) return NextResponse.json({ error: "Connexion requise." }, { status: 401 });
 
-    let decoded;
-    try {
-      decoded = await adminAuth().verifyIdToken(idToken);
-    } catch {
+    const decoded = await verifyUser(idToken);
+    if (!decoded) {
       return NextResponse.json({ error: "Session invalide, reconnectez-vous." }, { status: 401 });
     }
 

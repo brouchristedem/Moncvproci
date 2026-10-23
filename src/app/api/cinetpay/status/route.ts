@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminAuth, adminDb } from "@/lib/firebaseAdmin";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { verifyUser } from "@/lib/verifyUser";
 import { PAYMENTS_COLLECTION, settlePayment, type PaymentRecord } from "@/lib/cinetpay";
 
 export const runtime = "nodejs";
@@ -13,12 +14,9 @@ export async function GET(req: NextRequest) {
     const idToken = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
     if (!idToken) return NextResponse.json({ error: "Connexion requise." }, { status: 401 });
 
-    let uid: string;
-    try {
-      uid = (await adminAuth().verifyIdToken(idToken)).uid;
-    } catch {
-      return NextResponse.json({ error: "Session invalide." }, { status: 401 });
-    }
+    const verified = await verifyUser(idToken);
+    if (!verified) return NextResponse.json({ error: "Session invalide." }, { status: 401 });
+    const uid = verified.uid;
 
     const tx = req.nextUrl.searchParams.get("tx") || "";
     if (!tx || tx.length > 30) return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
