@@ -7,9 +7,9 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import PwaInstall from "@/components/PwaInstall";
 
 const siteUrl = "https://moncvproci.com";
-const title = "MON CV PRO CI — Créez un CV professionnel en quelques minutes";
+const title = "MON CV PRO CI — Créer un CV professionnel en ligne en Côte d'Ivoire";
 const description =
-  "Créez un CV professionnel et moderne, prisé par les recruteurs internationaux. 15 modèles, personnalisation complète, lettre de motivation assortie, export PDF. Pensé pour la Côte d'Ivoire.";
+  "Créez votre CV professionnel en ligne en Côte d'Ivoire : 15 modèles compatibles ATS, éditeur gratuit, lettre de motivation assortie, export PDF, paiement par Wave.";
 
 // Explicite plutôt que de laisser Next.js déduire un viewport par défaut :
 // certaines versions de Safari iPad appliquent un zoom/scaling incohérent
@@ -30,17 +30,52 @@ export const metadata: Metadata = {
   },
   description,
   keywords: [
+    // Cœur de recherche
     "créer un CV",
+    "créer un CV en ligne",
+    "faire un CV",
+    "faire un CV en ligne",
     "CV en ligne",
     "CV professionnel",
+    "CV moderne",
+    "CV PDF",
+    "faire un CV PDF",
+    "générateur de CV",
+    "créateur de CV",
+    "logiciel de CV",
+    "site pour faire un CV",
     "modèle de CV",
+    "modèle de CV gratuit",
+    "exemple de CV",
     "CV gratuit",
+    // Local : Côte d'Ivoire / Afrique de l'Ouest
     "CV Côte d'Ivoire",
     "CV Abidjan",
-    "générateur de CV",
-    "faire un CV PDF",
+    "faire un CV Côte d'Ivoire",
+    "faire un CV à Abidjan",
+    "modèle de CV Côte d'Ivoire",
+    "CV Afrique",
+    "CV Afrique de l'Ouest",
+    "emploi Côte d'Ivoire",
+    "recherche d'emploi Abidjan",
+    "candidature Côte d'Ivoire",
+    // Usage
+    "CV pour stage",
+    "CV étudiant",
+    "CV premier emploi",
+    "CV sans expérience",
+    "CV compatible ATS",
+    "CV ATS",
+    "CV format international",
+    // Lettre de motivation
     "lettre de motivation",
     "lettre de motivation Côte d'Ivoire",
+    "lettre de motivation stage",
+    "lettre de motivation en ligne",
+    // Marque
+    "MON CV PRO CI",
+    "moncvproci",
+    "mon cv pro",
   ],
   authors: [{ name: "MON CV PRO CI" }],
   alternates: {
@@ -125,6 +160,12 @@ export default function RootLayout({
               description,
               applicationCategory: "BusinessApplication",
               operatingSystem: "Web",
+              areaServed: [
+                { "@type": "Country", name: "Côte d'Ivoire" },
+                { "@type": "Place", name: "Afrique de l'Ouest" },
+              ],
+              keywords:
+                "créer un CV, CV en ligne, CV professionnel, modèle de CV, CV Côte d'Ivoire, CV Abidjan, lettre de motivation, CV compatible ATS",
               offers: [
                 {
                   "@type": "Offer",
