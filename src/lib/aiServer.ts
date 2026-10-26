@@ -57,6 +57,43 @@ export async function callCloudflare(system: string, user: string, maxTokens = 7
   return typeof text === "string" && text.trim() ? text.trim() : null;
 }
 
+export const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+
+// Gemini (offre gratuite). json = true force une réponse JSON valide.
+export async function callGemini(
+  system: string,
+  user: string,
+  maxTokens = 1024,
+  json = false
+): Promise<string | null> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) return null;
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] },
+        contents: [{ role: "user", parts: [{ text: user }] }],
+        generationConfig: {
+          temperature: 0.4,
+          maxOutputTokens: maxTokens,
+          thinkingConfig: { thinkingBudget: 0 },
+          ...(json ? { responseMimeType: "application/json" } : {}),
+        },
+      }),
+      signal: AbortSignal.timeout(40000),
+    }
+  );
+  if (!res.ok) return null;
+  const data = await res.json();
+  const parts = data?.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) return null;
+  const text = parts.map((p: { text?: string }) => p.text || "").join("").trim();
+  return text || null;
+}
+
 // ---------- Authentification + quota (Firebase, sans SDK admin) ----------
 
 export async function verifyIdToken(idToken: string): Promise<{ uid: string } | null> {

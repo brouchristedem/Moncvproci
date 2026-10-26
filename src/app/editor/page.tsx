@@ -6,6 +6,7 @@ import { useCVStore, mergeWithDefaults } from "@/lib/store";
 import CVPreviewFit from "@/components/templates/CVPreviewFit";
 import PersonalInfoForm from "@/components/editor/PersonalInfoForm";
 import CvImport from "@/components/editor/CvImport";
+import AiImproveAll from "@/components/editor/AiImproveAll";
 import SectionPanel from "@/components/editor/SectionPanel";
 import TemplatePicker from "@/components/editor/TemplatePicker";
 import ColorPicker from "@/components/editor/ColorPicker";
@@ -609,6 +610,7 @@ export default function EditorPage() {
           {activeId === "infos" && (
             <>
               <CvImport />
+              <AiImproveAll />
               <PersonalInfoForm />
             </>
           )}
