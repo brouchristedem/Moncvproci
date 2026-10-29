@@ -95,7 +95,9 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+const ADMIN_EMAIL = (
+  process.env.NEXT_PUBLIC_ADMIN_EMAIL || "brouchristedem@gmail.com"
+).toLowerCase();
 // Compte de test dédié : accès au téléchargement gratuit, sans les droits
 // d'administration (pas d'accès au panneau /admin, pas d'impact sur les
 // statistiques admin en dehors du log de téléchargement).
@@ -413,7 +415,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await setDoc(ref, { usedPromoCodes: [] }, { merge: true });
   }, [user]);
 
-  const isAdmin = !!user?.email && user.email === ADMIN_EMAIL;
+  const isAdmin = !!user?.email && user.email.toLowerCase() === ADMIN_EMAIL;
   const isFreeDownloadTester =
     !!user?.email && user.email === FREE_DOWNLOAD_TEST_EMAIL;
 

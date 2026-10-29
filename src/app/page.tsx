@@ -10,6 +10,7 @@ import AvisSection from "@/components/landing/AvisSection";
 import FAQSection from "@/components/landing/FAQSection";
 import Reveal from "@/components/landing/Reveal";
 import HeroDemoVideo from "@/components/landing/HeroDemoVideo";
+import { useAuth } from "@/lib/AuthContext";
 import { ENTRY_GATE_KEY } from "@/lib/entryGate";
 
 /**
@@ -70,6 +71,7 @@ const PROOF = [
 ];
 
 export default function Home() {
+  const { isAdmin } = useAuth();
   const ctaHref = "/editor";
 
   useEffect(() => {
@@ -95,13 +97,24 @@ export default function Home() {
           <a href="#tarifs" className="hover:opacity-70 transition focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ outlineColor: EMERALD }}>Tarifs</a>
           <a href="#faq" className="hover:opacity-70 transition focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ outlineColor: EMERALD }}>FAQ</a>
         </nav>
-        <Link
-          href={ctaHref}
-          className="rounded-full text-white px-4 py-2 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ background: EMERALD, outlineColor: EMERALD }}
-        >
-          Créer mon CV
-        </Link>
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="rounded-full px-4 py-2 text-sm font-semibold border transition hover:opacity-80"
+              style={{ color: EMERALD, borderColor: EMERALD }}
+            >
+              Admin
+            </Link>
+          )}
+          <Link
+            href={ctaHref}
+            className="rounded-full text-white px-4 py-2 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ background: EMERALD, outlineColor: EMERALD }}
+          >
+            Créer mon CV
+          </Link>
+        </div>
       </header>
 
       {/* ===== Hero — tout centré ===== */}
@@ -369,13 +382,16 @@ export default function Home() {
               <span className="uppercase tracking-[0.12em] text-[10px] mb-1" style={{ color: `${FOREST}99` }}>Légal</span>
               <Link href="/cgu" className="hover:opacity-70 transition" style={{ color: `${INK}b3` }}>Conditions d&apos;utilisation</Link>
               <Link href="/cgu#confidentialite" className="hover:opacity-70 transition" style={{ color: `${INK}b3` }}>Confidentialité</Link>
+              <Link href="/a-propos" className="hover:opacity-70 transition" style={{ color: `${INK}b3` }}>À propos</Link>
             </div>
             <div className="flex flex-col items-center gap-2">
               <span className="uppercase tracking-[0.12em] text-[10px] mb-1" style={{ color: `${FOREST}99` }}>Contact</span>
               <a href="https://wa.me/2250545177571" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition" style={{ color: `${INK}b3` }}>
                 WhatsApp
               </a>
-              <span style={{ color: `${INK}b3` }}>+225 05 45 17 75 71</span>
+              <a href="tel:+2250545177571" className="hover:opacity-70 transition" style={{ color: `${INK}b3` }}>
+                Service client : +225 05 45 17 75 71
+              </a>
             </div>
           </nav>
           <div className="pt-6 border-t w-full text-xs" style={{ borderColor: MINT, color: `${INK}80` }}>

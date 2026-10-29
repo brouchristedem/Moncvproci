@@ -399,8 +399,8 @@ export default function EditorPage() {
             {dark ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           {isAdmin && (
-            <Link href="/admin" className="p-2 rounded-2xl hover:bg-surface-muted transition" title={t.admin}>
-              <ShieldCheck size={16} />
+            <Link href="/admin" className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-2xl bg-surface-muted hover:bg-surface transition" title={t.admin}>
+              <ShieldCheck size={14} /> Admin
             </Link>
           )}
           <button
