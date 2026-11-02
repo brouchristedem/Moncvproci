@@ -86,7 +86,7 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
   saveProgress: (cv: CVData) => Promise<void>;
   incrementDownloads: () => Promise<void>;
-  confirmPaidDownload: (waveReference: string) => Promise<void>;
+  confirmPaidDownload: (waveReference: string, info?: { pack: boolean; amount: number }) => Promise<void>;
   applyPromoCode: (code: string) => Promise<void>;
   confirmPromoUsage: (code: string) => Promise<void>;
   resetMyUsedPromoCodes: () => Promise<void>;
@@ -305,7 +305,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, downloadsUsed]);
 
   const confirmPaidDownload = useCallback(
-    async (waveReference: string) => {
+    async (waveReference: string, info?: { pack: boolean; amount: number }) => {
       if (!user) return;
       const existing = await getDocs(
         query(collection(db, "paymentClaims"), where("waveReference", "==", waveReference))
@@ -323,6 +323,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           userId: user.uid,
           email: user.email,
           waveReference,
+          // Type d'achat (CV seul ou Pack CV + lettre) et montant attendu, pour le suivi des ventes.
+          ...(info ? { pack: info.pack, amount: info.amount } : {}),
           createdAt: serverTimestamp(),
         });
       } catch {

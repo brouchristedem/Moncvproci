@@ -382,7 +382,7 @@ export default function DownloadPanel({
     }
     setConfirming(true);
     try {
-      await confirmPaidDownload(waveReference.trim());
+      await confirmPaidDownload(waveReference.trim(), { pack: lettreActive, amount: currentPrice });
     } catch (err: unknown) {
       console.error("Erreur de confirmation de paiement:", err);
       const message = err instanceof Error ? err.message : String(err);
