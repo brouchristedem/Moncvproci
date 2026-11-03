@@ -220,10 +220,6 @@ export default function AdminPage() {
     await setDoc(doc(db, "promoCodes", code), { usageType: next }, { merge: true });
   };
 
-  const removeClaim = async (id: string) => {
-    await deleteDoc(doc(db, "paymentClaims", id));
-  };
-
   const removePromo = async (code: string) => {
     await deleteDoc(doc(db, "promoCodes", code));
   };
@@ -296,14 +292,9 @@ export default function AdminPage() {
                 <p>{c.email}</p>
                 {c.waveReference && <p className="text-foreground/40 font-mono text-[10px]">Réf : {c.waveReference}</p>}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-foreground/40">
-                  {c.createdAt ? new Date(c.createdAt.seconds * 1000).toLocaleString("fr-FR") : ""}
-                </span>
-                <button onClick={() => removeClaim(c.id)} className="text-red-400 hover:text-red-500">
-                  <Trash2 size={14} />
-                </button>
-              </div>
+              <span className="text-foreground/40">
+                {c.createdAt ? new Date(c.createdAt.seconds * 1000).toLocaleString("fr-FR") : ""}
+              </span>
             </div>
           ))}
         </div>

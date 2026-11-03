@@ -58,12 +58,14 @@ service cloud.firestore {
     }
 
     // Journal des déclarations de paiement (lecture nécessaire pour vérifier qu'une
-    // référence Wave n'est pas réutilisée deux fois)
+    // référence Wave n'est pas réutilisée deux fois).
+    // Journal PERMANENT : personne (pas même l'admin) ne peut modifier ni
+    // supprimer une entrée. Seule la création est autorisée, ce qui garde
+    // le tableau de bord admin fiable et la référence Wave bloquée à vie.
     match /paymentClaims/{claimId} {
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
       allow read: if request.auth != null;
-      allow delete: if request.auth != null &&
-        request.auth.token.email == "brouchristedem@gmail.com";
+      allow update, delete: if false;
     }
 
     // Journal de chaque téléchargement de CV réellement effectué (payant,
