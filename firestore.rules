@@ -23,6 +23,16 @@ service cloud.firestore {
           .hasOnly(["cv", "updatedAt"]);
     }
 
+    // Invités ayant commencé un CV sans compte (compteur anonyme) : n'importe qui
+    // peut créer UN document ne contenant que createdAt (= heure du serveur) ;
+    // aucune lecture publique, aucune modification, aucune suppression.
+    match /visitors/{visitorId} {
+      allow create: if request.resource.data.keys().hasOnly(["createdAt"]) &&
+        request.resource.data.createdAt == request.time;
+      allow read: if request.auth != null &&
+        request.auth.token.email == "brouchristedem@gmail.com";
+    }
+
     // Codes promo : lecture publique (pour vérifier un code), écriture réservée à l'admin
     match /promoCodes/{code} {
       allow read: if true;

@@ -40,10 +40,38 @@ function loadGuestDraft(): CVData | null {
   }
 }
 
+const VISITOR_ID_KEY = "cvpro_visitor_id";
+
+function getVisitorId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(VISITOR_ID_KEY);
+  } catch {
+    return null;
+  }
+}
+
+// Compte les invités (sans compte) qui ont réellement commencé un CV : un seul
+// petit document anonyme par navigateur, sans aucune donnée personnelle.
+function registerVisitor() {
+  if (typeof window === "undefined" || getVisitorId()) return;
+  try {
+    const id =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `v${Date.now()}${Math.random().toString(36).slice(2, 10)}`;
+    window.localStorage.setItem(VISITOR_ID_KEY, id);
+    void setDoc(doc(db, "visitors", id), { createdAt: serverTimestamp() }).catch(() => {});
+  } catch {
+    // non bloquant
+  }
+}
+
 export function saveGuestDraft(cv: CVData) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(GUEST_DRAFT_KEY, JSON.stringify(cv));
+    if (hasRealContent(cv)) registerVisitor();
   } catch {
     // stockage local indisponible (navigation privée, quota...) : non bloquant
   }
@@ -192,6 +220,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             reset(fresh);
             if (guestHasContent) clearGuestDraft();
             setDebugInfo(`uid=${u.uid.slice(0, 8)}... | AUCUN document trouvé, nouveau profil créé`);
+          }
+          const visitorId = getVisitorId();
+          if (visitorId) {
+            void setDoc(ref, { visitorId }, { merge: true }).catch(() => {});
           }
           setDataLoaded(true);
         } else {
