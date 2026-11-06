@@ -60,14 +60,14 @@ const INK = "#1A2E28";
 const STEPS = [
   { titre: "Remplissez vos informations", texte: "Votre parcours, section par section, dans l'éditeur." },
   { titre: "Choisissez un modèle", texte: "15 styles, changez de couleur à tout moment." },
-  { titre: "Testez, puis payez par Wave", texte: "Aperçu gratuit avant paiement — 1 000 FCFA le CV seul." },
+  { titre: "Testez, puis payez par Wave", texte: "Aperçu avant paiement — 1 000 FCFA le CV seul." },
 ];
 
 const PROOF = [
   { chiffre: "15", label: "modèles" },
   { chiffre: "1 000", label: "FCFA / CV" },
   { chiffre: "0", label: "abonnement" },
-  { chiffre: "Wave", label: "sans carte" },
+  { chiffre: "Wave", label: "paiement mobile" },
 ];
 
 export default function Home() {
@@ -125,14 +125,14 @@ export default function Home() {
             className="font-['Space_Grotesk'] font-bold leading-[1.12] mb-5"
             style={{ color: FOREST, fontSize: "clamp(2.1rem, 5.5vw, 3.5rem)" }}
           >
-            Le CV qui vous décroche l&apos;entretien.
+            Créez un CV professionnel, clair et prêt à envoyer.
           </h1>
           <p
             className="mb-9"
             style={{ maxWidth: "38rem", lineHeight: 1.7, color: `${INK}cc`, fontSize: "1rem" }}
           >
-            15 modèles pensés pour le marché ivoirien, un éditeur gratuit et un score ATS
-            inclus. Vous ne payez qu&apos;au moment de télécharger.
+            Choisissez un modèle, renseignez votre parcours et téléchargez votre CV en PDF
+            pour 1 000 FCFA. Paiement par Wave, sans abonnement.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-3 mb-14">
@@ -141,14 +141,14 @@ export default function Home() {
               className="inline-flex items-center justify-center gap-2 rounded-full text-white px-7 py-3.5 text-sm font-semibold transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ background: EMERALD, outlineColor: EMERALD }}
             >
-              Commencer gratuitement <ArrowRight size={16} />
+              Créer mon CV <ArrowRight size={16} />
             </Link>
             <Link
               href="#modeles"
               className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold border-2 transition hover:bg-[#157A52]/5 focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ borderColor: EMERALD, color: EMERALD, outlineColor: EMERALD }}
             >
-              Voir les 15 modèles
+              Voir un exemple
             </Link>
           </div>
 
@@ -156,19 +156,6 @@ export default function Home() {
           <div className="relative" style={{ perspective: "1400px" }}>
             <HeroDemoVideo />
 
-            {/* Badges flottants symétriques, en menthe */}
-            <span
-              className="hidden sm:flex absolute top-6 -left-24 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm"
-              style={{ background: MINT, color: EMERALD }}
-            >
-              <Check size={13} /> Score ATS 96
-            </span>
-            <span
-              className="hidden sm:flex absolute bottom-10 -right-28 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm"
-              style={{ background: MINT, color: EMERALD }}
-            >
-              <Check size={13} /> PDF prêt en 5 min
-            </span>
           </div>
         </div>
 
@@ -229,12 +216,13 @@ export default function Home() {
         <div className="max-w-2xl mx-auto text-center mb-12">
           <Reveal>
             <h2 id="ats-heading" className="font-['Space_Grotesk'] font-bold mb-4" style={{ color: FOREST, fontSize: "2rem" }}>
-              Un CV parfait ne suffit pas s&apos;il n&apos;est jamais lu
+              Un CV plus facile à lire et à vérifier
             </h2>
             <p className="mx-auto" style={{ maxWidth: "38rem", lineHeight: 1.7, color: `${INK}99` }}>
-              La majorité des grandes entreprises filtrent les candidatures avec un logiciel
-              avant qu&apos;un humain ne les voie. Voici les 8 critères vérifiés en direct
-              dans l&apos;éditeur, avec un score en temps réel.
+              L&apos;éditeur contrôle 8 points importants : coordonnées, intitulé du poste, dates,
+              formation, compétences, contenu des rubriques, verbes d&apos;action et réalisations chiffrées.
+              Ces contrôles améliorent la structure du CV, sans garantir son classement par un logiciel
+              de recrutement ni l&apos;obtention d&apos;un entretien.
             </p>
           </Reveal>
         </div>
@@ -253,7 +241,7 @@ export default function Home() {
             className="inline-flex items-center gap-2 rounded-full text-white px-7 py-3.5 text-sm font-semibold transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: EMERALD, outlineColor: EMERALD }}
           >
-            Scanner mon CV actuel (gratuit) <ArrowRight size={16} />
+            Scanner mon CV actuel <ArrowRight size={16} />
           </Link>
         </div>
       </section>
@@ -265,7 +253,7 @@ export default function Home() {
             <h2 id="tarifs-heading" className="font-['Space_Grotesk'] font-bold mb-2" style={{ color: FOREST, fontSize: "2rem" }}>
               Un tarif simple, sans abonnement
             </h2>
-            <p style={{ color: `${INK}99` }}>Aperçu gratuit avant tout paiement. Payez par Wave, sans carte bancaire.</p>
+            <p style={{ color: `${INK}99` }}>Aperçu avant paiement. Payez par Wave, sans abonnement.</p>
           </Reveal>
 
           <div className="grid sm:grid-cols-2 gap-6 text-left">
@@ -277,8 +265,9 @@ export default function Home() {
                 </p>
                 <p className="text-xs mb-6" style={{ color: `${INK}80` }}>par téléchargement</p>
                 <ul className="text-sm space-y-2 inline-block text-left" style={{ color: `${INK}cc` }}>
-                  <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> PDF haute qualité</li>
-                  <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> Score ATS inclus</li>
+                  <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> 15 modèles au choix</li>
+                  <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> Aperçu avant paiement</li>
+                  <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> Contrôle de 8 points + export PDF</li>
                 </ul>
               </div>
             </Reveal>
@@ -301,7 +290,7 @@ export default function Home() {
                 <ul className="text-sm space-y-2 inline-block text-left" style={{ color: `${INK}cc` }}>
                   <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> CV + lettre assortie</li>
                   <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> Un seul PDF prêt à l&apos;envoi</li>
-                  <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> Score ATS inclus</li>
+                  <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> Aperçu avant paiement</li>
                 </ul>
               </div>
             </Reveal>
@@ -329,7 +318,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== FAQ — 7 questions, centré ===== */}
+      {/* ===== FAQ — 5 questions essentielles, centré ===== */}
       <section id="faq" className="px-4 sm:px-6 py-16 sm:py-20" style={{ background: `${MINT}66` }} aria-labelledby="faq-heading">
         <div className="max-w-2xl mx-auto text-center">
           <Reveal className="mb-10">
@@ -337,7 +326,7 @@ export default function Home() {
               Questions fréquentes
             </h2>
           </Reveal>
-          <FAQSection pick={[0, 5, 1, 2, 9, 10, 8]} />
+          <FAQSection pick={[0, 1, 2, 3, 4]} />
         </div>
       </section>
 
@@ -349,7 +338,7 @@ export default function Home() {
             id="cta-final-heading"
             style={{ color: FOREST, fontSize: "2rem", maxWidth: "24ch" }}
           >
-            Votre prochain emploi commence par un bon CV.
+            Prêt à créer votre CV ?
           </h2>
           <Link
             href={ctaHref}

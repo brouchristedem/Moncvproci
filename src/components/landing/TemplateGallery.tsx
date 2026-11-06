@@ -57,7 +57,7 @@ const POPULAR_ID = "template-02";
 // horizontalement — cela alourdit inutilement le poids initial de la page
 // d'accueil. Les modèles suivants ne sont montés qu'après un clic explicite
 // sur "Voir les autres modèles".
-const INITIAL_COUNT = 4;
+const INITIAL_COUNT = 3;
 
 export default function TemplateGallery({ showCompare = true, showFilters = true }: { showCompare?: boolean; showFilters?: boolean }) {
   const scrollerRef = useRef<HTMLDivElement>(null);

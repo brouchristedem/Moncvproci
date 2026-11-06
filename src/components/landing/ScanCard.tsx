@@ -61,7 +61,7 @@ export default function ScanCard() {
       setTimeout(() => setChecked((prev) => prev.map((v, idx) => (idx === i ? true : v))), c.delay)
     );
     const startCount = setTimeout(() => {
-      const target = 96;
+      const target = 8;
       const duration = 1200;
       const startTime = performance.now();
       const tick = (now: number) => {
@@ -177,16 +177,16 @@ export default function ScanCard() {
                 strokeWidth="5"
                 strokeLinecap="round"
                 strokeDasharray={2 * Math.PI * 22}
-                strokeDashoffset={2 * Math.PI * 22 * (1 - (started ? score : 0) / 100)}
+                strokeDashoffset={2 * Math.PI * 22 * (1 - (started ? score : 0) / 8)}
                 style={{ transition: "stroke-dashoffset 120ms linear" }}
               />
             </svg>
             <div>
               <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] mb-0.5" style={{ color: `${INK}66` }}>
-                Score ATS
+                Contrôle de l&apos;éditeur
               </span>
               <span className="text-2xl font-bold tabular-nums font-['Space_Grotesk']" style={{ color: EMERALD }}>
-                {started ? score : 0}%
+                {started ? score : 0} points
               </span>
             </div>
           </div>

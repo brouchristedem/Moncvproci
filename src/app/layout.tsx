@@ -9,7 +9,7 @@ import PwaInstall from "@/components/PwaInstall";
 const siteUrl = "https://moncvproci.com";
 const title = "MON CV PRO CI — Créer un CV professionnel en ligne en Côte d'Ivoire";
 const description =
-  "Créez votre CV professionnel en ligne en Côte d'Ivoire : 15 modèles compatibles ATS, éditeur gratuit, lettre de motivation assortie, export PDF, paiement par Wave.";
+  "Créez votre CV professionnel en ligne en Côte d'Ivoire : 15 modèles, aperçu avant paiement, lettre de motivation assortie, export PDF à 1 000 FCFA. Paiement Wave, sans abonnement.";
 
 // Explicite plutôt que de laisser Next.js déduire un viewport par défaut :
 // certaines versions de Safari iPad appliquent un zoom/scaling incohérent
