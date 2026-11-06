@@ -34,8 +34,8 @@ export default function HeroDemoVideo() {
 
   return (
     <div
-      className="relative mx-auto w-[210px] sm:w-[250px] rounded-[2rem] border-[6px] overflow-hidden bg-white"
-      style={{ borderColor: "#0C3B2E", boxShadow: "0 40px 70px -24px rgba(12,59,46,0.3)" }}
+      className="relative mx-auto w-[220px] sm:w-[260px] rounded-[2.25rem] border-[7px] overflow-hidden bg-white"
+      style={{ borderColor: "rgba(255,255,255,0.92)", boxShadow: "0 40px 80px -20px rgba(0,0,0,0.55)" }}
     >
       <video
         ref={ref}

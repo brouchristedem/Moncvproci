@@ -18,19 +18,19 @@ const FAQ = [
   },
   {
     q: "Comment s'effectue le paiement par Wave ?",
-    a: "Depuis votre téléphone, par Wave : aucune carte bancaire n'est nécessaire. Le paiement n'intervient qu'au moment de télécharger le PDF final.",
+    a: "Depuis ton téléphone, par Wave : aucune carte bancaire n'est nécessaire. Le paiement n'intervient qu'au moment de télécharger le PDF final.",
   },
   {
     q: "Puis-je voir mon CV avant de payer ?",
-    a: "Oui. Vous créez votre CV et voyez un aperçu complet (avec un filigrane) avant tout paiement.",
+    a: "Oui. Tu crées ton CV et tu vois un aperçu complet (avec un filigrane) avant tout paiement.",
   },
   {
     q: "Puis-je modifier mon CV après le paiement ?",
-    a: "Oui, l'éditeur reste accessible. En revanche, chaque téléchargement du PDF est un paiement séparé : pour retélécharger le même CV ou une version modifiée, il faut repayer 1 000 FCFA (ou 1 500 FCFA pour le Pack).",
+    a: "Oui, l'éditeur reste accessible. En revanche, chaque téléchargement du PDF est un paiement séparé : pour retélécharger le même CV ou une version modifiée, tu repaies 1 000 FCFA (ou 1 500 FCFA pour le Pack).",
   },
   {
     q: "Comment mes données sont-elles protégées ?",
-    a: "Vos informations ne sont ni vendues ni partagées à des fins commerciales, et servent uniquement à générer votre CV. La seule exception est la fonction IA, facultative : si vous l'utilisez, le texte concerné est envoyé à un prestataire d'IA tiers. Vous pouvez demander la suppression de vos données à tout moment via WhatsApp. Détails dans nos Conditions d'utilisation.",
+    a: "Tes informations ne sont ni vendues ni partagées à des fins commerciales, et servent uniquement à générer ton CV. La seule exception est la fonction IA, facultative : si tu l'utilises, le texte concerné est envoyé à un prestataire d'IA tiers. Tu peux demander la suppression de tes données à tout moment via WhatsApp. Détails dans nos Conditions d'utilisation.",
   },
   {
     q: "Puis-je changer de modèle en cours de route ?",

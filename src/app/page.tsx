@@ -1,12 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, FileText, LayoutTemplate, Smartphone } from "lucide-react";
 import TemplateGallery from "@/components/landing/TemplateGallery";
-import ScanCard from "@/components/landing/ScanCard";
-import AtsCriteriaGrid from "@/components/landing/AtsCriteriaGrid";
-import AvisSection from "@/components/landing/AvisSection";
 import FAQSection from "@/components/landing/FAQSection";
 import Reveal from "@/components/landing/Reveal";
 import HeroDemoVideo from "@/components/landing/HeroDemoVideo";
@@ -15,388 +12,349 @@ import { ENTRY_GATE_KEY } from "@/lib/entryGate";
 
 /**
  * ============================================================================
- * Quatrième passe sur cette page — brief très précis fourni par Christ,
- * appliqué à la lettre. Récapitulatif pour la prochaine session :
+ * Cinquième passe — refonte COMPLÈTE de l'interface, alignée sur l'identité
+ * déjà visible dans l'aperçu du lien (public/og-image-v6.png) et le logo
+ * (public/logo.svg) : fond vert forêt profond avec halo émeraude en haut à
+ * droite, carte blanche arrondie, accent orange pour "lu." et le prix.
  *
- * PALETTE EXACTE (aucune autre couleur, aucune dans les tokens brand- ou
- * accent- du thème global — ce sont des valeurs arbitraires volontairement
- * différentes, pour ne pas modifier l'éditeur ni les vrais templates de CV
- * qui utilisent, eux, ces tokens brand-/accent-) :
- *   #FFFFFF fond universel · #0C3B2E vert forêt (titres uniquement, plus
- *   aucun bloc plein — retiré du CTA final et du footer sur demande) ·
- *   #157A52 vert émeraude (boutons, liens, icônes, étoiles) · #F26B1D
- *   orange (1 seul élément par section maximum) · #E3F0E9 menthe très clair
- *   (fonds d'icônes, badges discrets, bordures fines) · #1A2E28 texte courant.
+ * Palette (identique au logo / à l'OG) :
+ *   #0C3B2E forêt · #08251D forêt profond · #157A52 émeraude · #F26B1D orange
+ *   #E3F0E9 menthe · #F4F9F6 fond clair · #1A2E28 texte
  *
- * RETIRÉ SUR DEMANDE EXPLICITE ("je ne veux plus jamais voir ça") : toute
- * la section de filtres (mise en page / style) de la galerie de modèles.
- * TemplateGallery le supporte via showFilters={false} — ne pas la remettre.
- *
- * Police mono (JetBrains Mono) réservée à UN seul usage : les deux labels
- * techniques dans ScanCard ("Analyse.pdf", "Scan ATS"). Partout ailleurs
- * (prix, stats, étapes) : Space Grotesk (titres/chiffres forts) ou Inter
- * (corps, chargée ici uniquement, pas sur le reste du site).
- *
- * Alignement : tout le texte est centré (voir consigne). Les composants
- * interactifs (grille de modèles, accordéon FAQ) gardent leur structure
- * propre ; seul leur contenu textuel est centré autant que l'usage le
- * permet.
- *
- * Écart assumé : pas de photo humaine dans le hero (demandée dans le
- * brief). Je n'ai pas de photo réelle d'un candidat ivoirien à disposition,
- * et une photo de banque d'images non vérifiée poserait un problème de
- * droits sur un site commercial — je ne l'ai donc pas inventée. L'aperçu
- * de CV réel (incliné, en perspective) tient la place du visuel du hero.
- * Si Christ fournit une photo, elle se glisse facilement à côté.
+ * Structure volontairement courte (7 blocs) : hero sombre → 3 étapes → modèles
+ * (vrais aperçus) → tarifs → FAQ → CTA final → pied de page.
+ * Retirés : section ATS + ScanCard (faux score), avis, bandeau de stats,
+ * badges flottants. Aucun faux aperçu, aucune stat inventée.
  * ============================================================================
  */
 
-const EMERALD = "#157A52";
 const FOREST = "#0C3B2E";
+const DEEP = "#08251D";
+const EMERALD = "#157A52";
 const ORANGE = "#F26B1D";
 const MINT = "#E3F0E9";
+const PAPER = "#F4F9F6";
 const INK = "#1A2E28";
 
+const DARK_BG = `radial-gradient(900px 520px at 88% 0%, rgba(21,122,82,0.55), transparent 62%), radial-gradient(520px 320px at 0% 100%, rgba(242,107,29,0.14), transparent 65%), linear-gradient(165deg, ${FOREST} 0%, ${DEEP} 100%)`;
+
 const STEPS = [
-  { titre: "Remplissez vos informations", texte: "Votre parcours, section par section, dans l'éditeur." },
-  { titre: "Choisissez un modèle", texte: "15 styles, changez de couleur à tout moment." },
-  { titre: "Testez, puis payez par Wave", texte: "Aperçu avant paiement — 1 000 FCFA le CV seul." },
+  { icon: FileText, titre: "Remplis ton parcours", texte: "Expériences, formation, compétences : section par section, depuis ton téléphone." },
+  { icon: LayoutTemplate, titre: "Choisis un modèle", texte: "15 modèles, et tu changes de style ou de couleur quand tu veux." },
+  { icon: Smartphone, titre: "Vérifie, paie, télécharge", texte: "Aperçu avant paiement, puis Wave : ton PDF est prêt." },
 ];
 
-const PROOF = [
-  { chiffre: "15", label: "modèles" },
-  { chiffre: "1 000", label: "FCFA / CV" },
-  { chiffre: "0", label: "abonnement" },
-  { chiffre: "Wave", label: "paiement mobile" },
-];
+function LogoMark({ size = 36 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden>
+      <rect x="9" y="4" width="26" height="36" rx="5" fill="#fff" />
+      <rect x="14" y="11" width="16" height="3" rx="1.5" fill={FOREST} />
+      <rect x="14" y="17" width="13" height="2.5" rx="1.25" fill="#9DCDB7" />
+      <rect x="14" y="22" width="15" height="2.5" rx="1.25" fill="#9DCDB7" />
+      <circle cx="33" cy="34" r="11" fill={ORANGE} />
+      <path d="M28 34l3.6 3.6 6.4-7.4" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </svg>
+  );
+}
 
 export default function Home() {
   const { isAdmin } = useAuth();
   const ctaHref = "/editor";
+  const heroRef = useRef<HTMLElement>(null);
+  const [showSticky, setShowSticky] = useState(false);
 
   useEffect(() => {
     try {
       window.sessionStorage.setItem(ENTRY_GATE_KEY, "1");
     } catch {
-      // sessionStorage indisponible (navigation privée stricte, etc.) : on
-      // laisse simplement l'éditeur accessible sans bloquer la personne.
+      // sessionStorage indisponible : l'éditeur reste simplement accessible.
     }
   }, []);
 
+  // Barre CTA mobile : visible seulement une fois le hero dépassé.
+  useEffect(() => {
+    const el = heroRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([e]) => setShowSticky(!e.isIntersecting), { threshold: 0 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const focus = "focus-visible:outline-2 focus-visible:outline-offset-2";
+
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden bg-white font-['Inter']" style={{ color: INK }}>
-      {/* ===== Navigation ===== */}
-      <header className="flex items-center justify-between px-4 sm:px-6 py-5 max-w-6xl mx-auto w-full">
-        <span className="flex items-center gap-2.5 font-bold text-lg tracking-tight font-['Space_Grotesk']" style={{ color: FOREST }}>
-          <span aria-hidden className="w-2.5 h-2.5 rounded-full" style={{ background: EMERALD }} />
-          MON CV PRO CI
-        </span>
-        <nav className="hidden sm:flex items-center gap-7 text-sm" style={{ color: `${INK}99` }} aria-label="Navigation principale">
-          <a href="#modeles" className="hover:opacity-70 transition focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ outlineColor: EMERALD }}>Modèles</a>
-          <a href="#scan-ats" className="hover:opacity-70 transition focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ outlineColor: EMERALD }}>Scan ATS</a>
-          <a href="#tarifs" className="hover:opacity-70 transition focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ outlineColor: EMERALD }}>Tarifs</a>
-          <a href="#faq" className="hover:opacity-70 transition focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ outlineColor: EMERALD }}>FAQ</a>
-        </nav>
-        <div className="flex items-center gap-2">
-          {isAdmin && (
-            <Link
-              href="/admin"
-              className="rounded-full px-4 py-2 text-sm font-semibold border transition hover:opacity-80"
-              style={{ color: EMERALD, borderColor: EMERALD }}
-            >
-              Admin
-            </Link>
-          )}
-          <Link
-            href={ctaHref}
-            className="rounded-full text-white px-4 py-2 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ background: EMERALD, outlineColor: EMERALD }}
-          >
-            Créer mon CV
+    <div className="min-h-screen flex flex-col overflow-x-hidden font-sans" style={{ background: PAPER, color: INK }}>
+      {/* ===================== HERO sombre (header inclus) ===================== */}
+      <section ref={heroRef} className="relative text-white" style={{ background: DARK_BG }} aria-labelledby="hero-heading">
+        <header className="flex items-center justify-between px-4 sm:px-6 py-5 max-w-6xl mx-auto w-full">
+          <Link href="/" className="flex items-center gap-2.5 font-display font-bold text-base sm:text-lg tracking-tight" aria-label="MON CV PRO CI — accueil">
+            <LogoMark />
+            <span>
+              MON CV PRO <span style={{ color: ORANGE }}>CI</span>
+            </span>
           </Link>
-        </div>
-      </header>
-
-      {/* ===== Hero — tout centré ===== */}
-      <section className="px-4 sm:px-6 pt-6 pb-16 sm:pt-10 sm:pb-24" aria-labelledby="hero-heading">
-        <div className="max-w-3xl mx-auto flex flex-col items-center text-center">
-          <h1
-            id="hero-heading"
-            className="font-['Space_Grotesk'] font-bold leading-[1.12] mb-5"
-            style={{ color: FOREST, fontSize: "clamp(2.1rem, 5.5vw, 3.5rem)" }}
-          >
-            Créez un CV professionnel, clair et prêt à envoyer.
-          </h1>
-          <p
-            className="mb-9"
-            style={{ maxWidth: "38rem", lineHeight: 1.7, color: `${INK}cc`, fontSize: "1rem" }}
-          >
-            Choisissez un modèle, renseignez votre parcours et téléchargez votre CV en PDF
-            pour 1 000 FCFA. Paiement par Wave, sans abonnement.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center gap-3 mb-14">
+          <nav className="hidden md:flex items-center gap-8 text-sm text-white/75" aria-label="Navigation principale">
+            <a href="#modeles" className="hover:text-white transition">Modèles</a>
+            <a href="#tarifs" className="hover:text-white transition">Tarifs</a>
+            <Link href="/scanner-cv" className="hover:text-white transition">Scanner mon CV</Link>
+            <a href="#faq" className="hover:text-white transition">FAQ</a>
+          </nav>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link href="/admin" className="rounded-full px-4 py-2 text-sm font-semibold border border-white/30 text-white hover:bg-white/10 transition">
+                Admin
+              </Link>
+            )}
             <Link
               href={ctaHref}
-              className="inline-flex items-center justify-center gap-2 rounded-full text-white px-7 py-3.5 text-sm font-semibold transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ background: EMERALD, outlineColor: EMERALD }}
+              className={`rounded-full px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 ${focus}`}
+              style={{ background: ORANGE, outlineColor: "#fff" }}
             >
-              Créer mon CV <ArrowRight size={16} />
-            </Link>
-            <Link
-              href="#modeles"
-              className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold border-2 transition hover:bg-[#157A52]/5 focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ borderColor: EMERALD, color: EMERALD, outlineColor: EMERALD }}
-            >
-              Voir un exemple
+              Créer mon CV
             </Link>
           </div>
+        </header>
 
-          {/* Vidéo réelle de l'éditeur (capture d'écran) — visuel du hero (voir note sur la photo en tête de fichier) */}
-          <div className="relative" style={{ perspective: "1400px" }}>
-            <HeroDemoVideo />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-20 sm:pt-14 sm:pb-28 grid lg:grid-cols-[1.15fr_0.85fr] gap-14 lg:gap-8 items-center">
+          <div className="text-center lg:text-left">
+            <h1
+              id="hero-heading"
+              className="font-display font-bold leading-[1.05] tracking-tight mb-6"
+              style={{ fontSize: "clamp(2.5rem, 7vw, 4.6rem)" }}
+            >
+              Ton CV mérite
+              <br />
+              d&apos;être <span style={{ color: ORANGE }}>lu.</span>
+            </h1>
+            <p className="mx-auto lg:mx-0 mb-8 text-white/80" style={{ maxWidth: "34rem", fontSize: "1.1rem", lineHeight: 1.65 }}>
+              Choisis un modèle, remplis ton parcours et télécharge ton CV en PDF, directement depuis ton téléphone.
+            </p>
 
-          </div>
-        </div>
-
-        {/* Bandeau de preuves — une ligne compacte, centrée */}
-        <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 mt-16 pt-8 border-t max-w-3xl mx-auto" style={{ borderColor: MINT }}>
-          {PROOF.map((item) => (
-            <div key={item.label} className="flex items-baseline gap-2">
-              <span className="font-['Space_Grotesk'] text-xl sm:text-2xl font-bold" style={{ color: FOREST }}>{item.chiffre}</span>
-              <span className="text-xs" style={{ color: `${INK}80` }}>{item.label}</span>
+            <div className="flex flex-wrap justify-center lg:justify-start gap-2.5 mb-9">
+              <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold">15 modèles</span>
+              <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold">Paiement Wave</span>
+              <span className="rounded-full px-4 py-2 text-sm font-semibold text-white" style={{ background: ORANGE }}>1 000 FCFA le CV</span>
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* ===== Comment ça marche — centré, icône au-dessus du titre ===== */}
-      <section className="px-4 sm:px-6 py-16 sm:py-20" aria-labelledby="steps-heading">
-        <h2
-          id="steps-heading"
-          className="font-['Space_Grotesk'] font-bold text-center mb-12"
-          style={{ color: FOREST, fontSize: "2rem" }}
-        >
-          Trois étapes, un CV prêt
-        </h2>
-        <div className="max-w-4xl mx-auto grid sm:grid-cols-3 gap-10 sm:gap-6 relative">
-          <div aria-hidden className="hidden sm:block absolute top-6 left-[16.5%] right-[16.5%] h-px" style={{ background: MINT }} />
-          {STEPS.map((step, i) => (
-            <Reveal key={step.titre} delay={i * 120} className="flex flex-col items-center text-center">
-              <span
-                className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full font-['Space_Grotesk'] font-bold mb-4"
-                style={{ background: MINT, color: EMERALD }}
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
+              <Link
+                href={ctaHref}
+                className={`inline-flex items-center justify-center gap-2 rounded-full px-8 py-4 text-base font-bold text-white transition hover:brightness-110 ${focus}`}
+                style={{ background: ORANGE, outlineColor: "#fff", minHeight: 52 }}
               >
-                {i + 1}
-              </span>
-              <h3 className="font-semibold text-base mb-1.5">{step.titre}</h3>
-              <p className="text-sm max-w-[26ch]" style={{ color: `${INK}99`, lineHeight: 1.6 }}>{step.texte}</p>
-            </Reveal>
-          ))}
+                Créer mon CV <ArrowRight size={18} />
+              </Link>
+              <a
+                href="#modeles"
+                className={`inline-flex items-center justify-center rounded-full px-8 py-4 text-base font-semibold border-2 border-white/40 text-white hover:bg-white/10 transition ${focus}`}
+                style={{ outlineColor: "#fff", minHeight: 52 }}
+              >
+                Voir les modèles
+              </a>
+            </div>
+            <p className="mt-5 text-sm text-white/60">Aperçu avant paiement · Sans abonnement</p>
+          </div>
+
+          {/* Vraie capture de l'éditeur (pas de faux aperçu) */}
+          <div className="relative flex justify-center">
+            <div aria-hidden className="absolute -inset-8 rounded-full blur-3xl" style={{ background: "rgba(21,122,82,0.35)" }} />
+            <div className="relative">
+              <HeroDemoVideo />
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ===== Modèles — sans filtres, sans sélecteur de profil ===== */}
-      <section id="modeles" className="px-4 sm:px-6 py-16 sm:py-20" style={{ background: `${MINT}66` }} aria-labelledby="modeles-heading">
-        <div className="max-w-6xl mx-auto">
+      {/* ===================== 3 étapes ===================== */}
+      <section className="px-4 sm:px-6 py-20 sm:py-24" aria-labelledby="steps-heading">
+        <div className="max-w-5xl mx-auto">
+          <h2 id="steps-heading" className="font-display font-bold text-center mb-12 sm:mb-14" style={{ color: FOREST, fontSize: "clamp(1.8rem, 4vw, 2.5rem)" }}>
+            Trois étapes, c&apos;est tout.
+          </h2>
+          <div className="grid md:grid-cols-3 gap-5">
+            {STEPS.map((step, i) => (
+              <Reveal key={step.titre} delay={i * 100}>
+                <div className="h-full rounded-3xl bg-white p-7 border" style={{ borderColor: MINT, boxShadow: `0 18px 40px -26px ${FOREST}55` }}>
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: MINT, color: EMERALD }}>
+                      <step.icon size={22} />
+                    </span>
+                    <span className="font-display font-bold text-5xl leading-none" style={{ color: ORANGE }} aria-hidden>
+                      {i + 1}
+                    </span>
+                  </div>
+                  <h3 className="font-display font-bold text-xl mb-2" style={{ color: FOREST }}>{step.titre}</h3>
+                  <p className="text-[15px]" style={{ lineHeight: 1.65, color: `${INK}b3` }}>{step.texte}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===================== Modèles (vrais aperçus) ===================== */}
+      <section id="modeles" className="px-4 sm:px-6 pb-20 sm:pb-24 scroll-mt-4" aria-labelledby="modeles-heading">
+        <div className="max-w-6xl mx-auto rounded-[2rem] bg-white border px-4 sm:px-10 py-12 sm:py-14" style={{ borderColor: MINT }}>
           <Reveal className="text-center mb-10">
-            <h2 id="modeles-heading" className="font-['Space_Grotesk'] font-bold mb-2" style={{ color: FOREST, fontSize: "2rem" }}>
+            <h2 id="modeles-heading" className="font-display font-bold mb-3" style={{ color: FOREST, fontSize: "clamp(1.8rem, 4vw, 2.5rem)" }}>
               Un modèle pour chaque profil
             </h2>
-            <p className="mx-auto" style={{ maxWidth: "38rem", lineHeight: 1.7, color: `${INK}99` }}>
-              Changez de modèle et de couleur à tout moment, en aperçu direct dans l&apos;éditeur.
+            <p className="mx-auto" style={{ maxWidth: "34rem", lineHeight: 1.65, color: `${INK}b3` }}>
+              Change de modèle et de couleur à tout moment, avec un aperçu en direct.
             </p>
           </Reveal>
           <TemplateGallery showCompare={false} showFilters={false} />
         </div>
       </section>
 
-      {/* ===== Scan ATS — centré, la jauge et la checklist comme preuve ===== */}
-      <section id="scan-ats" className="px-4 sm:px-6 py-16 sm:py-20" aria-labelledby="ats-heading">
-        <div className="max-w-2xl mx-auto text-center mb-12">
-          <Reveal>
-            <h2 id="ats-heading" className="font-['Space_Grotesk'] font-bold mb-4" style={{ color: FOREST, fontSize: "2rem" }}>
-              Un CV plus facile à lire et à vérifier
+      {/* ===================== Tarifs (bloc sombre) ===================== */}
+      <section id="tarifs" className="px-4 sm:px-6 py-20 sm:py-24 text-white scroll-mt-4" style={{ background: DARK_BG }} aria-labelledby="tarifs-heading">
+        <div className="max-w-4xl mx-auto">
+          <Reveal className="text-center mb-12">
+            <h2 id="tarifs-heading" className="font-display font-bold mb-3" style={{ fontSize: "clamp(1.8rem, 4vw, 2.5rem)" }}>
+              Un prix clair, sans abonnement.
             </h2>
-            <p className="mx-auto" style={{ maxWidth: "38rem", lineHeight: 1.7, color: `${INK}99` }}>
-              L&apos;éditeur contrôle 8 points importants : coordonnées, intitulé du poste, dates,
-              formation, compétences, contenu des rubriques, verbes d&apos;action et réalisations chiffrées.
-              Ces contrôles améliorent la structure du CV, sans garantir son classement par un logiciel
-              de recrutement ni l&apos;obtention d&apos;un entretien.
-            </p>
-          </Reveal>
-        </div>
-
-        <Reveal className="mb-14">
-          <ScanCard />
-        </Reveal>
-
-        <div className="max-w-4xl mx-auto mb-10">
-          <AtsCriteriaGrid />
-        </div>
-
-        <div className="text-center">
-          <Link
-            href="/scanner-cv"
-            className="inline-flex items-center gap-2 rounded-full text-white px-7 py-3.5 text-sm font-semibold transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ background: EMERALD, outlineColor: EMERALD }}
-          >
-            Scanner mon CV actuel <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
-
-      {/* ===== Tarifs — 2 cartes, orange réservé au badge (pas au prix) ===== */}
-      <section id="tarifs" className="px-4 sm:px-6 py-16 sm:py-20" style={{ background: `${MINT}66` }} aria-labelledby="tarifs-heading">
-        <div className="max-w-3xl mx-auto text-center">
-          <Reveal className="mb-10">
-            <h2 id="tarifs-heading" className="font-['Space_Grotesk'] font-bold mb-2" style={{ color: FOREST, fontSize: "2rem" }}>
-              Un tarif simple, sans abonnement
-            </h2>
-            <p style={{ color: `${INK}99` }}>Aperçu avant paiement. Payez par Wave, sans abonnement.</p>
+            <p className="text-white/75">Tu vois ton CV avant de payer. Tu paies par Wave, uniquement quand tu télécharges.</p>
           </Reveal>
 
-          <div className="grid sm:grid-cols-2 gap-6 text-left">
+          <div className="grid sm:grid-cols-2 gap-6 items-stretch">
             <Reveal>
-              <div className="h-full rounded-2xl bg-white px-8 pt-8 pb-7 text-center" style={{ boxShadow: `0 10px 30px -18px ${FOREST}33` }}>
-                <p className="text-sm font-medium mb-4" style={{ color: `${INK}b3` }}>CV seul</p>
-                <p className="font-['Space_Grotesk'] text-4xl font-bold mb-1" style={{ color: EMERALD }}>
-                  1 000<span className="text-base font-normal ml-1.5" style={{ color: `${INK}66` }}>FCFA</span>
+              <div className="h-full rounded-3xl bg-white p-8" style={{ color: INK }}>
+                <p className="text-sm font-semibold mb-5" style={{ color: `${INK}99` }}>CV seul</p>
+                <p className="font-display font-bold leading-none mb-1" style={{ color: FOREST, fontSize: "3.2rem" }}>
+                  1 000<span className="text-lg font-semibold ml-2" style={{ color: `${INK}80` }}>FCFA</span>
                 </p>
-                <p className="text-xs mb-6" style={{ color: `${INK}80` }}>par téléchargement</p>
-                <ul className="text-sm space-y-2 inline-block text-left" style={{ color: `${INK}cc` }}>
-                  <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> 15 modèles au choix</li>
-                  <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> Aperçu avant paiement</li>
-                  <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> Contrôle de 8 points + export PDF</li>
+                <p className="text-sm mb-7" style={{ color: `${INK}80` }}>par téléchargement</p>
+                <ul className="space-y-3 text-[15px]">
+                  {["15 modèles au choix", "Aperçu avant paiement", "Export PDF"].map((t) => (
+                    <li key={t} className="flex items-center gap-3">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full" style={{ background: MINT, color: EMERALD }}><Check size={14} /></span>
+                      {t}
+                    </li>
+                  ))}
                 </ul>
+                <Link
+                  href={ctaHref}
+                  className={`mt-8 flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-bold border-2 transition hover:bg-[#E3F0E9] ${focus}`}
+                  style={{ borderColor: FOREST, color: FOREST, outlineColor: EMERALD }}
+                >
+                  Créer mon CV
+                </Link>
               </div>
             </Reveal>
+
             <Reveal delay={100}>
-              <div
-                className="h-full relative rounded-2xl bg-white px-8 pt-9 pb-7 text-center sm:-translate-y-3"
-                style={{ boxShadow: `0 20px 45px -18px ${FOREST}4d`, border: `2px solid ${EMERALD}` }}
-              >
-                <span
-                  className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full text-white text-[10px] font-semibold uppercase tracking-wide px-3 py-1"
-                  style={{ background: ORANGE }}
-                >
+              <div className="relative h-full rounded-3xl bg-white p-8" style={{ color: INK, boxShadow: `0 0 0 3px ${ORANGE}` }}>
+                <span className="absolute -top-3.5 left-8 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-white" style={{ background: ORANGE }}>
                   Recommandé
                 </span>
-                <p className="text-sm font-medium mb-4" style={{ color: `${INK}b3` }}>Pack Candidature Complète</p>
-                <p className="font-['Space_Grotesk'] text-4xl font-bold mb-1" style={{ color: EMERALD }}>
-                  1 500<span className="text-base font-normal ml-1.5" style={{ color: `${INK}66` }}>FCFA</span>
+                <p className="text-sm font-semibold mb-5" style={{ color: `${INK}99` }}>Pack Candidature Complète</p>
+                <p className="font-display font-bold leading-none mb-1" style={{ color: FOREST, fontSize: "3.2rem" }}>
+                  1 500<span className="text-lg font-semibold ml-2" style={{ color: `${INK}80` }}>FCFA</span>
                 </p>
-                <p className="text-xs mb-6" style={{ color: `${INK}80` }}>par téléchargement</p>
-                <ul className="text-sm space-y-2 inline-block text-left" style={{ color: `${INK}cc` }}>
-                  <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> CV + lettre assortie</li>
-                  <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> Un seul PDF prêt à l&apos;envoi</li>
-                  <li className="flex items-center gap-2"><Check size={14} style={{ color: EMERALD }} /> Aperçu avant paiement</li>
+                <p className="text-sm mb-7" style={{ color: `${INK}80` }}>par téléchargement</p>
+                <ul className="space-y-3 text-[15px]">
+                  {["CV + lettre de motivation assortie", "Un seul PDF prêt à envoyer", "Aperçu avant paiement"].map((t) => (
+                    <li key={t} className="flex items-center gap-3">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full" style={{ background: MINT, color: EMERALD }}><Check size={14} /></span>
+                      {t}
+                    </li>
+                  ))}
                 </ul>
+                <Link
+                  href={ctaHref}
+                  className={`mt-8 flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-bold text-white transition hover:brightness-110 ${focus}`}
+                  style={{ background: ORANGE, outlineColor: FOREST }}
+                >
+                  Choisir le pack <ArrowRight size={16} />
+                </Link>
               </div>
             </Reveal>
           </div>
-
-          <Link
-            href={ctaHref}
-            className="mt-10 inline-flex items-center gap-2 rounded-full text-white px-7 py-3.5 text-sm font-semibold transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ background: EMERALD, outlineColor: EMERALD }}
-          >
-            Créer mon CV maintenant <ArrowRight size={16} />
-          </Link>
         </div>
       </section>
 
-      {/* ===== Avis — 3 max, centré (voir AvisSection.tsx) ===== */}
-      <section id="avis" className="px-4 sm:px-6 py-16 sm:py-20" aria-labelledby="avis-heading">
-        <div className="max-w-6xl mx-auto text-center">
-          <Reveal className="mb-10">
-            <h2 id="avis-heading" className="font-['Space_Grotesk'] font-bold" style={{ color: FOREST, fontSize: "2rem" }}>
-              Ce qu&apos;en pensent nos utilisateurs
-            </h2>
-          </Reveal>
-          <AvisSection />
-        </div>
-      </section>
-
-      {/* ===== FAQ — 5 questions essentielles, centré ===== */}
-      <section id="faq" className="px-4 sm:px-6 py-16 sm:py-20" style={{ background: `${MINT}66` }} aria-labelledby="faq-heading">
-        <div className="max-w-2xl mx-auto text-center">
-          <Reveal className="mb-10">
-            <h2 id="faq-heading" className="font-['Space_Grotesk'] font-bold" style={{ color: FOREST, fontSize: "2rem" }}>
+      {/* ===================== FAQ ===================== */}
+      <section id="faq" className="px-4 sm:px-6 py-20 sm:py-24 scroll-mt-4" aria-labelledby="faq-heading">
+        <div className="max-w-2xl mx-auto">
+          <Reveal className="text-center mb-10">
+            <h2 id="faq-heading" className="font-display font-bold" style={{ color: FOREST, fontSize: "clamp(1.8rem, 4vw, 2.5rem)" }}>
               Questions fréquentes
             </h2>
           </Reveal>
-          <FAQSection pick={[0, 1, 2, 3, 4]} />
+          <div className="rounded-3xl bg-white border px-5 sm:px-8 py-2" style={{ borderColor: MINT }}>
+            <FAQSection pick={[0, 1, 2, 3, 4]} />
+          </div>
         </div>
       </section>
 
-      {/* ===== CTA final — fond BLANC, titre en vert forêt, plus de bloc plein ===== */}
-      <section className="px-4 sm:px-6 py-20 text-center" aria-labelledby="cta-final-heading">
-        <Reveal>
-          <h2
-            className="font-['Space_Grotesk'] font-bold mx-auto mb-8"
-            id="cta-final-heading"
-            style={{ color: FOREST, fontSize: "2rem", maxWidth: "24ch" }}
-          >
-            Prêt à créer votre CV ?
-          </h2>
-          <Link
-            href={ctaHref}
-            className="inline-flex items-center gap-2 rounded-full text-white px-8 py-4 text-sm font-semibold transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ background: EMERALD, outlineColor: EMERALD }}
-          >
-            Créer mon CV maintenant <ArrowRight size={16} />
-          </Link>
-        </Reveal>
+      {/* ===================== CTA final ===================== */}
+      <section className="px-4 sm:px-6 pb-20" aria-labelledby="cta-final-heading">
+        <div className="max-w-5xl mx-auto rounded-[2rem] text-center text-white px-6 py-14 sm:py-16" style={{ background: DARK_BG }}>
+          <Reveal>
+            <h2 id="cta-final-heading" className="font-display font-bold mx-auto mb-3" style={{ fontSize: "clamp(1.8rem, 4.5vw, 2.8rem)", maxWidth: "20ch", lineHeight: 1.1 }}>
+              Ton CV mérite d&apos;être <span style={{ color: ORANGE }}>lu.</span>
+            </h2>
+            <p className="text-white/75 mb-8">Commence maintenant, tu ne paies qu&apos;au téléchargement.</p>
+            <Link
+              href={ctaHref}
+              className={`inline-flex items-center justify-center gap-2 rounded-full px-9 py-4 text-base font-bold text-white transition hover:brightness-110 ${focus}`}
+              style={{ background: ORANGE, outlineColor: "#fff", minHeight: 52 }}
+            >
+              Créer mon CV <ArrowRight size={18} />
+            </Link>
+          </Reveal>
+        </div>
       </section>
 
-      {/* ===== Footer — fond BLANC, 3 colonnes centrées, texte vert/ink ===== */}
-      <footer className="px-4 sm:px-6 pt-10 pb-28 sm:pb-10 border-t" style={{ borderColor: MINT }}>
-        <div className="max-w-4xl mx-auto flex flex-col items-center gap-10 text-center">
+      {/* ===================== Footer ===================== */}
+      <footer className="text-white px-4 sm:px-6 pt-12 pb-28 sm:pb-10" style={{ background: DEEP }}>
+        <div className="max-w-6xl mx-auto grid gap-10 sm:grid-cols-[1.3fr_1fr_1fr_1fr]">
           <div>
-            <p className="font-semibold mb-1.5 text-sm font-['Space_Grotesk']" style={{ color: FOREST }}>MON CV PRO CI</p>
-            <p className="text-xs mx-auto" style={{ maxWidth: "32ch", color: `${INK}80`, lineHeight: 1.6 }}>
-              Créateur de CV professionnel pensé pour le marché ivoirien. Vos données restent confidentielles.
+            <div className="flex items-center gap-2.5 font-display font-bold mb-3">
+              <LogoMark size={32} />
+              <span>MON CV PRO <span style={{ color: ORANGE }}>CI</span></span>
+            </div>
+            <p className="text-sm text-white/60" style={{ maxWidth: "30ch", lineHeight: 1.6 }}>
+              Créateur de CV pensé pour le marché ivoirien. Tes données restent confidentielles.
             </p>
           </div>
-          <nav className="flex flex-wrap justify-center gap-10 text-xs" aria-label="Pied de page">
-            <div className="flex flex-col items-center gap-2">
-              <span className="uppercase tracking-[0.12em] text-[10px] mb-1" style={{ color: `${FOREST}99` }}>Produit</span>
-              <a href="#modeles" className="hover:opacity-70 transition" style={{ color: `${INK}b3` }}>Modèles</a>
-              <a href="#scan-ats" className="hover:opacity-70 transition" style={{ color: `${INK}b3` }}>Scan ATS</a>
-              <Link href="/scanner-cv" className="hover:opacity-70 transition" style={{ color: `${INK}b3` }}>Scanner mon CV</Link>
-              <a href="#tarifs" className="hover:opacity-70 transition" style={{ color: `${INK}b3` }}>Tarifs</a>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <span className="uppercase tracking-[0.12em] text-[10px] mb-1" style={{ color: `${FOREST}99` }}>Légal</span>
-              <Link href="/cgu" className="hover:opacity-70 transition" style={{ color: `${INK}b3` }}>Conditions d&apos;utilisation</Link>
-              <Link href="/cgu#confidentialite" className="hover:opacity-70 transition" style={{ color: `${INK}b3` }}>Confidentialité</Link>
-              <Link href="/a-propos" className="hover:opacity-70 transition" style={{ color: `${INK}b3` }}>À propos</Link>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <span className="uppercase tracking-[0.12em] text-[10px] mb-1" style={{ color: `${FOREST}99` }}>Contact</span>
-              <a href="https://wa.me/2250545177571" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition" style={{ color: `${INK}b3` }}>
-                WhatsApp
-              </a>
-              <a href="tel:+2250545177571" className="hover:opacity-70 transition" style={{ color: `${INK}b3` }}>
-                Service client : +225 05 45 17 75 71
-              </a>
-            </div>
+          <nav className="flex flex-col gap-2.5 text-sm" aria-label="Produit">
+            <span className="text-xs uppercase tracking-[0.12em] text-white/40 mb-1">Produit</span>
+            <a href="#modeles" className="text-white/75 hover:text-white transition">Modèles</a>
+            <a href="#tarifs" className="text-white/75 hover:text-white transition">Tarifs</a>
+            <Link href="/scanner-cv" className="text-white/75 hover:text-white transition">Scanner mon CV</Link>
           </nav>
-          <div className="pt-6 border-t w-full text-xs" style={{ borderColor: MINT, color: `${INK}80` }}>
-            © {new Date().getFullYear()} MON CV PRO CI. Tous droits réservés.
-          </div>
+          <nav className="flex flex-col gap-2.5 text-sm" aria-label="Légal">
+            <span className="text-xs uppercase tracking-[0.12em] text-white/40 mb-1">Légal</span>
+            <Link href="/cgu" className="text-white/75 hover:text-white transition">Conditions d&apos;utilisation</Link>
+            <Link href="/cgu#confidentialite" className="text-white/75 hover:text-white transition">Confidentialité</Link>
+            <Link href="/a-propos" className="text-white/75 hover:text-white transition">À propos</Link>
+          </nav>
+          <nav className="flex flex-col gap-2.5 text-sm" aria-label="Contact">
+            <span className="text-xs uppercase tracking-[0.12em] text-white/40 mb-1">Contact</span>
+            <a href="https://wa.me/2250545177571" target="_blank" rel="noopener noreferrer" className="text-white/75 hover:text-white transition">WhatsApp</a>
+            <a href="tel:+2250545177571" className="text-white/75 hover:text-white transition">+225 05 45 17 75 71</a>
+          </nav>
+        </div>
+        <div className="max-w-6xl mx-auto mt-10 pt-6 border-t border-white/10 text-xs text-white/45">
+          © {new Date().getFullYear()} MON CV PRO CI. Tous droits réservés.
         </div>
       </footer>
 
-      {/* ===== CTA sticky mobile ===== */}
-      <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 p-3 bg-white/95 backdrop-blur border-t" style={{ borderColor: MINT }}>
+      {/* ===================== CTA mobile (après le hero) ===================== */}
+      <div
+        className={`sm:hidden fixed bottom-0 inset-x-0 z-40 p-3 transition-transform duration-300 ${showSticky ? "translate-y-0" : "translate-y-full"}`}
+        style={{ background: `${DEEP}f2`, paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+        aria-hidden={!showSticky}
+      >
         <Link
           href={ctaHref}
-          className="flex items-center justify-center gap-2 rounded-full text-white px-5 py-3 text-sm font-semibold transition"
-          style={{ background: EMERALD }}
+          tabIndex={showSticky ? 0 : -1}
+          className="flex items-center justify-center gap-2 rounded-full px-5 py-3.5 text-[15px] font-bold text-white"
+          style={{ background: ORANGE }}
         >
-          Créer mon CV — 1 000 FCFA <ArrowRight size={16} />
+          PDF : 1 000 FCFA · Créer mon CV <ArrowRight size={16} />
         </Link>
       </div>
     </div>
