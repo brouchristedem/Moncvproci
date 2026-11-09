@@ -8,12 +8,12 @@ const inputClass =
   "w-full rounded-2xl border border-border bg-surface px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500/40 transition";
 const labelClass = "text-xs font-medium text-foreground/70 mb-1 block";
 
-// Bloc "Pack Candidature Complète" : bascule + formulaire de la lettre de
+// Bloc « Lettre de motivation » (incluse dans le Pass Candidature) : bascule + formulaire de la lettre de
 // motivation, assortie au même design que le CV (voir LettreRenderer). Une
 // fois activée, la lettre est automatiquement incluse comme 2e page dans
 // tout téléchargement (payant ou aperçu gratuit filigrané), sans logique
 // supplémentaire côté impression — voir CVPreviewFit.
-export default function LettreMotivationForm({ packPrice }: { packPrice: number }) {
+export default function LettreMotivationForm() {
   const cv = useCVStore((s) => s.cv);
   const set = useCVStore((s) => s.set);
   const isEn = cv.langue === "en";
@@ -41,12 +41,12 @@ export default function LettreMotivationForm({ packPrice }: { packPrice: number 
         <span className="flex-1">
           <span className="flex items-center gap-1.5 text-sm font-medium">
             <FileText size={14} />
-            {isEn ? "Full Application Pack" : "Pack Candidature Complète"}
+            {isEn ? "Add a cover letter" : "Ajouter une lettre de motivation"}
           </span>
           <span className="block text-[11px] text-foreground/60 mt-0.5">
             {isEn
-              ? `CV + matching cover letter, same design — ${packPrice} FCFA total.`
-              : `CV + lettre de motivation assortie, même design — ${packPrice} FCFA au total.`}
+              ? "Included in your pass: a matching cover letter, same design as your CV."
+              : "Incluse dans ton pass : une lettre assortie, même design que ton CV."}
           </span>
         </span>
       </label>

@@ -86,7 +86,7 @@ export const UI = {
     customerService: "Besoin d'aide ? Écrivez-nous sur WhatsApp :",
     confirmTitle: "Confirmer le téléchargement",
     confirmFreeText: "Ce téléchargement est votre 1er téléchargement, il est gratuit.",
-    confirmPaidText: "Ce téléchargement est payant : 1000 FCFA (déjà réglé).",
+    confirmPaidText: "Ce téléchargement est inclus dans votre Pass Candidature (déjà réglé).",
     confirmWarning:
       "Assurez-vous d'avoir terminé toutes vos modifications avant de continuer : aucun retour en arrière n'est possible après le téléchargement.",
     confirmCancel: "Annuler",
@@ -95,11 +95,11 @@ export const UI = {
     statusPaid: "Paiement effectué — vous pouvez télécharger votre CV.",
     downloadCta: "Télécharger le CV",
     downloadCtaPdf: "Télécharger en PDF",
-    firstDownloadInfo: "Le téléchargement est à 1000 FCFA.",
-    nextDownloadInfo: "Le téléchargement est à 1000 FCFA.",
-    downloadPriceInfo: "Le téléchargement de votre CV coûte 1000 FCFA.",
+    firstDownloadInfo: "Un seul paiement : Pass Candidature de 5 jours.",
+    nextDownloadInfo: "Un seul paiement : Pass Candidature de 5 jours.",
+    downloadPriceInfo: "Le Pass Candidature donne 5 jours de modifications et téléchargements illimités.",
     downloadWarning:
-      "Vérifiez que votre CV est prêt avant de télécharger. Vous pourrez toujours revenir le modifier ensuite — un nouveau téléchargement sera alors nécessaire (1000 FCFA).",
+      "Vérifiez que votre CV est prêt avant de télécharger. Vous pourrez le modifier et le retélécharger à volonté pendant 5 jours.",
     beforePayWarning:
       "Avant de payer : vérifiez que votre CV est prêt. Vous serez redirigé vers une page de paiement sécurisée ; à votre retour, le téléchargement se débloque automatiquement.",
     twaPaymentNotice:
@@ -247,7 +247,7 @@ export const UI = {
     customerService: "Need help? Message us on WhatsApp:",
     confirmTitle: "Confirm download",
     confirmFreeText: "This is your 1st download, it's free.",
-    confirmPaidText: "This is a paid download: 1000 FCFA (already paid).",
+    confirmPaidText: "This download is included in your Application Pass (already paid).",
     confirmWarning:
       "Make sure you've finished all your changes before continuing: there is no going back after downloading.",
     confirmCancel: "Cancel",
@@ -256,11 +256,11 @@ export const UI = {
     statusPaid: "Payment completed — you can download your CV.",
     downloadCta: "Download the CV",
     downloadCtaPdf: "Download as PDF",
-    firstDownloadInfo: "The download costs 1000 FCFA.",
-    nextDownloadInfo: "The download costs 1000 FCFA.",
-    downloadPriceInfo: "Downloading your CV costs 1000 FCFA.",
+    firstDownloadInfo: "One payment: a 5-day Application Pass.",
+    nextDownloadInfo: "One payment: a 5-day Application Pass.",
+    downloadPriceInfo: "The Application Pass gives 5 days of unlimited edits and downloads.",
     downloadWarning:
-      "Make sure your CV is ready before downloading. You can always come back to edit it later — a new download will then be needed (1000 FCFA).",
+      "Make sure your CV is ready before downloading. You can edit and re-download it as often as you like for 5 days.",
     beforePayWarning:
       "Before paying: make sure your CV is ready. You'll be redirected to a secure payment page; when you come back, your download unlocks automatically.",
     twaPaymentNotice:

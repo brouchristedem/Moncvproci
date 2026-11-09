@@ -26,6 +26,7 @@ import {
 import { auth, googleProvider, db } from "./firebase";
 import { useCVStore, defaultCV, mergeWithDefaults } from "./store";
 import { CVData } from "./types";
+import { PASS_MS } from "./pricing";
 
 const GUEST_DRAFT_KEY = "cvpro_guest_draft";
 
@@ -102,6 +103,8 @@ interface AuthContextValue {
   isFreeDownloadTester: boolean;
   downloadsUsed: number;
   paidUnlocked: boolean;
+  // Fin du Pass Candidature (ms depuis 1970) ; 0 = aucun pass acheté.
+  paidUntil: number;
   usedPromoCodes: string[];
   authError: string;
   loadError: string;
@@ -159,7 +162,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloadsUsed, setDownloadsUsed] = useState(0);
-  const [paidUnlocked, setPaidUnlocked] = useState(false);
+  // Pass Candidature : accès illimité jusqu'à paidUntil. "legacyUnlock" garde
+  // le comportement des anciens paiements (un seul téléchargement) pour les
+  // comptes qui avaient déjà payé avant le Pass.
+  const [paidUntil, setPaidUntil] = useState(0);
+  const [legacyUnlock, setLegacyUnlock] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+  const paidUnlocked = legacyUnlock || paidUntil > now;
   const [usedPromoCodes, setUsedPromoCodes] = useState<string[]>([]);
   const [authError, setAuthError] = useState("");
   const [loadError, setLoadError] = useState("");
@@ -180,6 +189,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(u);
         setLoadError("");
         setDataLoaded(false);
+        // Repart de zéro à chaque changement de compte : le pass d'un compte
+        // ne doit jamais rester actif pour le suivant.
+        setPaidUntil(0);
+        setLegacyUnlock(false);
         if (u) {
           setDebugInfo(`uid=${u.uid.slice(0, 8)}... | lecture en cours...`);
           const ref = doc(db, "users", u.uid);
@@ -196,7 +209,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 : null;
             if (merged) reset(merged);
             setDownloadsUsed(data.downloadsUsed || 0);
-            setPaidUnlocked(!!data.paidUnlocked);
+            const until = Number(data.paidUntil) || 0;
+            setPaidUntil(until);
+            setLegacyUnlock(!!data.paidUnlocked && !until);
+            setNow(Date.now());
             setUsedPromoCodes(Array.isArray(data.usedPromoCodes) ? data.usedPromoCodes : []);
             if (guestHasContent) {
               // Le CV construit avant connexion prime : on l'enregistre tout
@@ -245,6 +261,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     return () => unsub();
   }, [reset]);
+
+  // Rafraîchit l'état au moment précis où le pass expire (page restée ouverte).
+  useEffect(() => {
+    const remaining = paidUntil - Date.now();
+    if (remaining <= 0) return;
+    const id = window.setTimeout(() => setNow(Date.now()), Math.min(remaining, 2 ** 31 - 1) + 500);
+    return () => window.clearTimeout(id);
+  }, [paidUntil]);
 
   const signInWithGoogle = useCallback(async () => {
     try {
@@ -332,9 +356,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const ref = doc(db, "users", user.uid);
     const next = downloadsUsed + 1;
     setDownloadsUsed(next);
-    setPaidUnlocked(false);
-    await setDoc(ref, { downloadsUsed: next, paidUnlocked: false }, { merge: true });
-  }, [user, downloadsUsed]);
+    // Avec le Pass, un téléchargement ne consomme plus l'accès : seul le
+    // compteur augmente. Les anciens paiements (1 téléchargement) restent
+    // consommés après usage.
+    if (legacyUnlock) {
+      setLegacyUnlock(false);
+      await setDoc(ref, { downloadsUsed: next, paidUnlocked: false }, { merge: true });
+    } else {
+      await setDoc(ref, { downloadsUsed: next }, { merge: true });
+    }
+  }, [user, downloadsUsed, legacyUnlock]);
 
   const confirmPaidDownload = useCallback(
     async (paymentReference: string, info?: { pack: boolean; amount: number }) => {
@@ -347,9 +378,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           "Ce paiement a déjà été utilisé pour un autre téléchargement."
         );
       }
-      setPaidUnlocked(true);
+      // Un nouveau paiement pendant un pass encore actif prolonge la durée.
+      const until = Math.max(Date.now(), paidUntil) + PASS_MS;
+      setPaidUntil(until);
+      setLegacyUnlock(false);
+      setNow(Date.now());
       const ref = doc(db, "users", user.uid);
-      await setDoc(ref, { paidUnlocked: true, lastPaymentReference: paymentReference }, { merge: true });
+      await setDoc(
+        ref,
+        { paidUnlocked: true, paidUntil: until, lastPaymentReference: paymentReference },
+        { merge: true }
+      );
       try {
         await addDoc(collection(db, "paymentClaims"), {
           userId: user.uid,
@@ -363,7 +402,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // non bloquant
       }
     },
-    [user]
+    [user, paidUntil]
   );
 
   // Valide un code promo (existe, actif, pas déjà utilisé par cette
@@ -462,6 +501,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isFreeDownloadTester,
         downloadsUsed,
         paidUnlocked,
+        paidUntil,
         usedPromoCodes,
         authError,
         loadError,

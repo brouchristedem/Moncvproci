@@ -9,7 +9,7 @@ import PwaInstall from "@/components/PwaInstall";
 const siteUrl = "https://moncvproci.com";
 const title = "MON CV PRO CI — Créer un CV professionnel en ligne en Côte d'Ivoire";
 const description =
-  "Créez votre CV professionnel en ligne en Côte d'Ivoire : 15 modèles, aperçu avant paiement, lettre de motivation assortie, export PDF à 1 000 FCFA. Paiement Mobile Money ou carte, sans abonnement.";
+  "Créez votre CV professionnel en ligne en Côte d'Ivoire : 15 modèles, aperçu avant paiement, lettre de motivation assortie, pass 5 jours à 1 500 FCFA, modifications et téléchargements illimités. Paiement Mobile Money ou carte, sans abonnement.";
 
 // Explicite plutôt que de laisser Next.js déduire un viewport par défaut :
 // certaines versions de Safari iPad appliquent un zoom/scaling incohérent
@@ -166,20 +166,12 @@ export default function RootLayout({
               ],
               keywords:
                 "créer un CV, CV en ligne, CV professionnel, modèle de CV, CV Côte d'Ivoire, CV Abidjan, lettre de motivation, CV compatible ATS",
-              offers: [
-                {
-                  "@type": "Offer",
-                  name: "CV seul",
-                  priceCurrency: "XOF",
-                  price: "1000",
-                },
-                {
-                  "@type": "Offer",
-                  name: "Pack Candidature Complète (CV + lettre de motivation)",
-                  priceCurrency: "XOF",
-                  price: "1500",
-                },
-              ],
+              offers: {
+                "@type": "Offer",
+                name: "Pass Candidature 5 jours (CV + lettre de motivation, modifications et téléchargements illimités)",
+                priceCurrency: "XOF",
+                price: "1500",
+              },
               inLanguage: ["fr", "en"],
             }),
           }}

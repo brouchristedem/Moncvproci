@@ -9,6 +9,7 @@ import Reveal from "@/components/landing/Reveal";
 import HeroDemoVideo from "@/components/landing/HeroDemoVideo";
 import { useAuth } from "@/lib/AuthContext";
 import { ENTRY_GATE_KEY } from "@/lib/entryGate";
+import { PASS_PRICE, PASS_DAYS, formatFcfa } from "@/lib/pricing";
 
 /**
  * ============================================================================
@@ -133,7 +134,7 @@ export default function Home() {
             <div className="flex flex-wrap justify-center lg:justify-start gap-2.5 mb-9">
               <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold">15 modèles</span>
               <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold">Paiement Mobile Money</span>
-              <span className="rounded-full px-4 py-2 text-sm font-semibold text-white" style={{ background: ORANGE }}>1 000 FCFA le CV</span>
+              <span className="rounded-full px-4 py-2 text-sm font-semibold text-white" style={{ background: ORANGE }}>{formatFcfa(PASS_PRICE)} FCFA · CV + lettre</span>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
@@ -214,63 +215,41 @@ export default function Home() {
             <h2 id="tarifs-heading" className="font-display font-bold mb-3" style={{ fontSize: "clamp(1.8rem, 4vw, 2.5rem)" }}>
               Un prix clair, sans abonnement.
             </h2>
-            <p className="text-white/75">Tu vois ton CV avant de payer. Tu paies par Mobile Money (Wave, Orange, MTN, Moov) ou par carte, uniquement quand tu télécharges.</p>
+            <p className="text-white/75">Tu vois ton CV avant de payer. Un seul paiement (Mobile Money ou carte), et tu modifies et télécharges autant que tu veux pendant {PASS_DAYS} jours.</p>
           </Reveal>
 
-          <div className="grid sm:grid-cols-2 gap-6 items-stretch">
-            <Reveal>
-              <div className="h-full rounded-3xl bg-white p-8" style={{ color: INK }}>
-                <p className="text-sm font-semibold mb-5" style={{ color: `${INK}99` }}>CV seul</p>
-                <p className="font-display font-bold leading-none mb-1" style={{ color: FOREST, fontSize: "3.2rem" }}>
-                  1 000<span className="text-lg font-semibold ml-2" style={{ color: `${INK}80` }}>FCFA</span>
-                </p>
-                <p className="text-sm mb-7" style={{ color: `${INK}80` }}>par téléchargement</p>
-                <ul className="space-y-3 text-[15px]">
-                  {["15 modèles au choix", "Aperçu avant paiement", "Export PDF"].map((t) => (
-                    <li key={t} className="flex items-center gap-3">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full" style={{ background: MINT, color: EMERALD }}><Check size={14} /></span>
-                      {t}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href={ctaHref}
-                  className={`mt-8 flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-bold border-2 transition hover:bg-[#E3F0E9] ${focus}`}
-                  style={{ borderColor: FOREST, color: FOREST, outlineColor: EMERALD }}
-                >
-                  Créer mon CV
-                </Link>
-              </div>
-            </Reveal>
-
-            <Reveal delay={100}>
-              <div className="relative h-full rounded-3xl bg-white p-8" style={{ color: INK, boxShadow: `0 0 0 3px ${ORANGE}` }}>
-                <span className="absolute -top-3.5 left-8 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-white" style={{ background: ORANGE }}>
-                  Recommandé
-                </span>
-                <p className="text-sm font-semibold mb-5" style={{ color: `${INK}99` }}>Pack Candidature Complète</p>
-                <p className="font-display font-bold leading-none mb-1" style={{ color: FOREST, fontSize: "3.2rem" }}>
-                  1 500<span className="text-lg font-semibold ml-2" style={{ color: `${INK}80` }}>FCFA</span>
-                </p>
-                <p className="text-sm mb-7" style={{ color: `${INK}80` }}>par téléchargement</p>
-                <ul className="space-y-3 text-[15px]">
-                  {["CV + lettre de motivation assortie", "Un seul PDF prêt à envoyer", "Aperçu avant paiement"].map((t) => (
-                    <li key={t} className="flex items-center gap-3">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full" style={{ background: MINT, color: EMERALD }}><Check size={14} /></span>
-                      {t}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href={ctaHref}
-                  className={`mt-8 flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-bold text-white transition hover:brightness-110 ${focus}`}
-                  style={{ background: ORANGE, outlineColor: FOREST }}
-                >
-                  Choisir le pack <ArrowRight size={16} />
-                </Link>
-              </div>
-            </Reveal>
-          </div>
+          <Reveal>
+            <div className="relative mx-auto max-w-md rounded-3xl bg-white p-8" style={{ color: INK, boxShadow: `0 0 0 3px ${ORANGE}` }}>
+              <span className="absolute -top-3.5 left-8 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-white" style={{ background: ORANGE }}>
+                Une seule offre
+              </span>
+              <p className="text-sm font-semibold mb-5" style={{ color: `${INK}99` }}>Pass Candidature</p>
+              <p className="font-display font-bold leading-none mb-1" style={{ color: FOREST, fontSize: "3.2rem" }}>
+                {formatFcfa(PASS_PRICE)}<span className="text-lg font-semibold ml-2" style={{ color: `${INK}80` }}>FCFA</span>
+              </p>
+              <p className="text-sm mb-7" style={{ color: `${INK}80` }}>un seul paiement, valable {PASS_DAYS} jours</p>
+              <ul className="space-y-3 text-[15px]">
+                {[
+                  "CV + lettre de motivation assortie",
+                  `Modifications illimitées pendant ${PASS_DAYS} jours`,
+                  `Téléchargements PDF illimités pendant ${PASS_DAYS} jours`,
+                  "15 modèles, aperçu avant paiement",
+                ].map((t) => (
+                  <li key={t} className="flex items-center gap-3">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full" style={{ background: MINT, color: EMERALD }}><Check size={14} /></span>
+                    {t}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={ctaHref}
+                className={`mt-8 flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-bold text-white transition hover:brightness-110 ${focus}`}
+                style={{ background: ORANGE, outlineColor: FOREST }}
+              >
+                Créer mon CV <ArrowRight size={16} />
+              </Link>
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -295,7 +274,7 @@ export default function Home() {
             <h2 id="cta-final-heading" className="font-display font-bold mx-auto mb-3" style={{ fontSize: "clamp(1.8rem, 4.5vw, 2.8rem)", maxWidth: "20ch", lineHeight: 1.1 }}>
               Ton CV mérite d&apos;être <span style={{ color: ORANGE }}>lu.</span>
             </h2>
-            <p className="text-white/75 mb-8">Commence maintenant, tu ne paies qu&apos;au téléchargement.</p>
+            <p className="text-white/75 mb-8">Commence maintenant, tu ne paies que quand ton CV est prêt.</p>
             <Link
               href={ctaHref}
               className={`inline-flex items-center justify-center gap-2 rounded-full px-9 py-4 text-base font-bold text-white transition hover:brightness-110 ${focus}`}
@@ -354,7 +333,7 @@ export default function Home() {
           className="flex items-center justify-center gap-2 rounded-full px-5 py-3.5 text-[15px] font-bold text-white"
           style={{ background: ORANGE }}
         >
-          PDF : 1 000 FCFA · Créer mon CV <ArrowRight size={16} />
+          Pass {PASS_DAYS} jours : {formatFcfa(PASS_PRICE)} FCFA · Créer mon CV <ArrowRight size={16} />
         </Link>
       </div>
     </div>

@@ -8,12 +8,9 @@ import { Download, Loader2, CheckCircle2, ExternalLink, AlertCircle, MessageCirc
 import { UI } from "@/lib/i18n";
 import LettreMotivationForm from "./LettreMotivationForm";
 import { isTwaContext } from "@/lib/isTwa";
+import { PASS_PRICE, PASS_DAYS } from "@/lib/pricing";
 
-// Prix unique pour tous les téléchargements, qu'il s'agisse du premier ou
-// des suivants. Les montants viennent des variables d'environnement
-// "NEXT" (CV seul) et "PACK" (CV + lettre de motivation assortie).
-const PRICE = Number(process.env.NEXT_PUBLIC_PRICE_NEXT || 1000);
-const PACK_PRICE = Number(process.env.NEXT_PUBLIC_PRICE_PACK || 1500);
+// Offre unique : le Pass Candidature (prix et durée dans lib/pricing.ts).
 // Paiement GeniusPay (Wave, Orange, MTN, Moov, carte) : le client est redirigé
 // vers la page de paiement GeniusPay, puis le téléchargement se débloque tout
 // seul à son retour (vérification côté serveur).
@@ -47,7 +44,9 @@ function PaymentFlow({
   onGeniusPay: () => void;
 }) {
   const priceInfoText =
-    langue === "en" ? `Downloading your CV costs ${price} FCFA.` : `Le téléchargement de votre CV coûte ${price} FCFA.`;
+    langue === "en"
+      ? `Application Pass: ${price} FCFA — CV + cover letter, unlimited edits and downloads for ${PASS_DAYS} days.`
+      : `Pass Candidature : ${price} FCFA — CV + lettre de motivation, modifications et téléchargements illimités pendant ${PASS_DAYS} jours.`;
 
   return (
     <>
@@ -127,6 +126,7 @@ export default function DownloadPanel({
   const {
     user,
     paidUnlocked,
+    paidUntil,
     isAdmin,
     isFreeDownloadTester,
     incrementDownloads,
@@ -160,8 +160,17 @@ export default function DownloadPanel({
 
   const canDownload =
     paidUnlocked || promoApplied || isAdmin || isFreeDownloadTester;
-  const lettreActive = !!cv.lettreMotivation?.activee;
-  const currentPrice = lettreActive ? PACK_PRICE : PRICE;
+  const currentPrice = PASS_PRICE;
+  // Vrai pass payé (pas un accès admin/test/promo) : on affiche sa date de fin.
+  const passEnd =
+    paidUnlocked && paidUntil > 0
+      ? new Date(paidUntil).toLocaleString(cv.langue === "en" ? "en-GB" : "fr-FR", {
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : null;
 
   // Journalisation du téléchargement PDF : compteur "CV téléchargés" +
   // décrément du palier de prix.
@@ -329,7 +338,6 @@ export default function DownloadPanel({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pack: lettreActive,
           uid: user.uid,
           email: user.email,
           name: user.displayName || "",
@@ -371,7 +379,7 @@ export default function DownloadPanel({
         // déjà contrôlé dans confirmPaidDownload).
         if (d.paid && (d.userId == null || d.userId === user.uid)) {
           try {
-            await confirmPaidDownload(ref!, { pack: d.pack, amount: d.amount });
+            await confirmPaidDownload(ref!, { pack: true, amount: d.amount });
             if (cancelled) return;
             setGpStatus("paid");
           } catch (err) {
@@ -425,7 +433,9 @@ export default function DownloadPanel({
           {cv.langue === "en" ? "Log in to download" : "Se connecter pour télécharger"}
         </Link>
         <p className="text-[11px] text-foreground/50 text-center">
-          {cv.langue === "en" ? `Flat price: ${PRICE} FCFA` : `Prix unique : ${PRICE} FCFA`}
+          {cv.langue === "en"
+            ? `Application Pass: ${PASS_PRICE} FCFA — CV + cover letter, unlimited edits and downloads for ${PASS_DAYS} days`
+            : `Pass Candidature : ${PASS_PRICE} FCFA — CV + lettre, modifications et téléchargements illimités pendant ${PASS_DAYS} jours`}
         </p>
       </div>
     );
@@ -450,8 +460,8 @@ export default function DownloadPanel({
           <CheckCircle2 className="flex-shrink-0 mt-0.5" size={14} />
           <span className="font-medium">
             {en
-              ? "Payment confirmed! Tap “Download” below to get your CV."
-              : "Paiement confirmé ! Appuyez sur « Télécharger » ci-dessous pour récupérer votre CV."}
+              ? `Payment confirmed! Your pass is active for ${PASS_DAYS} days: edit and download as often as you like.`
+              : `Paiement confirmé ! Ton pass est actif pendant ${PASS_DAYS} jours : modifie et télécharge autant que tu veux.`}
           </span>
         </div>
       )}
@@ -483,6 +493,17 @@ export default function DownloadPanel({
           </span>
         </div>
       )}
+      {passEnd && gpStatus !== "paid" && (
+        <div className="flex items-start gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
+          <CheckCircle2 className="flex-shrink-0 mt-0.5" size={14} />
+          <span>
+            {en
+              ? `Pass active until ${passEnd}. Edit your CV and letter and download as often as you like.`
+              : `Pass actif jusqu'au ${passEnd}. Modifie ton CV et ta lettre et télécharge autant que tu veux.`}
+          </span>
+        </div>
+      )}
+      <LettreMotivationForm />
       {canDownload && (
         <>
           <button
@@ -509,7 +530,6 @@ export default function DownloadPanel({
           caché dès que canDownload est vrai, comme avant. */}
       {(!canDownload || isFreeDownloadTester) && (
         <>
-          <LettreMotivationForm packPrice={PACK_PRICE} />
           <button
             onClick={downloadFreePreview}
             className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-brand-600 text-brand-600 hover:bg-brand-50 font-medium py-3 transition"

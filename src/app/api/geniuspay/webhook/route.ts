@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { GP_BASE, GP_PRICE_PACK, gpHeaders } from "@/lib/geniuspayServer";
+import { GP_BASE, gpHeaders } from "@/lib/geniuspayServer";
 
 // Évite un doublon si GeniusPay renvoie le même webhook (retry).
 const alreadyNotified = new Set<string>();
@@ -49,12 +49,11 @@ export async function POST(req: NextRequest) {
       const chatId = process.env.TELEGRAM_CHAT_ID;
       if (token && chatId) {
         const amount = Number(d.amount);
-        const isPack = d.metadata?.pack === "1" || amount === GP_PRICE_PACK;
         const isSandbox = reference.startsWith("SANDBOX_") || body.environment === "sandbox";
         const texte =
           `${isSandbox ? "🧪 TEST (sandbox) — " : "💰 "}Paiement reçu — MON CV PRO CI\n\n` +
           `💵 ${amount} FCFA${d.net_amount != null ? ` (net ${Number(d.net_amount)})` : ""}\n` +
-          `📦 ${isPack ? "Pack CV + lettre" : "CV seul"}\n` +
+          `📦 Pass Candidature 5 jours\n` +
           `📲 ${d.provider || d.payment_method || d.gateway || "?"}\n` +
           `🧾 ${reference}`;
         const tg = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {

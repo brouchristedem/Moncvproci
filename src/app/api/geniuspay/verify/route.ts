@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GP_BASE, GP_PRICE, GP_PRICE_PACK, gpHeaders } from "@/lib/geniuspayServer";
+import { GP_BASE, PASS_PRICE, gpHeaders } from "@/lib/geniuspayServer";
 
 // Vérifie auprès de GeniusPay (avec la clé secrète) qu'un paiement est bien
 // terminé. Le navigateur ne peut donc pas "déclarer" un paiement lui-même.
@@ -20,12 +20,11 @@ export async function GET(req: NextRequest) {
     }
     const d = json.data;
     const amount = Number(d.amount);
-    const okAmount = amount === GP_PRICE || amount === GP_PRICE_PACK;
+    const okAmount = amount === PASS_PRICE;
     return NextResponse.json({
       status: d.status as string,
       paid: d.status === "completed" && okAmount,
       amount,
-      pack: amount === GP_PRICE_PACK,
       userId: d.metadata?.user_id ?? null,
     });
   } catch {

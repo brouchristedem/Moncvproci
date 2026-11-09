@@ -2,10 +2,9 @@
 // secrètes restent sur le serveur).
 export const GP_BASE = "https://geniuspay.ci/api/v1/merchant";
 
-// Les montants sont décidés ICI, côté serveur : le navigateur envoie
-// seulement "pack: true/false", jamais un montant.
-export const GP_PRICE = Number(process.env.NEXT_PUBLIC_PRICE_NEXT || 1000);
-export const GP_PRICE_PACK = Number(process.env.NEXT_PUBLIC_PRICE_PACK || 1500);
+// Le montant est décidé ICI, côté serveur (voir lib/pricing.ts) : le navigateur
+// n'envoie jamais de montant.
+export { PASS_PRICE } from "@/lib/pricing";
 
 export function gpHeaders() {
   const key = process.env.GENIUSPAY_API_KEY;

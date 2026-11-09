@@ -2,23 +2,22 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { PASS_PRICE, PASS_DAYS, formatFcfa } from "@/lib/pricing";
 
 // Réponses vérifiées sur le fonctionnement réel du produit (voir DownloadPanel.tsx
-// / AuthContext.tsx) plutôt que des réponses génériques. Point important :
-// incrementDownloads() remet paidUnlocked à false juste après le téléchargement
-// (voir AuthContext.tsx) — chaque téléchargement est donc un paiement séparé,
-// que ce soit pour retélécharger le même CV ou après une modification. Il n'y a
-// pas d'accès illimité après un seul paiement. Un compte gère un CV à la fois
-// (pas de multi-CV pour l'instant), mais la modification dans l'éditeur reste
-// gratuite — seul l'export PDF est payant, à chaque fois.
+// / AuthContext.tsx). Offre unique : le Pass Candidature donne, après un seul
+// paiement, PASS_DAYS jours de modifications et de téléchargements illimités
+// (CV + lettre de motivation). Un compte gère un CV à la fois (pas de
+// multi-CV pour l'instant).
+const PRICE_TXT = formatFcfa(PASS_PRICE);
 const FAQ = [
   {
-    q: "Combien coûte le téléchargement d'un CV ?",
-    a: "1 000 FCFA pour le CV seul, ou 1 500 FCFA pour le Pack Candidature Complète (CV + lettre de motivation assortie), à chaque téléchargement. Pas d'abonnement.",
+    q: "Combien ça coûte ?",
+    a: `${PRICE_TXT} FCFA, une seule fois : c'est le Pass Candidature. Il inclut ton CV et une lettre de motivation assortie, avec modifications et téléchargements illimités pendant ${PASS_DAYS} jours. Pas d'abonnement, pas de renouvellement automatique.`,
   },
   {
     q: "Comment s'effectue le paiement ?",
-    a: "Depuis ton téléphone, via Geniuspay : Wave, Orange Money, MTN, Moov ou carte bancaire. Aucune carte n'est nécessaire. Le paiement n'intervient qu'au moment de télécharger le PDF final, et ton téléchargement se débloque automatiquement une fois le paiement confirmé.",
+    a: "Depuis ton téléphone, via Geniuspay : Wave, Orange Money, MTN, Moov ou carte bancaire. Aucune carte n'est nécessaire. Tu ne paies que lorsque ton CV est prêt, et ton accès se débloque automatiquement une fois le paiement confirmé.",
   },
   {
     q: "Puis-je voir mon CV avant de payer ?",
@@ -26,7 +25,7 @@ const FAQ = [
   },
   {
     q: "Puis-je modifier mon CV après le paiement ?",
-    a: "Oui, l'éditeur reste accessible. En revanche, chaque téléchargement du PDF est un paiement séparé : pour retélécharger le même CV ou une version modifiée, tu repaies 1 000 FCFA (ou 1 500 FCFA pour le Pack).",
+    a: `Oui. Pendant ${PASS_DAYS} jours après ton paiement, tu peux modifier ton CV et ta lettre et les retélécharger autant de fois que tu veux, sans repayer. Passé ce délai, un nouveau Pass est nécessaire pour télécharger.`,
   },
   {
     q: "Comment mes données sont-elles protégées ?",
@@ -46,7 +45,7 @@ const FAQ = [
   },
   {
     q: "Comment obtenir une lettre de motivation ?",
-    a: "En activant le Pack Candidature Complète dans l'éditeur : votre CV et une lettre de motivation au même style, dans un seul PDF, pour 1 500 FCFA.",
+    a: "En cochant « Ajouter une lettre de motivation » dans l'éditeur : ta lettre au même style que ton CV, dans le même PDF. Elle est incluse dans le Pass, sans supplément.",
   },
   {
     q: "Puis-je importer mon ancien CV ?",

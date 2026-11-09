@@ -116,7 +116,7 @@ export default function AdminPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let usersDocs: any[] = [];
     let downloadsCount = 0;
-    let claimsCount = 0;
+    let claimsRevenue = 0;
     let usersLoaded = false;
     let downloadsLoaded = false;
     let claimsLoaded = false;
@@ -154,7 +154,7 @@ export default function AdminPage() {
         topPromoCode,
         topPromoCodeCount,
         totalDownloads: downloadsCount,
-        totalRevenueFCFA: claimsCount * PRICE,
+        totalRevenueFCFA: claimsRevenue,
       });
       setStatsLoading(false);
     };
@@ -180,7 +180,9 @@ export default function AdminPage() {
     const unsubClaims2 = onSnapshot(
       collection(db, "paymentClaims"),
       (snap) => {
-        claimsCount = snap.size;
+        // Somme des montants réellement enregistrés ; les anciennes
+        // déclarations sans montant comptent pour l'ancien prix du CV seul.
+        claimsRevenue = snap.docs.reduce((sum, d) => sum + (Number(d.data().amount) || PRICE), 0);
         claimsLoaded = true;
         recompute();
       },
