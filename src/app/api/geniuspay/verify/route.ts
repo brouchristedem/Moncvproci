@@ -8,7 +8,8 @@ export async function GET(req: NextRequest) {
   if (!headers) return NextResponse.json({ error: "Paiement non configuré." }, { status: 503 });
 
   const reference = req.nextUrl.searchParams.get("reference") || "";
-  if (!/^MTX-[A-Z0-9]{6,}$/i.test(reference)) {
+  // Références réelles (MTX-...) et références du mode test (SANDBOX_...).
+  if (!/^[A-Za-z0-9_-]{6,64}$/.test(reference)) {
     return NextResponse.json({ error: "Référence invalide." }, { status: 400 });
   }
   try {

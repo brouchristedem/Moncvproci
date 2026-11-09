@@ -220,6 +220,9 @@ export default function DownloadPanel({
   const [isIOSSafari, setIsIOSSafari] = useState(false);
   const [isTwa, setIsTwa] = useState(false);
   const [gpLoading, setGpLoading] = useState(false);
+  // État visible du paiement GeniusPay au retour du checkout.
+  const [gpStatus, setGpStatus] = useState<"idle" | "checking" | "paid" | "pending" | "failed">("idle");
+  const [gpCheckNonce, setGpCheckNonce] = useState(0);
 
   useEffect(() => {
     const ua = window.navigator.userAgent;
@@ -437,14 +440,27 @@ export default function DownloadPanel({
     if (!ref) return;
     let cancelled = false;
     let tries = 0;
+    let timer: number | undefined;
     const check = async () => {
       tries++;
+      setGpStatus((s) => (s === "paid" ? s : "checking"));
       try {
         const res = await fetch(`/api/geniuspay/verify?reference=${encodeURIComponent(ref!)}`, { cache: "no-store" });
         const d = await res.json();
         if (cancelled) return;
-        if (d.paid && d.userId === user.uid) {
-          await confirmPaidDownload(ref!, { pack: d.pack, amount: d.amount });
+        // userId peut être absent en mode test : dans ce cas on se fie à la
+        // référence stockée sur cet appareil (une référence = un seul compte,
+        // déjà contrôlé dans confirmPaidDownload).
+        if (d.paid && (d.userId == null || d.userId === user.uid)) {
+          try {
+            await confirmPaidDownload(ref!, { pack: d.pack, amount: d.amount });
+            if (cancelled) return;
+            setGpStatus("paid");
+          } catch (err) {
+            if (cancelled) return;
+            setUnlockError(err instanceof Error ? err.message : t.genericError);
+            setGpStatus("failed");
+          }
           try {
             localStorage.removeItem(GP_STORAGE_KEY);
           } catch {}
@@ -454,17 +470,26 @@ export default function DownloadPanel({
           try {
             localStorage.removeItem(GP_STORAGE_KEY);
           } catch {}
+          setGpStatus("failed");
           return;
         }
       } catch {}
-      if (!cancelled && tries < 20) window.setTimeout(check, 3000);
+      if (cancelled) return;
+      if (tries < 40) {
+        timer = window.setTimeout(check, 3000);
+      } else {
+        // ~2 minutes sans confirmation (ex. Orange Money non validé sur le
+        // téléphone) : on arrête d'attendre et on propose de revérifier.
+        setGpStatus("pending");
+      }
     };
-    void check();
+    timer = window.setTimeout(check, 0);
     return () => {
       cancelled = true;
+      if (timer) window.clearTimeout(timer);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, gpCheckNonce]);
 
   const handlePaidConfirmClick = async () => {
     if (!user) return;
@@ -511,8 +536,58 @@ export default function DownloadPanel({
     );
   }
 
+  const en = cv.langue === "en";
+
   return (
     <div className="space-y-3">
+      {gpStatus === "checking" && (
+        <div className="flex items-start gap-2 rounded-2xl border border-sky-200 bg-sky-50 p-3 text-xs text-sky-800">
+          <Loader2 className="animate-spin flex-shrink-0 mt-0.5" size={14} />
+          <span>
+            {en
+              ? "Checking your payment… If you paid with Orange Money, confirm it on your phone. This page updates by itself."
+              : "Vérification de votre paiement… Si vous payez avec Orange Money, confirmez sur votre téléphone. Cette page se met à jour toute seule."}
+          </span>
+        </div>
+      )}
+      {gpStatus === "paid" && (
+        <div className="flex items-start gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
+          <CheckCircle2 className="flex-shrink-0 mt-0.5" size={14} />
+          <span className="font-medium">
+            {en
+              ? "Payment confirmed! Tap “Download” below to get your CV."
+              : "Paiement confirmé ! Appuyez sur « Télécharger » ci-dessous pour récupérer votre CV."}
+          </span>
+        </div>
+      )}
+      {gpStatus === "pending" && (
+        <div className="space-y-2 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="flex-shrink-0 mt-0.5" size={14} />
+            <span>
+              {en
+                ? "Payment still pending. If you already paid, wait a moment then check again."
+                : "Paiement toujours en attente. Si vous avez déjà payé, patientez un instant puis revérifiez."}
+            </span>
+          </div>
+          <button
+            onClick={() => setGpCheckNonce((n) => n + 1)}
+            className="w-full rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-medium py-2 transition"
+          >
+            {en ? "Check again" : "Vérifier à nouveau"}
+          </button>
+        </div>
+      )}
+      {gpStatus === "failed" && !paidUnlocked && (
+        <div className="flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+          <AlertCircle className="flex-shrink-0 mt-0.5" size={14} />
+          <span>
+            {en
+              ? "Payment failed or cancelled. You can try again below."
+              : "Paiement échoué ou annulé. Vous pouvez réessayer ci-dessous."}
+          </span>
+        </div>
+      )}
       {canDownload && (
         <>
           <button

@@ -206,6 +206,20 @@ export default function EditorPage() {
   // éditeur". Voir src/lib/entryGate.ts.
   useEffect(() => {
     try {
+      // Retour de la page de paiement GeniusPay (souvent dans un nouvel
+      // onglet/contexte où sessionStorage est vide) : on laisse passer, sinon
+      // la personne est renvoyée à l'accueil et son téléchargement n'est
+      // jamais débloqué.
+      const returningFromPayment =
+        new URLSearchParams(window.location.search).has("gp") ||
+        !!window.localStorage.getItem("gp_pending_reference");
+      if (returningFromPayment) {
+        window.sessionStorage.setItem(ENTRY_GATE_KEY, "1");
+        // Ouvre le panneau de téléchargement : c'est lui qui vérifie le
+        // paiement et affiche le résultat à la personne.
+        const openTimer = window.setTimeout(() => setDownloadOpen(true), 0);
+        return () => window.clearTimeout(openTimer);
+      }
       if (window.sessionStorage.getItem(ENTRY_GATE_KEY) !== "1") {
         router.replace("/");
       }
