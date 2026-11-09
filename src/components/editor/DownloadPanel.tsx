@@ -25,6 +25,11 @@ const PRICE = Number(process.env.NEXT_PUBLIC_PRICE_NEXT || 1000);
 // possible.
 const PACK_WAVE_LINK = process.env.NEXT_PUBLIC_WAVE_LINK_PACK || WAVE_LINK;
 const PACK_PRICE = Number(process.env.NEXT_PUBLIC_PRICE_PACK || 1500);
+// Paiement GeniusPay (Wave, Orange, MTN, Moov, carte) : activé seulement quand
+// NEXT_PUBLIC_GENIUSPAY_ENABLED=1 sur Vercel (et les clés serveur ajoutées).
+// Sinon on garde l'ancien parcours Wave manuel, qui continue de fonctionner.
+const GENIUSPAY_ENABLED = process.env.NEXT_PUBLIC_GENIUSPAY_ENABLED === "1";
+const GP_STORAGE_KEY = "gp_pending_reference";
 const SUPPORT_WHATSAPP_NUMBER = "2250545177571"; // format international sans "+" ni espaces, pour le lien wa.me
 const SUPPORT_PHONE_DISPLAY = "+225 05 45 17 75 71";
 
@@ -47,6 +52,8 @@ function PaymentFlow({
   confirmError,
   confirmSuccess,
   isTwa,
+  gpLoading,
+  onGeniusPay,
 }: {
   t: (typeof UI)["fr"] | (typeof UI)["en"];
   langue: "fr" | "en";
@@ -66,6 +73,8 @@ function PaymentFlow({
   confirmError?: string;
   confirmSuccess?: boolean;
   isTwa: boolean;
+  gpLoading: boolean;
+  onGeniusPay: () => void;
 }) {
   const priceInfoText =
     langue === "en" ? `Downloading your CV costs ${price} FCFA.` : `Le téléchargement de votre CV coûte ${price} FCFA.`;
@@ -108,6 +117,16 @@ function PaymentFlow({
           </div>
         )}
 
+        {GENIUSPAY_ENABLED ? (
+          <button
+            onClick={onGeniusPay}
+            disabled={gpLoading}
+            className="flex items-center justify-center gap-2 w-full rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 text-sm transition disabled:opacity-60"
+          >
+            {gpLoading ? <Loader2 className="animate-spin" size={16} /> : <ExternalLink size={14} />}
+            {langue === "en" ? `Pay ${price} FCFA` : `Payer ${price} FCFA`}
+          </button>
+        ) : (
         <a
           href={waveLink}
           target="_blank"
@@ -117,8 +136,17 @@ function PaymentFlow({
         >
           {t.payWithWave} {price} FCFA {t.payWithWaveSuffix} <ExternalLink size={14} />
         </a>
+        )}
 
-        {waveClicked && (
+        {GENIUSPAY_ENABLED && (
+          <p className="text-[11px] text-foreground/60">
+            {langue === "en"
+              ? "Wave, Orange Money, MTN, Moov or card. Your download unlocks automatically after payment."
+              : "Wave, Orange Money, MTN, Moov ou carte. Votre téléchargement se débloque automatiquement après le paiement."}
+          </p>
+        )}
+
+        {!GENIUSPAY_ENABLED && waveClicked && (
           <div className="space-y-2 pt-1 border-t border-border">
             <div>
               <label className="text-[11px] text-foreground/60 block mb-1">{t.waveReferenceLabel}</label>
@@ -191,6 +219,7 @@ export default function DownloadPanel({
   const [waveClicked, setWaveClicked] = useState(false);
   const [isIOSSafari, setIsIOSSafari] = useState(false);
   const [isTwa, setIsTwa] = useState(false);
+  const [gpLoading, setGpLoading] = useState(false);
 
   useEffect(() => {
     const ua = window.navigator.userAgent;
@@ -369,6 +398,74 @@ export default function DownloadPanel({
     return /^T_[A-Z0-9]{16}$/.test(v);
   };
 
+  // --- GeniusPay : création du paiement puis redirection vers le checkout ---
+  const startGeniusPay = async () => {
+    if (!user) return;
+    setUnlockError("");
+    setGpLoading(true);
+    try {
+      const res = await fetch("/api/geniuspay/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pack: lettreActive,
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName || "",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || t.genericError);
+      try {
+        localStorage.setItem(GP_STORAGE_KEY, data.reference);
+      } catch {}
+      window.location.href = data.url;
+    } catch (err) {
+      setUnlockError(err instanceof Error ? err.message : t.genericError);
+      setGpLoading(false);
+    }
+  };
+
+  // Au retour du checkout (ou si la page est rouverte plus tard), on demande
+  // au serveur si le paiement est terminé, puis on débloque le téléchargement.
+  useEffect(() => {
+    if (!GENIUSPAY_ENABLED || !user) return;
+    let ref: string | null = null;
+    try {
+      ref = localStorage.getItem(GP_STORAGE_KEY);
+    } catch {}
+    if (!ref) return;
+    let cancelled = false;
+    let tries = 0;
+    const check = async () => {
+      tries++;
+      try {
+        const res = await fetch(`/api/geniuspay/verify?reference=${encodeURIComponent(ref!)}`, { cache: "no-store" });
+        const d = await res.json();
+        if (cancelled) return;
+        if (d.paid && d.userId === user.uid) {
+          await confirmPaidDownload(ref!, { pack: d.pack, amount: d.amount });
+          try {
+            localStorage.removeItem(GP_STORAGE_KEY);
+          } catch {}
+          return;
+        }
+        if (d.status === "failed" || d.status === "cancelled" || d.status === "expired") {
+          try {
+            localStorage.removeItem(GP_STORAGE_KEY);
+          } catch {}
+          return;
+        }
+      } catch {}
+      if (!cancelled && tries < 20) window.setTimeout(check, 3000);
+    };
+    void check();
+    return () => {
+      cancelled = true;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   const handlePaidConfirmClick = async () => {
     if (!user) return;
     setUnlockError("");
@@ -473,6 +570,8 @@ export default function DownloadPanel({
             confirming={confirming}
             handlePaidConfirmClick={handlePaidConfirmClick}
             isTwa={isTwa}
+            gpLoading={gpLoading}
+            onGeniusPay={startGeniusPay}
           />
         </>
       )}
