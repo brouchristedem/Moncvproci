@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { GP_BASE, GP_PRICE_PACK, gpHeaders } from "@/lib/geniuspayServer";
+
+// Évite un doublon si GeniusPay renvoie le même webhook (retry).
+const alreadyNotified = new Set<string>();
 
 // Webhook GeniusPay : vérifie la signature HMAC-SHA256, puis prévient l'admin
 // par Telegram à chaque paiement réussi. Ne modifie aucune donnée : l'accès
@@ -25,21 +29,40 @@ export async function POST(req: NextRequest) {
   try {
     const body = JSON.parse(raw);
     if (body.event === "payment.success") {
-      const d = body.data || {};
+      let d = body.data || {};
+      const reference: string = d.reference || "";
+      if (reference && alreadyNotified.has(reference)) {
+        return NextResponse.json({ ok: true, duplicate: true });
+      }
+      // Le payload du webhook est parfois incomplet (surtout en sandbox) :
+      // on relit le paiement auprès de GeniusPay pour avoir opérateur et net.
+      const headers = gpHeaders();
+      if (headers && reference) {
+        const r = await fetch(`${GP_BASE}/payments/${encodeURIComponent(reference)}`, {
+          headers,
+          cache: "no-store",
+        }).catch(() => null);
+        const j = await r?.json().catch(() => null);
+        if (j?.success && j.data) d = { ...d, ...j.data, metadata: j.data.metadata ?? d.metadata };
+      }
       const token = process.env.TELEGRAM_BOT_TOKEN;
       const chatId = process.env.TELEGRAM_CHAT_ID;
       if (token && chatId) {
+        const amount = Number(d.amount);
+        const isPack = d.metadata?.pack === "1" || amount === GP_PRICE_PACK;
+        const isSandbox = reference.startsWith("SANDBOX_") || body.environment === "sandbox";
         const texte =
-          `💰 Paiement reçu — MON CV PRO CI\n\n` +
-          `💵 ${d.amount} FCFA (net ${d.net_amount ?? "?"})\n` +
-          `📦 ${d.metadata?.pack === "1" ? "Pack CV + lettre" : "CV seul"}\n` +
-          `📲 ${d.provider || d.payment_method || "?"}\n` +
-          `🧾 ${d.reference}`;
-        await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          `${isSandbox ? "🧪 TEST (sandbox) — " : "💰 "}Paiement reçu — MON CV PRO CI\n\n` +
+          `💵 ${amount} FCFA${d.net_amount != null ? ` (net ${Number(d.net_amount)})` : ""}\n` +
+          `📦 ${isPack ? "Pack CV + lettre" : "CV seul"}\n` +
+          `📲 ${d.provider || d.payment_method || d.gateway || "?"}\n` +
+          `🧾 ${reference}`;
+        const tg = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ chat_id: chatId, text: texte }),
         }).catch(() => null);
+        if (tg?.ok && reference) alreadyNotified.add(reference);
       }
     }
   } catch {

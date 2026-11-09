@@ -454,13 +454,6 @@ export default function DownloadPanel({
         if (d.paid && (d.userId == null || d.userId === user.uid)) {
           try {
             await confirmPaidDownload(ref!, { pack: d.pack, amount: d.amount });
-            // Notification Telegram à l'admin : envoyée par le site lui-même
-            // (vérifiée côté serveur), sans dépendre du webhook GeniusPay.
-            void fetch("/api/geniuspay/notify", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ reference: ref }),
-            }).catch(() => null);
             if (cancelled) return;
             setGpStatus("paid");
           } catch (err) {
