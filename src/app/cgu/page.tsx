@@ -47,7 +47,7 @@ export default function CGUPage() {
             proposés, puis d&apos;exporter son CV en PDF. La création et la modification du CV dans
             l&apos;éditeur sont gratuites et illimitées. Un aperçu gratuit filigrané est disponible
             avant tout paiement. En revanche, chaque téléchargement du PDF final (sans filigrane) est
-            payant : 1 000 FCFA via Wave pour le CV seul, ou 1 500 FCFA pour le Pack Candidature
+            payant : 1 000 FCFA pour le CV seul, ou 1 500 FCFA pour le Pack Candidature
             Complète incluant en plus une lettre de motivation assortie au CV. Ce paiement s&apos;applique
             à chaque téléchargement — y compris pour retélécharger un CV déjà payé, ou télécharger une
             version modifiée après un premier paiement. Aucun abonnement : c&apos;est un paiement à
@@ -58,8 +58,10 @@ export default function CGUPage() {
         <section className="space-y-2">
           <h2 className="font-semibold text-foreground">3. Paiement</h2>
           <p>
-            Le paiement s&apos;effectue par Wave et est dû à chaque téléchargement du PDF final. Une
-            fois la transaction confirmée, ce téléchargement précis est débloqué ; un nouveau
+            Le paiement s&apos;effectue en ligne via la plateforme sécurisée Geniuspay (Wave, Orange
+            Money, MTN, Moov ou carte bancaire) et est dû à chaque téléchargement du PDF final. Vos
+            identifiants de paiement sont saisis sur la page de Geniuspay et ne sont pas conservés par
+            MON CV PRO CI. Une fois le paiement confirmé, ce téléchargement précis est débloqué ; un nouveau
             téléchargement (y compris après modification de votre CV) nécessite un nouveau paiement.
             Un code promotionnel valide peut remplacer un paiement lorsque l&apos;offre est active.
           </p>

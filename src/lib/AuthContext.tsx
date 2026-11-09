@@ -114,7 +114,7 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
   saveProgress: (cv: CVData) => Promise<void>;
   incrementDownloads: () => Promise<void>;
-  confirmPaidDownload: (waveReference: string, info?: { pack: boolean; amount: number }) => Promise<void>;
+  confirmPaidDownload: (paymentReference: string, info?: { pack: boolean; amount: number }) => Promise<void>;
   applyPromoCode: (code: string) => Promise<void>;
   confirmPromoUsage: (code: string) => Promise<void>;
   resetMyUsedPromoCodes: () => Promise<void>;
@@ -337,24 +337,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, downloadsUsed]);
 
   const confirmPaidDownload = useCallback(
-    async (waveReference: string, info?: { pack: boolean; amount: number }) => {
+    async (paymentReference: string, info?: { pack: boolean; amount: number }) => {
       if (!user) return;
       const existing = await getDocs(
-        query(collection(db, "paymentClaims"), where("waveReference", "==", waveReference))
+        query(collection(db, "paymentClaims"), where("reference", "==", paymentReference))
       );
       if (!existing.empty) {
         throw new Error(
-          "Cette référence a déjà été utilisée pour un autre téléchargement. Vérifiez le numéro affiché par Wave après votre paiement."
+          "Ce paiement a déjà été utilisé pour un autre téléchargement."
         );
       }
       setPaidUnlocked(true);
       const ref = doc(db, "users", user.uid);
-      await setDoc(ref, { paidUnlocked: true, lastWaveReference: waveReference }, { merge: true });
+      await setDoc(ref, { paidUnlocked: true, lastPaymentReference: paymentReference }, { merge: true });
       try {
         await addDoc(collection(db, "paymentClaims"), {
           userId: user.uid,
           email: user.email,
-          waveReference,
+          reference: paymentReference,
           // Type d'achat (CV seul ou Pack CV + lettre) et montant attendu, pour le suivi des ventes.
           ...(info ? { pack: info.pack, amount: info.amount } : {}),
           createdAt: serverTimestamp(),
