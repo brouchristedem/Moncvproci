@@ -17,8 +17,8 @@ const FAQ = [
     a: "1 000 FCFA pour le CV seul, ou 1 500 FCFA pour le Pack Candidature Complète (CV + lettre de motivation assortie), à chaque téléchargement. Pas d'abonnement.",
   },
   {
-    q: "Comment s'effectue le paiement par Wave ?",
-    a: "Depuis ton téléphone, par Wave : aucune carte bancaire n'est nécessaire. Le paiement n'intervient qu'au moment de télécharger le PDF final.",
+    q: "Comment s'effectue le paiement ?",
+    a: "Depuis ton téléphone, via Geniuspay : Wave, Orange Money, MTN, Moov ou carte bancaire. Aucune carte n'est nécessaire. Le paiement n'intervient qu'au moment de télécharger le PDF final, et ton téléchargement se débloque automatiquement une fois le paiement confirmé.",
   },
   {
     q: "Puis-je voir mon CV avant de payer ?",

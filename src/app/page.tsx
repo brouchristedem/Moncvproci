@@ -41,7 +41,7 @@ const DARK_BG = `radial-gradient(900px 520px at 88% 0%, rgba(21,122,82,0.55), tr
 const STEPS = [
   { icon: FileText, titre: "Remplis ton parcours", texte: "Expériences, formation, compétences : section par section, depuis ton téléphone." },
   { icon: LayoutTemplate, titre: "Choisis un modèle", texte: "15 modèles, et tu changes de style ou de couleur quand tu veux." },
-  { icon: Smartphone, titre: "Vérifie, paie, télécharge", texte: "Aperçu avant paiement, puis Wave : ton PDF est prêt." },
+  { icon: Smartphone, titre: "Vérifie, paie, télécharge", texte: "Aperçu avant paiement, puis paiement Mobile Money : ton PDF est prêt." },
 ];
 
 function LogoMark({ size = 36 }: { size?: number }) {
@@ -132,7 +132,7 @@ export default function Home() {
 
             <div className="flex flex-wrap justify-center lg:justify-start gap-2.5 mb-9">
               <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold">15 modèles</span>
-              <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold">Paiement Wave</span>
+              <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold">Paiement Mobile Money</span>
               <span className="rounded-full px-4 py-2 text-sm font-semibold text-white" style={{ background: ORANGE }}>1 000 FCFA le CV</span>
             </div>
 
@@ -214,7 +214,7 @@ export default function Home() {
             <h2 id="tarifs-heading" className="font-display font-bold mb-3" style={{ fontSize: "clamp(1.8rem, 4vw, 2.5rem)" }}>
               Un prix clair, sans abonnement.
             </h2>
-            <p className="text-white/75">Tu vois ton CV avant de payer. Tu paies par Wave, uniquement quand tu télécharges.</p>
+            <p className="text-white/75">Tu vois ton CV avant de payer. Tu paies par Mobile Money (Wave, Orange, MTN, Moov) ou par carte, uniquement quand tu télécharges.</p>
           </Reveal>
 
           <div className="grid sm:grid-cols-2 gap-6 items-stretch">

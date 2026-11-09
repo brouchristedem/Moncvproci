@@ -10,25 +10,13 @@ import LettreMotivationForm from "./LettreMotivationForm";
 import { isTwaContext } from "@/lib/isTwa";
 
 // Prix unique pour tous les téléchargements, qu'il s'agisse du premier ou
-// des suivants. On réutilise volontairement les variables d'environnement
-// "NEXT" existantes (déjà à 1000 FCFA côté Vercel) pour ne pas avoir à
-// toucher à la configuration de déploiement.
-const WAVE_LINK = process.env.NEXT_PUBLIC_WAVE_LINK_NEXT || "#";
+// des suivants. Les montants viennent des variables d'environnement
+// "NEXT" (CV seul) et "PACK" (CV + lettre de motivation assortie).
 const PRICE = Number(process.env.NEXT_PUBLIC_PRICE_NEXT || 1000);
-// Pack "Candidature Complète" (CV + lettre de motivation assortie), à 1500
-// FCFA. Nécessite en principe un lien Wave à montant fixe dédié
-// (NEXT_PUBLIC_WAVE_LINK_PACK) puisque le lien Wave "simple" est verrouillé
-// sur 1000 FCFA. Tant que ce lien n'est pas configuré côté Vercel, on
-// retombe sur le lien standard pour ne jamais casser le paiement — mais le
-// montant affiché sur le bouton ne correspondra alors pas au montant
-// réellement demandé par Wave : Christ doit créer le lien dédié dès que
-// possible.
-const PACK_WAVE_LINK = process.env.NEXT_PUBLIC_WAVE_LINK_PACK || WAVE_LINK;
 const PACK_PRICE = Number(process.env.NEXT_PUBLIC_PRICE_PACK || 1500);
-// Paiement GeniusPay (Wave, Orange, MTN, Moov, carte) : activé seulement quand
-// NEXT_PUBLIC_GENIUSPAY_ENABLED=1 sur Vercel (et les clés serveur ajoutées).
-// Sinon on garde l'ancien parcours Wave manuel, qui continue de fonctionner.
-const GENIUSPAY_ENABLED = process.env.NEXT_PUBLIC_GENIUSPAY_ENABLED === "1";
+// Paiement GeniusPay (Wave, Orange, MTN, Moov, carte) : le client est redirigé
+// vers la page de paiement GeniusPay, puis le téléchargement se débloque tout
+// seul à son retour (vérification côté serveur).
 const GP_STORAGE_KEY = "gp_pending_reference";
 const SUPPORT_WHATSAPP_NUMBER = "2250545177571"; // format international sans "+" ni espaces, pour le lien wa.me
 const SUPPORT_PHONE_DISPLAY = "+225 05 45 17 75 71";
@@ -37,20 +25,11 @@ function PaymentFlow({
   t,
   langue,
   price,
-  waveLink,
   promoCode,
   setPromoCode,
   checkPromo,
   promoError,
   promoApplied,
-  waveClicked,
-  setWaveClicked,
-  waveReference,
-  setWaveReference,
-  confirming,
-  handlePaidConfirmClick,
-  confirmError,
-  confirmSuccess,
   isTwa,
   gpLoading,
   onGeniusPay,
@@ -58,20 +37,11 @@ function PaymentFlow({
   t: (typeof UI)["fr"] | (typeof UI)["en"];
   langue: "fr" | "en";
   price: number;
-  waveLink: string;
   promoCode: string;
   setPromoCode: (v: string) => void;
   checkPromo: () => void;
   promoError: string;
   promoApplied: boolean;
-  waveClicked: boolean;
-  setWaveClicked: (v: boolean) => void;
-  waveReference: string;
-  setWaveReference: (v: string) => void;
-  confirming: boolean;
-  handlePaidConfirmClick: () => void;
-  confirmError?: string;
-  confirmSuccess?: boolean;
   isTwa: boolean;
   gpLoading: boolean;
   onGeniusPay: () => void;
@@ -117,61 +87,20 @@ function PaymentFlow({
           </div>
         )}
 
-        {GENIUSPAY_ENABLED ? (
-          <button
-            onClick={onGeniusPay}
-            disabled={gpLoading}
-            className="flex items-center justify-center gap-2 w-full rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 text-sm transition disabled:opacity-60"
-          >
-            {gpLoading ? <Loader2 className="animate-spin" size={16} /> : <ExternalLink size={14} />}
-            {langue === "en" ? `Pay ${price} FCFA` : `Payer ${price} FCFA`}
-          </button>
-        ) : (
-        <a
-          href={waveLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => setWaveClicked(true)}
-          className="flex items-center justify-center gap-2 w-full rounded-2xl bg-[#1DC8CD] hover:opacity-90 text-white font-semibold py-3 text-sm transition"
+        <button
+          onClick={onGeniusPay}
+          disabled={gpLoading}
+          className="flex items-center justify-center gap-2 w-full rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 text-sm transition disabled:opacity-60"
         >
-          {t.payWithWave} {price} FCFA {t.payWithWaveSuffix} <ExternalLink size={14} />
-        </a>
-        )}
+          {gpLoading ? <Loader2 className="animate-spin" size={16} /> : <ExternalLink size={14} />}
+          {langue === "en" ? `Pay ${price} FCFA` : `Payer ${price} FCFA`}
+        </button>
 
-        {GENIUSPAY_ENABLED && (
-          <p className="text-[11px] text-foreground/60">
-            {langue === "en"
-              ? "Wave, Orange Money, MTN, Moov or card. Your download unlocks automatically after payment."
-              : "Wave, Orange Money, MTN, Moov ou carte. Votre téléchargement se débloque automatiquement après le paiement."}
-          </p>
-        )}
-
-        {!GENIUSPAY_ENABLED && waveClicked && (
-          <div className="space-y-2 pt-1 border-t border-border">
-            <div>
-              <label className="text-[11px] text-foreground/60 block mb-1">{t.waveReferenceLabel}</label>
-              <input
-                value={waveReference}
-                onChange={(e) => setWaveReference(e.target.value)}
-                placeholder={t.waveReferencePlaceholder}
-                className="w-full rounded-2xl border border-border bg-surface px-2.5 py-1.5 text-xs outline-none"
-              />
-            </div>
-            <p className="text-[11px] text-amber-600">{t.paidFlowWarning}</p>
-            <button
-              onClick={handlePaidConfirmClick}
-              disabled={confirming}
-              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-slate-800 hover:bg-slate-900 text-white font-medium py-2.5 transition disabled:opacity-60"
-            >
-              {confirming ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
-              {t.paidConfirm}
-            </button>
-            {confirmError && <p className="text-[11px] text-red-500">{confirmError}</p>}
-            {confirmSuccess && (
-              <p className="text-[11px] text-emerald-600 font-medium">Parcours validé avec succès.</p>
-            )}
-          </div>
-        )}
+        <p className="text-[11px] text-foreground/60">
+          {langue === "en"
+            ? "Wave, Orange Money, MTN, Moov or card. Your download unlocks automatically after payment."
+            : "Wave, Orange Money, MTN, Moov ou carte. Votre téléchargement se débloque automatiquement après le paiement."}
+        </p>
       </div>
 
       <a
@@ -214,9 +143,6 @@ export default function DownloadPanel({
   const [generating, setGenerating] = useState(false);
   const [unlockError, setUnlockError] = useState("");
   const [downloadError, setDownloadError] = useState("");
-  const [confirming, setConfirming] = useState(false);
-  const [waveReference, setWaveReference] = useState("");
-  const [waveClicked, setWaveClicked] = useState(false);
   const [isIOSSafari, setIsIOSSafari] = useState(false);
   const [isTwa, setIsTwa] = useState(false);
   const [gpLoading, setGpLoading] = useState(false);
@@ -236,7 +162,6 @@ export default function DownloadPanel({
     paidUnlocked || promoApplied || isAdmin || isFreeDownloadTester;
   const lettreActive = !!cv.lettreMotivation?.activee;
   const currentPrice = lettreActive ? PACK_PRICE : PRICE;
-  const currentWaveLink = lettreActive ? PACK_WAVE_LINK : WAVE_LINK;
 
   // Journalisation du téléchargement PDF : compteur "CV téléchargés" +
   // décrément du palier de prix.
@@ -303,7 +228,7 @@ export default function DownloadPanel({
     const logOnce = async () => {
       if (logged) return;
       logged = true;
-      // Seul un téléchargement réellement payé (Wave) fait passer le tarif
+      // Seul un téléchargement réellement payé fait passer le tarif
       // au palier suivant. Un code promo ou un téléchargement admin ne doit
       // jamais compter comme "premier téléchargement consommé", sinon la
       // personne se retrouve à devoir payer 1000 FCFA dès son prochain
@@ -326,8 +251,6 @@ export default function DownloadPanel({
       settled = true;
       window.removeEventListener("afterprint", finish);
       setPromoApplied(false);
-      setWaveClicked(false);
-      setWaveReference("");
       setGenerating(false);
     };
 
@@ -396,11 +319,6 @@ export default function DownloadPanel({
     }
   };
 
-  const isPlausibleWaveReference = (value: string) => {
-    const v = value.trim().toUpperCase();
-    return /^T_[A-Z0-9]{16}$/.test(v);
-  };
-
   // --- GeniusPay : création du paiement puis redirection vers le checkout ---
   const startGeniusPay = async () => {
     if (!user) return;
@@ -432,7 +350,7 @@ export default function DownloadPanel({
   // Au retour du checkout (ou si la page est rouverte plus tard), on demande
   // au serveur si le paiement est terminé, puis on débloque le téléchargement.
   useEffect(() => {
-    if (!GENIUSPAY_ENABLED || !user) return;
+    if (!user) return;
     let ref: string | null = null;
     try {
       ref = localStorage.getItem(GP_STORAGE_KEY);
@@ -478,7 +396,7 @@ export default function DownloadPanel({
       if (tries < 40) {
         timer = window.setTimeout(check, 3000);
       } else {
-        // ~2 minutes sans confirmation (ex. Orange Money non validé sur le
+        // ~2 minutes sans confirmation (ex. paiement Mobile Money non validé sur le
         // téléphone) : on arrête d'attendre et on propose de revérifier.
         setGpStatus("pending");
       }
@@ -490,29 +408,6 @@ export default function DownloadPanel({
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, gpCheckNonce]);
-
-  const handlePaidConfirmClick = async () => {
-    if (!user) return;
-    setUnlockError("");
-    if (!waveReference.trim()) {
-      setUnlockError(t.waveReferenceRequired);
-      return;
-    }
-    if (!isPlausibleWaveReference(waveReference)) {
-      setUnlockError(t.waveReferenceInvalid);
-      return;
-    }
-    setConfirming(true);
-    try {
-      await confirmPaidDownload(waveReference.trim(), { pack: lettreActive, amount: currentPrice });
-    } catch (err: unknown) {
-      console.error("Erreur de confirmation de paiement:", err);
-      const message = err instanceof Error ? err.message : String(err);
-      setUnlockError(message || t.genericError);
-    } finally {
-      setConfirming(false);
-    }
-  };
 
   if (!user) {
     return (
@@ -545,8 +440,8 @@ export default function DownloadPanel({
           <Loader2 className="animate-spin flex-shrink-0 mt-0.5" size={14} />
           <span>
             {en
-              ? "Checking your payment… If you paid with Orange Money, confirm it on your phone. This page updates by itself."
-              : "Vérification de votre paiement… Si vous payez avec Orange Money, confirmez sur votre téléphone. Cette page se met à jour toute seule."}
+              ? "Checking your payment… If your mobile money provider asks you to confirm on your phone, please do. This page updates by itself."
+              : "Vérification de votre paiement… Si votre opérateur Mobile Money vous demande de confirmer sur votre téléphone, faites-le. Cette page se met à jour toute seule."}
           </span>
         </div>
       )}
@@ -608,7 +503,7 @@ export default function DownloadPanel({
       )}
       {/* Sur le compte de test dédié au téléchargement gratuit, on garde
           également visible tout le reste du parcours (aperçu filigrane,
-          formulaire pack CV + lettre, paiement Wave, code promo) pour
+          formulaire pack CV + lettre, paiement, code promo) pour
           pouvoir continuer à tout tester depuis ce même compte. Pour les
           autres comptes (payant, promo, admin classique), ce bloc reste
           caché dès que canDownload est vrai, comme avant. */}
@@ -632,18 +527,11 @@ export default function DownloadPanel({
             t={t}
             langue={cv.langue}
             price={currentPrice}
-            waveLink={currentWaveLink}
             promoCode={promoCode}
             setPromoCode={setPromoCode}
             checkPromo={checkPromo}
             promoError={promoError}
             promoApplied={promoApplied}
-            waveClicked={waveClicked}
-            setWaveClicked={setWaveClicked}
-            waveReference={waveReference}
-            setWaveReference={setWaveReference}
-            confirming={confirming}
-            handlePaidConfirmClick={handlePaidConfirmClick}
             isTwa={isTwa}
             gpLoading={gpLoading}
             onGeniusPay={startGeniusPay}

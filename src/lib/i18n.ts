@@ -80,21 +80,13 @@ export const UI = {
     promoAppliedSuccess: "Code promo appliqué avec succès.",
     paymentValidated: "Télécharger le CV",
     paymentPending:
-      "Paiement en attente de validation. Après votre paiement Wave, cela peut prendre quelques minutes le temps que ce soit vérifié.",
-    payWithWave: "Payer",
-    payWithWaveSuffix: "via Wave",
+      "Paiement en attente de validation. Cela peut prendre quelques instants le temps que Geniuspay le confirme.",
     unlockDownload: "Débloquer ce téléchargement —",
-    viaWave: "via Wave",
     genericError: "Une erreur est survenue. Réessayez dans un instant.",
-    paidConfirm: "J'ai terminé mon paiement Wave",
-    waveReferenceLabel: "Numéro de référence Wave (affiché après paiement)",
-    waveReferencePlaceholder: "ex : T_2SKTWTSDZMCN24YV",
-    waveReferenceRequired: "Merci de renseigner le numéro de référence affiché par Wave après votre paiement.",
-    waveReferenceInvalid: "Ce numéro ne ressemble pas à une référence Wave valide (lettres et chiffres, sans espace). Vérifiez le reçu affiché par Wave.",
     customerService: "Besoin d'aide ? Écrivez-nous sur WhatsApp :",
     confirmTitle: "Confirmer le téléchargement",
     confirmFreeText: "Ce téléchargement est votre 1er téléchargement, il est gratuit.",
-    confirmPaidText: "Ce téléchargement est payant : 1000 FCFA (déjà réglé via Wave).",
+    confirmPaidText: "Ce téléchargement est payant : 1000 FCFA (déjà réglé).",
     confirmWarning:
       "Assurez-vous d'avoir terminé toutes vos modifications avant de continuer : aucun retour en arrière n'est possible après le téléchargement.",
     confirmCancel: "Annuler",
@@ -109,11 +101,9 @@ export const UI = {
     downloadWarning:
       "Vérifiez que votre CV est prêt avant de télécharger. Vous pourrez toujours revenir le modifier ensuite — un nouveau téléchargement sera alors nécessaire (1000 FCFA).",
     beforePayWarning:
-      "Avant de payer : vérifiez que votre CV est prêt. Une fois le paiement Wave effectué, il vous sera demandé de saisir le numéro de référence affiché sur votre reçu Wave.",
+      "Avant de payer : vérifiez que votre CV est prêt. Vous serez redirigé vers une page de paiement sécurisée ; à votre retour, le téléchargement se débloque automatiquement.",
     twaPaymentNotice:
-      "Vous utilisez l'application Android. Le paiement Wave s'ouvre dans votre navigateur pour plus de sécurité — revenez ensuite sur l'application pour terminer votre téléchargement.",
-    paidFlowWarning:
-      "Une fois votre référence renseignée et validée, vous pourrez télécharger votre CV.",
+      "Vous utilisez l'application Android. Le paiement s'ouvre dans votre navigateur pour plus de sécurité — revenez ensuite sur l'application pour terminer votre téléchargement.",
     printUnsupported:
       "Le téléchargement PDF ne fonctionne pas dans ce navigateur intégré (ex : appli Facebook, Instagram, TikTok). Ouvrez ce site dans Chrome ou Safari pour télécharger votre CV.",
     downloadFailed:
@@ -251,21 +241,13 @@ export const UI = {
     promoAppliedSuccess: "Promo code applied successfully.",
     paymentValidated: "Download the CV",
     paymentPending:
-      "Payment awaiting validation. After your Wave payment, this may take a few minutes to be verified.",
-    payWithWave: "Pay",
-    payWithWaveSuffix: "via Wave",
+      "Payment awaiting validation. This may take a few moments while Geniuspay confirms it.",
     unlockDownload: "Unlock this download —",
-    viaWave: "via Wave",
     genericError: "Something went wrong. Please try again shortly.",
-    paidConfirm: "I've completed my Wave payment",
-    waveReferenceLabel: "Wave reference number (shown after payment)",
-    waveReferencePlaceholder: "e.g. T_2SKTWTSDZMCN24YV",
-    waveReferenceRequired: "Please enter the reference number shown by Wave after your payment.",
-    waveReferenceInvalid: "This doesn't look like a valid Wave reference (letters and numbers, no spaces). Check the receipt shown by Wave.",
     customerService: "Need help? Message us on WhatsApp:",
     confirmTitle: "Confirm download",
     confirmFreeText: "This is your 1st download, it's free.",
-    confirmPaidText: "This is a paid download: 1000 FCFA (already paid via Wave).",
+    confirmPaidText: "This is a paid download: 1000 FCFA (already paid).",
     confirmWarning:
       "Make sure you've finished all your changes before continuing: there is no going back after downloading.",
     confirmCancel: "Cancel",
@@ -280,11 +262,9 @@ export const UI = {
     downloadWarning:
       "Make sure your CV is ready before downloading. You can always come back to edit it later — a new download will then be needed (1000 FCFA).",
     beforePayWarning:
-      "Before paying: make sure your CV is ready. Once you've paid via Wave, you'll be asked to enter the reference number shown on your Wave receipt.",
+      "Before paying: make sure your CV is ready. You'll be redirected to a secure payment page; when you come back, your download unlocks automatically.",
     twaPaymentNotice:
-      "You're using the Android app. The Wave payment opens in your browser for extra security — come back to the app afterwards to finish your download.",
-    paidFlowWarning:
-      "Once your reference is entered and validated, you'll be able to download your CV.",
+      "You're using the Android app. The payment opens in your browser for extra security — come back to the app afterwards to finish your download.",
     printUnsupported:
       "PDF download doesn't work inside this in-app browser (e.g. Facebook, Instagram, TikTok app). Open this site in Chrome or Safari to download your CV.",
     downloadFailed:

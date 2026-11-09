@@ -30,6 +30,8 @@ interface PromoCode {
 interface PaymentClaim {
   id: string;
   email: string;
+  reference?: string;
+  /** Ancien champ (paiements Wave manuels d'avant Geniuspay) */
   waveReference?: string;
   createdAt?: { seconds: number };
 }
@@ -197,7 +199,7 @@ export default function AdminPage() {
     if (!q) return true;
     return (
       c.email?.toLowerCase().includes(q) ||
-      (c.waveReference || "").toLowerCase().includes(q)
+      (c.reference || c.waveReference || "").toLowerCase().includes(q)
     );
   });
 
@@ -268,13 +270,13 @@ export default function AdminPage() {
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold mb-1">Journal des paiements déclarés</h2>
+        <h2 className="text-sm font-semibold mb-1">Journal des paiements</h2>
         <div className="relative mb-2">
           <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground/40" />
           <input
             value={claimSearch}
             onChange={(e) => setClaimSearch(e.target.value)}
-            placeholder="Rechercher par email ou référence Wave (T_...)"
+            placeholder="Rechercher par email ou référence de paiement"
             className="w-full rounded-2xl border border-border bg-surface pl-8 pr-3 py-2 text-xs"
           />
         </div>
@@ -282,7 +284,7 @@ export default function AdminPage() {
           {filteredClaims.length === 0 && (
             <p className="text-xs text-foreground/40">
               {claims.length === 0
-                ? "Aucune déclaration de paiement pour le moment."
+                ? "Aucun paiement pour le moment."
                 : "Aucun résultat pour cette recherche."}
             </p>
           )}
@@ -290,7 +292,7 @@ export default function AdminPage() {
             <div key={c.id} className="flex items-center justify-between rounded-2xl border border-border p-2.5 text-xs">
               <div>
                 <p>{c.email}</p>
-                {c.waveReference && <p className="text-foreground/40 font-mono text-[10px]">Réf : {c.waveReference}</p>}
+                {(c.reference || c.waveReference) && <p className="text-foreground/40 font-mono text-[10px]">Réf : {c.reference || c.waveReference}</p>}
               </div>
               <span className="text-foreground/40">
                 {c.createdAt ? new Date(c.createdAt.seconds * 1000).toLocaleString("fr-FR") : ""}
