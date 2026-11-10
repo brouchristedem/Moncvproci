@@ -24,6 +24,7 @@ export default function CVPreviewFit({
 }) {
   const { containerRef, scale, contentWidth } = useFitScale(zoom);
   const scaledHeight = contentWidth * PAGE_HEIGHT_RATIO * scale;
+  const scaledWidth = contentWidth * scale;
   const [mounted, setMounted] = useState(false);
   // iOS (Safari, Chrome iOS, etc. — tous sur WebKit) : voir la note dans la
   // zone d'impression plus bas.
@@ -79,35 +80,52 @@ export default function CVPreviewFit({
 
   return (
     <>
-      {/* Aperçu visible à l'écran uniquement — ajusté à la largeur disponible */}
-      <div
-        ref={containerRef}
-        className="w-full print:hidden"
-        style={{ height: scaledHeight || undefined }}
-      >
+      {/* Aperçu visible à l'écran uniquement — ajusté à la largeur disponible.
+          Le conteneur mesuré (containerRef) occupe toute la largeur ; la page
+          A4 est placée dans une boîte dont la taille est celle de la page
+          RÉDUITE (largeur et hauteur après zoom). `transform: scale()` ne
+          change pas la taille de mise en page : avant, la page gardait sa
+          largeur d'origine (794 px) dans la mise en page, donc elle débordait
+          à droite sur téléphone, paraissait décentrée quand le zoom était
+          réduit, et était coupée sur les côtés quand le zoom dépassait 100 %.
+          Ici la boîte a la bonne taille, est centrée quand elle tient dans
+          l'écran, et défile horizontalement (sans rien couper) quand elle est
+          plus large que l'écran. */}
+      <div ref={containerRef} className="w-full overflow-x-auto print:hidden">
         <div
-          className="bg-white shadow-xl cv-protected mx-auto"
           style={{
-            width: contentWidth,
-            height: contentWidth * PAGE_HEIGHT_RATIO,
-            transform: `scale(${scale})`,
-            transformOrigin: "top left",
+            display: "flex",
+            justifyContent: "center",
+            minWidth: "100%",
+            width: "max-content",
           }}
-          onContextMenu={(e) => e.preventDefault()}
         >
-          {/* Largeur en calc (absolue) pour éviter le CV collé à gauche.
-              Hauteur en pourcentage : ici pas de risque de "page 2" comme à
-              l'impression (pas de pagination à l'écran), mais on garde la
-              même logique que le rendu imprimé pour que les deux versions
-              se comportent de façon cohérente. */}
-          <div
-            style={{
-              zoom: finalZoom,
-              width: `calc(${contentWidth}px / ${finalZoom})`,
-              height: `${100 / finalZoom}%`,
-            }}
-          >
-            <CVRenderer cv={cv} />
+          <div style={{ width: scaledWidth, height: scaledHeight, flexShrink: 0 }}>
+            <div
+              className="bg-white shadow-xl cv-protected"
+              style={{
+                width: contentWidth,
+                height: contentWidth * PAGE_HEIGHT_RATIO,
+                transform: `scale(${scale})`,
+                transformOrigin: "top left",
+              }}
+              onContextMenu={(e) => e.preventDefault()}
+            >
+              {/* Largeur en calc (absolue) pour éviter le CV collé à gauche.
+                  Hauteur en pourcentage : ici pas de risque de "page 2" comme à
+                  l'impression (pas de pagination à l'écran), mais on garde la
+                  même logique que le rendu imprimé pour que les deux versions
+                  se comportent de façon cohérente. */}
+              <div
+                style={{
+                  zoom: finalZoom,
+                  width: `calc(${contentWidth}px / ${finalZoom})`,
+                  height: `${100 / finalZoom}%`,
+                }}
+              >
+                <CVRenderer cv={cv} />
+              </div>
+            </div>
           </div>
         </div>
       </div>

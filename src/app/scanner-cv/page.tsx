@@ -1,35 +1,52 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   CheckCircle2,
   Circle,
   FileUp,
   Loader2,
+  Pencil,
   ShieldCheck,
   ArrowLeft,
 } from "lucide-react";
 import { analyzeRawCvText, RawATSResult } from "@/lib/atsScoreRaw";
 import { ENTRY_GATE_KEY } from "@/lib/entryGate";
+import { extractPdfText } from "@/lib/pdfText";
+import { saveScannerHandoff } from "@/lib/cvImportCore";
 
 type Status = "idle" | "reading" | "error" | "done";
 
 // Outil gratuit et autonome : on ne demande pas de compte, on n'enregistre
 // rien nulle part (analyse 100% côté client, dans le navigateur). Sert de
-// porte d'entrée SEO/acquisition vers l'éditeur payant : le CTA final
-// redirige vers /editor en posant le même flag sessionStorage que la page
-// d'accueil, pour ne pas se faire bloquer par le garde-fou de l'éditeur.
+// porte d'entrée SEO/acquisition vers l'éditeur payant. Une fois le score
+// affiché, la personne peut importer CE MÊME CV dans l'éditeur pour
+// l'améliorer : le texte du PDF est transmis à l'éditeur (sessionStorage),
+// qui le fait structurer par l'IA après accord explicite. Les deux CTA posent
+// le flag sessionStorage de la page d'accueil pour ne pas se faire bloquer
+// par le garde-fou de l'éditeur.
 export default function ScannerCvPage() {
   const [status, setStatus] = useState<Status>("idle");
   const [fileName, setFileName] = useState<string | null>(null);
   const [result, setResult] = useState<RawATSResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  // Le fichier analysé est gardé pour pouvoir l'importer dans l'éditeur sans
+  // redemander le PDF à la personne.
+  const fileRef = useRef<File | null>(null);
+  const [consent, setConsent] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   const handleFile = useCallback(async (file: File) => {
     setError(null);
     setResult(null);
+    setImportError(null);
+    setConsent(false);
+    fileRef.current = null;
     setFileName(file.name);
 
     if (file.type !== "application/pdf") {
@@ -67,6 +84,7 @@ export default function ScannerCvPage() {
       }
 
       const analysis = analyzeRawCvText(fullText);
+      fileRef.current = file;
       setResult(analysis);
       setStatus("done");
     } catch {
@@ -92,6 +110,29 @@ export default function ScannerCvPage() {
     } catch {
       // sessionStorage indisponible (navigation privée stricte) : tant pis,
       // l'éditeur redirigera vers l'accueil dans ce cas.
+    }
+  };
+
+  // Transmet le CV analysé à l'éditeur, qui le structure (rubriques, postes,
+  // formations…) pour que la personne puisse l'améliorer directement.
+  const importIntoEditor = async () => {
+    const file = fileRef.current;
+    if (!file || !result || !consent) return;
+    setImportError(null);
+    setImporting(true);
+    try {
+      const text = await extractPdfText(file);
+      if (text.length > 12000) {
+        setImportError("Ce CV est trop long pour l'import automatique (3 pages maximum). Essayez avec un PDF plus court.");
+        setImporting(false);
+        return;
+      }
+      saveScannerHandoff({ text, fileName: file.name, percent: result.percent });
+      goToEditor();
+      router.push("/editor");
+    } catch {
+      setImportError("Impossible de préparer l'import. Réessayez, ou ouvrez l'éditeur et importez le PDF depuis la première rubrique.");
+      setImporting(false);
     }
   };
 
@@ -122,7 +163,8 @@ export default function ScannerCvPage() {
           </h1>
           <p className="text-sm sm:text-base text-foreground/60 mb-8">
             Déposez votre CV actuel au format PDF. L&apos;analyse se fait directement dans votre
-            navigateur — rien n&apos;est envoyé ni stocké sur un serveur.
+            navigateur — rien n&apos;est envoyé ni stocké sur un serveur, sauf si vous choisissez
+            ensuite d&apos;importer votre CV dans l&apos;éditeur.
           </p>
 
           {status !== "done" && (
@@ -194,19 +236,63 @@ export default function ScannerCvPage() {
                 ))}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="rounded-2xl border border-brand-600/40 bg-brand-600/5 p-4 space-y-3">
+                <div>
+                  <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+                    <Pencil size={15} /> Améliorez ce CV dans l&apos;éditeur
+                  </h2>
+                  <p className="mt-1 text-xs text-foreground/60 leading-relaxed">
+                    On reprend ce même CV : vos expériences, formations et compétences sont placées
+                    automatiquement dans l&apos;éditeur. Vous choisissez un modèle, corrigez les points
+                    ci-dessus et suivez votre score ATS en direct.
+                  </p>
+                </div>
+                <label className="flex items-start gap-2 text-[11px] text-foreground/70 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                    className="mt-0.5 accent-brand-600"
+                  />
+                  <span>
+                    J&apos;accepte que le contenu de mon CV (sans email ni téléphone) soit envoyé à un service
+                    d&apos;IA tiers pour remplir l&apos;éditeur. L&apos;analyse du score ci-dessus, elle, reste dans
+                    votre navigateur.{" "}
+                    <Link href="/cgu#confidentialite" target="_blank" className="underline hover:text-foreground">
+                      En savoir plus
+                    </Link>
+                  </span>
+                </label>
+                <button
+                  onClick={importIntoEditor}
+                  disabled={!consent || importing}
+                  className="w-full flex items-center justify-center gap-2 rounded-2xl bg-brand-600 text-white px-5 py-3 text-sm font-semibold hover:bg-brand-700 transition disabled:opacity-40"
+                >
+                  {importing ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
+                  Importer ce CV et l&apos;améliorer
+                </button>
+                {importError && <p className="text-xs text-red-600">{importError}</p>}
+                <p className="text-[11px] text-foreground/45">
+                  Un compte gratuit est demandé pour l&apos;import. Le téléchargement du CV final se fait
+                  dans l&apos;éditeur, avec aperçu avant paiement.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 mt-3">
                 <Link
                   href="/editor"
                   onClick={goToEditor}
-                  className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-brand-600 text-white px-5 py-3 text-sm font-semibold hover:bg-brand-700 transition"
+                  className="flex-1 flex items-center justify-center gap-2 rounded-2xl border border-border px-5 py-3 text-sm font-medium hover:border-foreground/30 transition"
                 >
-                  Corriger mon CV maintenant <ArrowRight size={16} />
+                  Repartir d&apos;un CV vide
                 </Link>
                 <button
                   onClick={() => {
                     setStatus("idle");
                     setResult(null);
                     setFileName(null);
+                    setConsent(false);
+                    fileRef.current = null;
                   }}
                   className="px-5 py-3 text-sm font-medium border border-border rounded-2xl hover:border-foreground/30 transition"
                 >

@@ -9,12 +9,19 @@ import { UI } from "@/lib/i18n";
 import LettreMotivationForm from "./LettreMotivationForm";
 import { isTwaContext } from "@/lib/isTwa";
 import { PASS_PRICE, PASS_DAYS } from "@/lib/pricing";
+import {
+  checkoutReturnParam,
+  clearPendingPayment,
+  isFreshPayment,
+  readPendingPayment,
+  savePendingPayment,
+  stripCheckoutReturnParam,
+} from "@/lib/pendingPayment";
 
 // Offre unique : le Pass Candidature (prix et durée dans lib/pricing.ts).
 // Paiement GeniusPay (Wave, Orange, MTN, Moov, carte) : le client est redirigé
 // vers la page de paiement GeniusPay, puis le téléchargement se débloque tout
 // seul à son retour (vérification côté serveur).
-const GP_STORAGE_KEY = "gp_pending_reference";
 const SUPPORT_WHATSAPP_NUMBER = "2250545177571"; // format international sans "+" ni espaces, pour le lien wa.me
 const SUPPORT_PHONE_DISPLAY = "+225 05 45 17 75 71";
 
@@ -149,6 +156,11 @@ export default function DownloadPanel({
   // État visible du paiement GeniusPay au retour du checkout.
   const [gpStatus, setGpStatus] = useState<"idle" | "checking" | "paid" | "pending" | "failed">("idle");
   const [gpCheckNonce, setGpCheckNonce] = useState(0);
+  // Paiement lancé récemment mais pas confirmé, alors que la personne est
+  // revenue sans passer par la page de succès (retour arrière du navigateur,
+  // par exemple) : on ne l'inquiète pas avec un bandeau, on lui laisse
+  // seulement un lien discret pour revérifier si elle a bien payé.
+  const [gpUnconfirmed, setGpUnconfirmed] = useState(false);
 
   useEffect(() => {
     const ua = window.navigator.userAgent;
@@ -345,9 +357,7 @@ export default function DownloadPanel({
       });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error || t.genericError);
-      try {
-        localStorage.setItem(GP_STORAGE_KEY, data.reference);
-      } catch {}
+      savePendingPayment(data.reference);
       window.location.href = data.url;
     } catch (err) {
       setUnlockError(err instanceof Error ? err.message : t.genericError);
@@ -355,23 +365,44 @@ export default function DownloadPanel({
     }
   };
 
-  // Au retour du checkout (ou si la page est rouverte plus tard), on demande
-  // au serveur si le paiement est terminé, puis on débloque le téléchargement.
+  // Au retour du checkout, on demande au serveur si le paiement est terminé,
+  // puis on débloque le téléchargement.
+  //
+  // Le bandeau bleu « Vérification de votre paiement… » n'apparaît que si la
+  // personne attend vraiment la confirmation : elle revient de la page de
+  // succès (?gp=success) ou vient d'appuyer sur « Vérifier mon paiement ».
+  // Dans tous les autres cas (paiement abandonné, ancienne référence restée
+  // sur l'appareil), la vérification se fait en silence et s'arrête vite :
+  // plus de bandeau à chaque ouverture de « Télécharger ».
   useEffect(() => {
     if (!user) return;
-    let ref: string | null = null;
-    try {
-      ref = localStorage.getItem(GP_STORAGE_KEY);
-    } catch {}
-    if (!ref) return;
+    const pending = readPendingPayment();
+    const gp = checkoutReturnParam();
+
+    if (gp === "error") {
+      clearPendingPayment();
+      stripCheckoutReturnParam();
+      setGpStatus("failed");
+      return;
+    }
+    if (!pending) {
+      if (gp) stripCheckoutReturnParam();
+      return;
+    }
+
+    const ref = pending.ref;
+    const fresh = isFreshPayment(pending);
+    const loud = gp === "success" || gpCheckNonce > 0;
+    const maxTries = loud ? 40 : fresh ? 8 : 1;
     let cancelled = false;
     let tries = 0;
     let timer: number | undefined;
+
     const check = async () => {
       tries++;
-      setGpStatus((s) => (s === "paid" ? s : "checking"));
+      if (loud) setGpStatus((s) => (s === "paid" ? s : "checking"));
       try {
-        const res = await fetch(`/api/geniuspay/verify?reference=${encodeURIComponent(ref!)}`, { cache: "no-store" });
+        const res = await fetch(`/api/geniuspay/verify?reference=${encodeURIComponent(ref)}`, { cache: "no-store" });
         const d = await res.json();
         if (cancelled) return;
         // userId peut être absent en mode test : dans ce cas on se fie à la
@@ -379,7 +410,7 @@ export default function DownloadPanel({
         // déjà contrôlé dans confirmPaidDownload).
         if (d.paid && (d.userId == null || d.userId === user.uid)) {
           try {
-            await confirmPaidDownload(ref!, { pack: true, amount: d.amount });
+            await confirmPaidDownload(ref, { pack: true, amount: d.amount });
             if (cancelled) return;
             setGpStatus("paid");
           } catch (err) {
@@ -387,27 +418,37 @@ export default function DownloadPanel({
             setUnlockError(err instanceof Error ? err.message : t.genericError);
             setGpStatus("failed");
           }
-          try {
-            localStorage.removeItem(GP_STORAGE_KEY);
-          } catch {}
+          clearPendingPayment();
+          stripCheckoutReturnParam();
+          setGpUnconfirmed(false);
           return;
         }
         if (d.status === "failed" || d.status === "cancelled" || d.status === "expired") {
-          try {
-            localStorage.removeItem(GP_STORAGE_KEY);
-          } catch {}
-          setGpStatus("failed");
+          clearPendingPayment();
+          stripCheckoutReturnParam();
+          setGpUnconfirmed(false);
+          // Échec officiel : on ne l'affiche que si la personne l'attendait.
+          setGpStatus(loud ? "failed" : "idle");
           return;
         }
       } catch {}
       if (cancelled) return;
-      if (tries < 40) {
+      if (tries < maxTries) {
         timer = window.setTimeout(check, 3000);
-      } else {
-        // ~2 minutes sans confirmation (ex. paiement Mobile Money non validé sur le
-        // téléphone) : on arrête d'attendre et on propose de revérifier.
-        setGpStatus("pending");
+        return;
       }
+      // Plus de confirmation attendue : on arrête de vérifier.
+      if (loud) {
+        // ~2 minutes sans confirmation (ex. paiement Mobile Money non validé
+        // sur le téléphone) : on propose de revérifier.
+        setGpStatus("pending");
+      } else if (fresh) {
+        setGpUnconfirmed(true);
+      } else {
+        // Paiement ouvert il y a longtemps et jamais abouti : abandonné.
+        clearPendingPayment();
+      }
+      stripCheckoutReturnParam();
     };
     timer = window.setTimeout(check, 0);
     return () => {
@@ -482,6 +523,17 @@ export default function DownloadPanel({
             {en ? "Check again" : "Vérifier à nouveau"}
           </button>
         </div>
+      )}
+      {gpUnconfirmed && gpStatus === "idle" && !paidUnlocked && (
+        <button
+          onClick={() => {
+            setGpUnconfirmed(false);
+            setGpCheckNonce((n) => n + 1);
+          }}
+          className="w-full text-left text-[11px] text-foreground/60 underline underline-offset-2 hover:text-foreground transition"
+        >
+          {en ? "Already paid? Check my payment" : "Vous avez déjà payé ? Vérifier mon paiement"}
+        </button>
       )}
       {gpStatus === "failed" && !paidUnlocked && (
         <div className="flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
