@@ -7,6 +7,7 @@ const { launch, screenshotHtml } = require("./browser.cjs");
 const { renderVideo } = require("./video.cjs");
 const content = require("./content.cjs");
 const tg = require("./telegram.cjs");
+const ig = require("./instagram.cjs");
 
 (async () => {
   const root = path.join(__dirname, "..");
@@ -58,7 +59,26 @@ const tg = require("./telegram.cjs");
   await tg.sendMessage("📸 LÉGENDE INSTAGRAM :\n\n" + caps.instagram);
   await tg.sendMessage("🎵 LÉGENDE TIKTOK :\n\n" + caps.tiktok);
 
-  history.push({ date: new Date().toISOString().slice(0, 10), type, id: item.id, key: content.itemKey(type, item), source });
+  // Publication automatique sur Instagram (si les secrets sont présents). Un échec n'empêche pas l'historique.
+  let igStatus = "désactivé";
+  if (ig.enabled() && !args.includes("--no-instagram")) {
+    const done = [];
+    try {
+      const url = await ig.hostInRepo(png, "marketing-agent/published/latest.png");
+      await ig.postImage(url, caps.instagram);
+      done.push("affiche");
+      await ig.postReel(mp4, caps.instagram);
+      done.push("reel");
+      igStatus = "publié (" + done.join(" + ") + ")";
+    } catch (e) {
+      igStatus = "échec : " + e.message + (done.length ? " (déjà publié : " + done.join(", ") + ")" : "");
+      console.error(igStatus);
+      await tg.sendMessage("⚠️ Instagram : " + e.message + "\nTu peux publier à la main avec les fichiers ci-dessus. Si c'est un souci de jeton, génère-en un nouveau (valable 60 jours).").catch(() => {});
+    }
+    if (igStatus.startsWith("publié")) await tg.sendMessage("✅ Instagram : " + igStatus).catch(() => {});
+  }
+
+  history.push({ date: new Date().toISOString().slice(0, 10), type, id: item.id, key: content.itemKey(type, item), source, instagram: igStatus });
   fs.writeFileSync(histFile, JSON.stringify(history.slice(-200), null, 2) + "\n");
   console.log("Envoyé sur Telegram, historique mis à jour.");
 })().catch((e) => {
