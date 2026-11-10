@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 // Adresse du portfolio : à renseigner ici (une seule fois) pour qu'elle
 // apparaisse sur la page. Tant qu'elle est vide, la ligne « Mon portfolio »
 // est masquée plutôt que d'afficher un lien périmé.
-const PORTFOLIO_URL = "";
+const PORTFOLIO_URL = "https://portfolio-christedem.vercel.app";
 
 const FOREST = "#0C3B2E";
 const EMERALD = "#157A52";
