@@ -6,8 +6,13 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "À propos",
   description:
-    "Christ Edem, étudiant en Licence 3 Logistique à Abidjan, crée MON CV PRO CI : un éditeur de CV simple pour les étudiants et chercheurs d'emploi en Côte d'Ivoire.",
+    "Christ Edem, étudiant en Licence 3 Administration des Affaires (spécialisation logistique) à Abidjan et développeur full-stack, crée MON CV PRO CI : créateur de CV et scanner ATS gratuit pour les étudiants et chercheurs d'emploi en Côte d'Ivoire.",
 };
+
+// Adresse du portfolio : à renseigner ici (une seule fois) pour qu'elle
+// apparaisse sur la page. Tant qu'elle est vide, la ligne « Mon portfolio »
+// est masquée plutôt que d'afficher un lien périmé.
+const PORTFOLIO_URL = "https://portfolio-christedem.vercel.app";
 
 const FOREST = "#0C3B2E";
 const EMERALD = "#157A52";
@@ -39,24 +44,29 @@ export default function AProposPage() {
           />
           <h1 className="text-3xl font-bold font-['Space_Grotesk']" style={{ color: FOREST }}>Christ Edem</h1>
           <p className="text-base leading-relaxed" style={{ maxWidth: "46ch" }}>
-            Étudiant en Licence 3 Logistique à Abidjan, je crée des outils web simples pour les étudiants et les chercheurs d&apos;emploi en Côte d&apos;Ivoire.
+            Étudiant en Licence 3 Administration des Affaires (spécialisation logistique) à Abidjan, je suis aussi développeur full-stack et fondateur de SaaS : je crée des outils web simples pour les étudiants, les chercheurs d&apos;emploi et les petits commerçants en Côte d&apos;Ivoire.
           </p>
         </section>
 
         <section className="rounded-3xl p-6 text-left space-y-2" style={{ background: `${MINT}88` }}>
           <h2 className="font-bold font-['Space_Grotesk'] text-lg" style={{ color: FOREST }}>MON CV PRO CI</h2>
           <p className="text-sm leading-relaxed">
-            MON CV PRO CI est un éditeur de CV gratuit avec 15 modèles. Le téléchargement du CV en PDF est payant, à chaque téléchargement.
+            MON CV PRO CI est un créateur de CV pensé pour le marché ivoirien : 15 modèles, une version française et anglaise, une lettre de motivation assortie, et un paiement par Mobile Money (Wave, Orange, MTN, Moov) ou par carte.
           </p>
           <p className="text-sm leading-relaxed">
-            Un scanner ATS gratuit vous aide aussi à vérifier si votre CV passe bien les logiciels de tri des recruteurs.
+            Vous remplissez et mettez en page votre CV gratuitement, avec un aperçu avant de payer. Le Pass Candidature donne ensuite des modifications et des téléchargements PDF illimités, avec la lettre de motivation incluse, pendant 5 jours.
+          </p>
+          <p className="text-sm leading-relaxed">
+            Le{" "}
+            <Link href="/scanner-cv" className="underline" style={{ color: EMERALD }}>scanner ATS gratuit</Link>{" "}
+            vérifie, sans compte, si votre CV passe bien les logiciels de tri des recruteurs. Vous pouvez ensuite importer ce même CV dans l&apos;éditeur pour l&apos;améliorer.
           </p>
         </section>
 
         <section className="rounded-3xl p-6 text-left space-y-2 border" style={{ borderColor: MINT }}>
           <h2 className="font-bold font-['Space_Grotesk'] text-lg" style={{ color: FOREST }}>Vos données</h2>
           <p className="text-sm leading-relaxed">
-            Les informations saisies dans l&apos;éditeur servent uniquement à générer votre CV : elles ne sont ni vendues ni partagées avec des tiers à des fins commerciales. Pour le détail, consultez les{" "}
+            Les informations saisies dans l&apos;éditeur servent uniquement à générer votre CV : elles ne sont ni vendues ni partagées avec des tiers à des fins commerciales. L&apos;analyse du scanner ATS se fait dans votre navigateur ; le contenu de votre CV n&apos;est envoyé à un service d&apos;IA que si vous demandez l&apos;import dans l&apos;éditeur. Pour le détail, consultez les{" "}
             <Link href="/cgu#confidentialite" className="underline" style={{ color: EMERALD }}>conditions d&apos;utilisation et la confidentialité</Link>.
           </p>
         </section>
@@ -81,12 +91,14 @@ export default function AProposPage() {
               <Phone size={16} /> Appeler : +225 05 45 17 75 71
             </a>
           </div>
-          <p className="text-sm">
-            Mon portfolio :{" "}
-            <a href="https://christedem.vercel.app" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: EMERALD }}>
-              christedem.vercel.app
-            </a>
-          </p>
+          {PORTFOLIO_URL && (
+            <p className="text-sm">
+              Mon portfolio :{" "}
+              <a href={PORTFOLIO_URL} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: EMERALD }}>
+                {PORTFOLIO_URL.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+              </a>
+            </p>
+          )}
         </section>
 
         <p className="text-xs pt-6 border-t" style={{ borderColor: MINT, color: `${INK}80` }}>

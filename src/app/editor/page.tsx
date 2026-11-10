@@ -37,6 +37,8 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ENTRY_GATE_KEY } from "@/lib/entryGate";
+import { checkoutReturnParam, isFreshPayment, readPendingPayment } from "@/lib/pendingPayment";
+import { SCANNER_HANDOFF_KEY } from "@/lib/cvImportCore";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
@@ -193,6 +195,8 @@ export default function EditorPage() {
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [fullscreen, setFullscreen] = useState(false);
+  // Zoom de l'aperçu plein écran, relatif à « page ajustée à la largeur ».
+  const [fsZoom, setFsZoom] = useState(1);
   // Filigrane appliqué au portail d'impression pendant un "Aperçu gratuit" :
   // activé juste avant window.print() (déclenché depuis DownloadPanel),
   // désactivé une fois l'impression terminée, pour ne jamais apparaître sur
@@ -210,15 +214,26 @@ export default function EditorPage() {
       // onglet/contexte où sessionStorage est vide) : on laisse passer, sinon
       // la personne est renvoyée à l'accueil et son téléchargement n'est
       // jamais débloqué.
-      const returningFromPayment =
-        new URLSearchParams(window.location.search).has("gp") ||
-        !!window.localStorage.getItem("gp_pending_reference");
-      if (returningFromPayment) {
+      // Seul un retour réel du checkout (?gp=...) ouvre le panneau tout seul.
+      // Une référence de paiement restée sur l'appareil (paiement abandonné)
+      // ne doit ni rouvrir « Télécharger » à chaque visite ni contourner la
+      // porte d'entrée : on la laisse seulement passer si elle est récente.
+      const returningFromCheckout = checkoutReturnParam() !== null;
+      const pending = readPendingPayment();
+      const recentPayment = !!pending && isFreshPayment(pending);
+      if (returningFromCheckout || recentPayment) {
         window.sessionStorage.setItem(ENTRY_GATE_KEY, "1");
+      }
+      if (returningFromCheckout) {
         // Ouvre le panneau de téléchargement : c'est lui qui vérifie le
         // paiement et affiche le résultat à la personne.
         const openTimer = window.setTimeout(() => setDownloadOpen(true), 0);
         return () => window.clearTimeout(openTimer);
+      }
+      // Arrivée depuis le scanner de CV avec un CV à importer : on laisse passer.
+      if (window.sessionStorage.getItem(SCANNER_HANDOFF_KEY)) {
+        window.sessionStorage.setItem(ENTRY_GATE_KEY, "1");
+        return;
       }
       if (window.sessionStorage.getItem(ENTRY_GATE_KEY) !== "1") {
         router.replace("/");
@@ -913,20 +928,50 @@ export default function EditorPage() {
       )}
 
       {fullscreen && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex flex-col p-4">
-          <div className="flex justify-end mb-2">
-            <button
-              onClick={() => setFullscreen(false)}
-              className="text-white p-2 rounded-2xl hover:bg-white/10 transition"
-              title={t.closeLabel}
-            >
-              <X size={20} />
-            </button>
-          </div>
-          <div className="flex-1 overflow-auto flex items-start justify-center">
-            <div className="w-full max-w-[210mm]">
-              <CVPreviewFit cv={cv} zoom={1} />
+        <div className="fixed inset-0 z-50 bg-neutral-900 flex flex-col print:hidden">
+          <div
+            className="flex items-center justify-between gap-2 px-3 py-2 border-b border-white/10 text-white"
+            style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top))" }}
+          >
+            <span className="text-xs font-medium text-white/70">{t.preview} · A4</span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setFsZoom((z) => Math.max(0.8, +(z - 0.2).toFixed(2)))}
+                className="p-2 rounded-2xl hover:bg-white/10 transition"
+                title={t.zoomLabel}
+              >
+                <Minus size={16} />
+              </button>
+              <span className="text-[11px] w-10 text-center tabular-nums text-white/70">
+                {Math.round(fsZoom * 100)}%
+              </span>
+              <button
+                onClick={() => setFsZoom((z) => Math.min(2.6, +(z + 0.2).toFixed(2)))}
+                className="p-2 rounded-2xl hover:bg-white/10 transition"
+                title={t.zoomLabel}
+              >
+                <Plus size={16} />
+              </button>
+              <button
+                onClick={() => {
+                  setFullscreen(false);
+                  setFsZoom(1);
+                }}
+                className="ml-1 p-2 rounded-2xl hover:bg-white/10 transition"
+                title={t.closeLabel}
+              >
+                <X size={20} />
+              </button>
             </div>
+          </div>
+          {/* Toute la largeur de l'écran est utilisée (plus de cadre étroit) ;
+              le zoom + et le pincement permettent de lire le texte, et la page
+              défile dans les deux sens sans rien couper. */}
+          <div
+            className="flex-1 overflow-auto p-2 sm:p-4"
+            style={{ touchAction: "pan-x pan-y pinch-zoom", paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+          >
+            <CVPreviewFit cv={cv} zoom={fsZoom} />
           </div>
         </div>
       )}
@@ -937,7 +982,7 @@ export default function EditorPage() {
           onClick={() => setDownloadOpen(false)}
         >
           <div
-            className="bg-surface rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-5"
+            className="bg-surface rounded-2xl max-w-md w-full max-h-[90vh] max-h-[90dvh] overflow-y-auto p-5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">

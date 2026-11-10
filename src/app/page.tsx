@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, FileText, LayoutTemplate, Smartphone } from "lucide-react";
+import { ArrowRight, Check, FileText, LayoutTemplate, ScanSearch, Smartphone, Upload, Wand2 } from "lucide-react";
 import TemplateGallery from "@/components/landing/TemplateGallery";
 import FAQSection from "@/components/landing/FAQSection";
 import Reveal from "@/components/landing/Reveal";
@@ -22,7 +22,7 @@ import { PASS_PRICE, PASS_DAYS, formatFcfa } from "@/lib/pricing";
  *   #0C3B2E forêt · #08251D forêt profond · #157A52 émeraude · #F26B1D orange
  *   #E3F0E9 menthe · #F4F9F6 fond clair · #1A2E28 texte
  *
- * Structure volontairement courte (7 blocs) : hero sombre → 3 étapes → modèles
+ * Structure volontairement courte (8 blocs) : hero sombre → scanner ATS gratuit → 3 étapes → modèles
  * (vrais aperçus) → tarifs → FAQ → CTA final → pied de page.
  * Retirés : section ATS + ScanCard (faux score), avis, bandeau de stats,
  * badges flottants. Aucun faux aperçu, aucune stat inventée.
@@ -87,6 +87,18 @@ export default function Home() {
     <div className="min-h-screen flex flex-col overflow-x-hidden font-sans" style={{ background: PAPER, color: INK }}>
       {/* ===================== HERO sombre (header inclus) ===================== */}
       <section ref={heroRef} className="relative text-white" style={{ background: DARK_BG }} aria-labelledby="hero-heading">
+        {/* Bandeau permanent : le scanner de CV est un outil gratuit qui attire
+            à lui seul du monde, il doit être visible dès la première seconde,
+            sur téléphone comme sur ordinateur. */}
+        <Link
+          href="/scanner-cv"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 text-center text-[13px] sm:text-sm font-semibold hover:brightness-110 transition"
+          style={{ background: ORANGE }}
+        >
+          <ScanSearch size={16} className="flex-shrink-0" />
+          <span>Scanner ATS gratuit : ton CV passe-t-il les logiciels de tri ?</span>
+          <ArrowRight size={15} className="flex-shrink-0" />
+        </Link>
         <header className="flex items-center justify-between px-4 sm:px-6 py-5 max-w-6xl mx-auto w-full">
           <Link href="/" className="flex items-center gap-2.5 font-display font-bold text-base sm:text-lg tracking-tight" aria-label="MON CV PRO CI — accueil">
             <LogoMark />
@@ -97,7 +109,10 @@ export default function Home() {
           <nav className="hidden md:flex items-center gap-8 text-sm text-white/75" aria-label="Navigation principale">
             <a href="#modeles" className="hover:text-white transition">Modèles</a>
             <a href="#tarifs" className="hover:text-white transition">Tarifs</a>
-            <Link href="/scanner-cv" className="hover:text-white transition">Scanner mon CV</Link>
+            <Link href="/scanner-cv" className="inline-flex items-center gap-2 font-semibold text-white hover:opacity-90 transition">
+              Scanner mon CV
+              <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ background: ORANGE }}>Gratuit</span>
+            </Link>
             <a href="#faq" className="hover:text-white transition">FAQ</a>
           </nav>
           <div className="flex items-center gap-2">
@@ -133,6 +148,7 @@ export default function Home() {
 
             <div className="flex flex-wrap justify-center lg:justify-start gap-2.5 mb-9">
               <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold">15 modèles</span>
+              <Link href="/scanner-cv" className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/20 transition">Scanner ATS gratuit</Link>
               <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold">Paiement Mobile Money</span>
               <span className="rounded-full px-4 py-2 text-sm font-semibold text-white" style={{ background: ORANGE }}>{formatFcfa(PASS_PRICE)} FCFA · CV + lettre</span>
             </div>
@@ -145,15 +161,18 @@ export default function Home() {
               >
                 Créer mon CV <ArrowRight size={18} />
               </Link>
-              <a
-                href="#modeles"
-                className={`inline-flex items-center justify-center rounded-full px-8 py-4 text-base font-semibold border-2 border-white/40 text-white hover:bg-white/10 transition ${focus}`}
+              <Link
+                href="/scanner-cv"
+                className={`inline-flex items-center justify-center gap-2 rounded-full px-8 py-4 text-base font-semibold border-2 border-white/40 text-white hover:bg-white/10 transition ${focus}`}
                 style={{ outlineColor: "#fff", minHeight: 52 }}
               >
-                Voir les modèles
-              </a>
+                <ScanSearch size={18} /> Scanner mon CV · gratuit
+              </Link>
             </div>
-            <p className="mt-5 text-sm text-white/60">Aperçu avant paiement · Sans abonnement</p>
+            <p className="mt-5 text-sm text-white/60">
+              Aperçu avant paiement · Sans abonnement ·{" "}
+              <a href="#modeles" className="underline underline-offset-2 hover:text-white">Voir les modèles</a>
+            </p>
           </div>
 
           {/* Vraie capture de l'éditeur (pas de faux aperçu) */}
@@ -166,8 +185,54 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===================== Scanner ATS gratuit ===================== */}
+      <section className="px-4 sm:px-6 pt-16 sm:pt-20" aria-labelledby="scanner-heading">
+        <div
+          className="max-w-5xl mx-auto rounded-[2rem] border bg-white px-6 sm:px-10 py-10 sm:py-12 grid md:grid-cols-[1.1fr_0.9fr] gap-8 items-center"
+          style={{ borderColor: MINT, boxShadow: `0 24px 50px -30px ${FOREST}66` }}
+        >
+          <Reveal>
+            <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white mb-4" style={{ background: EMERALD }}>
+              <ScanSearch size={13} /> Outil gratuit · sans inscription
+            </span>
+            <h2 id="scanner-heading" className="font-display font-bold mb-3" style={{ color: FOREST, fontSize: "clamp(1.7rem, 4vw, 2.3rem)", lineHeight: 1.1 }}>
+              Ton CV actuel passe-t-il les logiciels de tri&nbsp;?
+            </h2>
+            <p className="mb-6" style={{ lineHeight: 1.65, color: `${INK}b3`, maxWidth: "32rem" }}>
+              Dépose ton CV en PDF : en quelques secondes, tu vois ton score ATS et les points à corriger. L&apos;analyse se fait dans ton navigateur. Ensuite, importe ce même CV dans l&apos;éditeur et améliore-le directement.
+            </p>
+            <Link
+              href="/scanner-cv"
+              className={`inline-flex items-center justify-center gap-2 rounded-full px-8 py-4 text-base font-bold text-white transition hover:brightness-110 ${focus}`}
+              style={{ background: ORANGE, outlineColor: FOREST, minHeight: 52 }}
+            >
+              Scanner mon CV gratuitement <ArrowRight size={18} />
+            </Link>
+          </Reveal>
+          <Reveal delay={120}>
+            <ol className="space-y-3">
+              {[
+                { icon: Upload, titre: "Dépose ton CV (PDF)", texte: "Aucun compte, aucun envoi sur un serveur." },
+                { icon: ScanSearch, titre: "Vois ton score ATS", texte: "Les critères validés et ceux à corriger." },
+                { icon: Wand2, titre: "Améliore-le dans l'éditeur", texte: "Ton CV est repris, tu choisis un modèle et tu corriges." },
+              ].map((item) => (
+                <li key={item.titre} className="flex items-start gap-3 rounded-2xl p-4" style={{ background: PAPER }}>
+                  <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl" style={{ background: MINT, color: EMERALD }}>
+                    <item.icon size={19} />
+                  </span>
+                  <span>
+                    <span className="block font-display font-bold" style={{ color: FOREST }}>{item.titre}</span>
+                    <span className="block text-sm" style={{ color: `${INK}b3` }}>{item.texte}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </Reveal>
+        </div>
+      </section>
+
       {/* ===================== 3 étapes ===================== */}
-      <section className="px-4 sm:px-6 py-20 sm:py-24" aria-labelledby="steps-heading">
+      <section className="px-4 sm:px-6 py-16 sm:py-20" aria-labelledby="steps-heading">
         <div className="max-w-5xl mx-auto">
           <h2 id="steps-heading" className="font-display font-bold text-center mb-12 sm:mb-14" style={{ color: FOREST, fontSize: "clamp(1.8rem, 4vw, 2.5rem)" }}>
             Trois étapes, c&apos;est tout.
