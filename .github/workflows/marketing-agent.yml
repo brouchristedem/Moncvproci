@@ -9,6 +9,10 @@ on:
         description: "Forcer un type (tip, dodont, question, rule, offer) — vide = rotation automatique"
         required: false
         default: ""
+      dry:
+        description: "Test sans rien envoyer (true/false)"
+        required: false
+        default: "false"
 
 permissions:
   contents: write
@@ -28,8 +32,17 @@ jobs:
           cache: npm
           cache-dependency-path: marketing-agent/package-lock.json
       - name: Installer ffmpeg (montage vidéo)
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg espeak-ng
         working-directory: .
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Installer la voix off (Piper, gratuit)
+        continue-on-error: true
+        run: |
+          pip install piper-tts
+          python -m piper.download_voices fr_FR-siwis-medium --data-dir voices
+          ls -la voices
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Créer et envoyer le post
@@ -41,7 +54,7 @@ jobs:
           INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           POST_TYPE: ${{ github.event.inputs.type }}
-        run: node src/run.cjs
+        run: node src/run.cjs ${{ github.event.inputs.dry == 'true' && '--dry' || '' }}
       - name: Garder l'historique
         run: |
           git config user.name "marketing-agent"

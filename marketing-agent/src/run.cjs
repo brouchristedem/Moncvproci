@@ -39,7 +39,7 @@ const ig = require("./instagram.cjs");
   try {
     await screenshotHtml(browser, renderPostHtml(cfg, type, item), png, { width: 1080, height: 1350 });
     const v = await renderVideo(browser, cfg, type, item, mp4);
-    console.log(`Affiche + vidéo (${v.seconds.toFixed(1)} s) prêtes dans out/`);
+    console.log(`Affiche + vidéo (${v.seconds.toFixed(1)} s, voix : ${v.voice ? "oui" : "non"}, musique : ${v.music ? "oui" : "non"}) prêtes dans out/`);
   } finally {
     await browser.close();
   }
