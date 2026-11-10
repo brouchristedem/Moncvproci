@@ -1,0 +1,50 @@
+name: Agent marketing (post du jour)
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # tous les jours à 07h00 (heure d'Abidjan = UTC)
+  workflow_dispatch:
+    inputs:
+      type:
+        description: "Forcer un type (tip, dodont, question, rule, offer) — vide = rotation automatique"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: marketing-agent
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: marketing-agent/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Créer et envoyer le post
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          POST_TYPE: ${{ github.event.inputs.type }}
+        run: node src/run.cjs
+      - name: Garder l'historique
+        run: |
+          git config user.name "marketing-agent"
+          git config user.email "marketing-agent@users.noreply.github.com"
+          git add history.json
+          git diff --staged --quiet || (git commit -m "chore(agent): historique des posts" && git push)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: post-du-jour
+          path: marketing-agent/out/*
+          retention-days: 7

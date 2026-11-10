@@ -1,0 +1,37 @@
+{
+  "brand": {
+    "name": "MON CV PRO CI",
+    "url": "moncvproci.com",
+    "forest": "#0C3B2E",
+    "deep": "#08251D",
+    "emerald": "#157A52",
+    "orange": "#F26B1D",
+    "mint": "#E3F0E9",
+    "ink": "#1A2E28"
+  },
+  "offer": {
+    "name": "Pass Candidature",
+    "price": 1500,
+    "days": 5,
+    "points": [
+      "CV + lettre de motivation assortie",
+      "Modifications illimitées pendant 5 jours",
+      "PDF illimités pendant 5 jours",
+      "15 modèles, aperçu avant de payer"
+    ]
+  },
+  "rotation": ["tip", "dodont", "question", "rule", "tip", "dodont", "offer"],
+  "hashtags": ["#CV", "#CVprofessionnel", "#emploi", "#stage", "#CotedIvoire", "#Abidjan", "#conseilscarriere", "#lettredemotivation", "#etudiants", "#moncvproci"],
+  "aiTopics": [
+    "la mise en page du CV",
+    "la rubrique compétences",
+    "la rubrique formation",
+    "l'accroche ou le profil en haut du CV",
+    "la lettre de motivation",
+    "les erreurs de débutant",
+    "envoyer sa candidature par email ou WhatsApp",
+    "se préparer avant un entretien",
+    "relire et corriger son CV",
+    "adapter son CV à l'offre"
+  ]
+}

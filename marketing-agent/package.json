@@ -1,0 +1,15 @@
+{
+  "name": "marketing-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agent marketing MON CV PRO CI : crée chaque jour un post (affiche + vidéo + légendes) et l'envoie sur Telegram.",
+  "scripts": {
+    "post": "node src/run.cjs",
+    "dry": "node src/run.cjs --dry"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.1.0",
+    "@fontsource/space-grotesk": "^5.1.0",
+    "playwright": "^1.49.0"
+  }
+}
