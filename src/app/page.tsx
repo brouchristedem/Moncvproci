@@ -14,7 +14,7 @@ import { PASS_PRICE, PASS_DAYS, formatFcfa } from "@/lib/pricing";
 /**
  * ============================================================================
  * Cinquième passe — refonte COMPLÈTE de l'interface, alignée sur l'identité
- * déjà visible dans l'aperçu du lien (public/og-image-v6.png) et le logo
+ * déjà visible dans l'aperçu du lien (public/og-image-v7.png) et le logo
  * (public/logo.svg) : fond vert forêt profond avec halo émeraude en haut à
  * droite, carte blanche arrondie, accent orange pour "lu." et le prix.
  *
