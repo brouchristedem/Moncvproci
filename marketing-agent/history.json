@@ -14,5 +14,13 @@
     "key": "Le titre de ton CV",
     "source": "banque",
     "instagram": "désactivé"
+  },
+  {
+    "date": "2026-11-12",
+    "type": "question",
+    "id": "q-blocage",
+    "key": "Ton plus gros blocage pour faire ton CV ?",
+    "source": "banque",
+    "instagram": "désactivé"
   }
 ]
