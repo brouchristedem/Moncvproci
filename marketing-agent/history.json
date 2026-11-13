@@ -22,5 +22,13 @@
     "key": "Ton plus gros blocage pour faire ton CV ?",
     "source": "banque",
     "instagram": "désactivé"
+  },
+  {
+    "date": "2026-11-13",
+    "type": "rule",
+    "id": "r-objectif",
+    "key": "Un CV, un objectif.",
+    "source": "banque",
+    "instagram": "désactivé"
   }
 ]
