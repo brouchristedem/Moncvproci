@@ -54,5 +54,13 @@
     "key": "offre",
     "source": "banque",
     "instagram": "publié (affiche + reel) — rattrapage"
+  },
+  {
+    "date": "2026-11-17",
+    "type": "tip",
+    "id": "tip-avant-envoi",
+    "key": "Avant d'envoyer ton CV, vérifie",
+    "source": "banque",
+    "instagram": "publié (affiche + reel)"
   }
 ]
