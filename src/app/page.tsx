@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Check, FileText, LayoutTemplate, ScanSearch, Smartphone, Upload, Wand2 } from "lucide-react";
 import TemplateGallery from "@/components/landing/TemplateGallery";
 import FAQSection from "@/components/landing/FAQSection";
+import AvisSection from "@/components/landing/AvisSection";
 import Reveal from "@/components/landing/Reveal";
 import HeroDemoVideo from "@/components/landing/HeroDemoVideo";
 import { useAuth } from "@/lib/AuthContext";
@@ -329,6 +330,18 @@ export default function Home() {
           <div className="rounded-3xl bg-white border px-5 sm:px-8 py-2" style={{ borderColor: MINT }}>
             <FAQSection pick={[0, 1, 2, 3, 4]} />
           </div>
+        </div>
+      </section>
+
+      {/* ===================== Avis ===================== */}
+      <section id="avis" className="px-4 sm:px-6 pb-20 scroll-mt-4" aria-labelledby="avis-heading">
+        <div className="max-w-5xl mx-auto">
+          <Reveal className="text-center mb-8">
+            <h2 id="avis-heading" className="font-display font-bold" style={{ color: FOREST, fontSize: "clamp(1.6rem, 4vw, 2.2rem)" }}>
+              Votre avis compte
+            </h2>
+          </Reveal>
+          <AvisSection />
         </div>
       </section>
 
