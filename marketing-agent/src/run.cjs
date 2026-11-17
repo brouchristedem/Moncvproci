@@ -31,13 +31,15 @@ const ig = require("./instagram.cjs");
   if (!item) throw new Error("Aucune idée disponible pour le type " + type);
   console.log(`Type : ${type} · source : ${source} · idée : ${item.id}`);
 
+  const theme = process.env.THEME || (cfg.themes || ["forest"])[history.length % (cfg.themes || ["forest"]).length];
+  console.log("Thème visuel :", theme);
   const out = path.join(root, "out");
   fs.mkdirSync(out, { recursive: true });
   const png = path.join(out, "post.png");
   const mp4 = path.join(out, "post.mp4");
   const browser = await launch();
   try {
-    await screenshotHtml(browser, renderPostHtml(cfg, type, item), png, { width: 1080, height: 1350 });
+    await screenshotHtml(browser, renderPostHtml(cfg, type, item, { theme }), png, { width: 1080, height: 1350 });
     const v = await renderVideo(browser, cfg, type, item, mp4);
     console.log(`Affiche + vidéo (${v.seconds.toFixed(1)} s, voix : ${v.voice ? "oui" : "non"}, musique : ${v.music ? "oui" : "non"}) prêtes dans out/`);
   } finally {

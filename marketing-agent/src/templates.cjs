@@ -17,6 +17,8 @@ const typo = (s) =>
 const esc = (s) =>
   typo(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
+let THEME = "forest"; // « forest » (fond vert) ou « light » (clair, pro) — choisi par renderPostHtml
+
 const fmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
 const LOGO = `<svg viewBox="0 0 512 512" width="64" height="64" xmlns="http://www.w3.org/2000/svg"><rect width="512" height="512" rx="112" fill="#157A52"/><rect x="152" y="96" width="208" height="288" rx="28" fill="#FFFFFF"/><rect x="184" y="148" width="144" height="16" rx="8" fill="#0C3B2E"/><rect x="184" y="184" width="112" height="12" rx="6" fill="#9DCDB7"/><rect x="184" y="208" width="128" height="12" rx="6" fill="#9DCDB7"/><rect x="184" y="232" width="96" height="12" rx="6" fill="#9DCDB7"/><circle cx="256" cy="340" r="72" fill="#0C3B2E"/><path d="M226 340l22 22 40-46" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="352" cy="150" r="22" fill="#F26B1D"/></svg>`;
@@ -44,7 +46,30 @@ html,body{width:1080px;height:1350px;background:${b.deep}}
 .ct,.bal{text-wrap:pretty}
 .hl{color:${b.orange}}
 .card{background:rgba(255,255,255,.075);border:1.5px solid rgba(255,255,255,.15);border-radius:40px;backdrop-filter:blur(2px)}
-.num{flex:none;width:92px;height:92px;border-radius:50%;background:${b.orange};font-family:"SG";font-weight:700;font-size:50px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 26px rgba(242,107,29,.35)}
+.num{flex:none;width:92px;height:92px;border-radius:50%;background:${b.orange};font-family:"SG";font-weight:700;font-size:50px;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 26px rgba(242,107,29,.35)}
+`;
+
+
+// Thème clair « marque pro » : crème, vert forêt, touches orange, léger quadrillage de points.
+const lightCss = (b) => `
+.canvas.light{color:${b.ink};background:radial-gradient(760px 560px at 100% 0%,rgba(21,122,82,.14),transparent 62%),radial-gradient(640px 480px at 0% 100%,rgba(242,107,29,.12),transparent 60%),linear-gradient(170deg,#FBF8F1 0%,#F1EBDD 100%)}
+.canvas.light::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(12,59,46,.13) 2px,transparent 2.6px);background-size:46px 46px;-webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 52%);mask-image:linear-gradient(180deg,#000 0%,transparent 52%)}
+.canvas.light::after{content:"";position:absolute;left:0;top:0;right:0;height:16px;background:linear-gradient(90deg,${b.forest},${b.emerald},${b.orange})}
+.light .head,.light .foot{z-index:2}
+.light .brand{color:${b.forest}}
+.light .tag{background:#fff;border-color:rgba(12,59,46,.14);box-shadow:0 8px 22px rgba(12,59,46,.07)}
+.light .title{color:${b.forest}}
+.light .card{background:#fff;border:1.5px solid rgba(12,59,46,.10);box-shadow:0 18px 40px rgba(12,59,46,.09);backdrop-filter:none}
+.light [style*="color:rgba(255,255,255"]{color:rgba(26,46,40,.78)!important}
+.light [style*="rgba(110,26,38"]{background:#FFF1F2!important}
+.light [style*="rgba(21,122,82,.42)"]{background:#E8F5EE!important}
+.light [style*="solid #FF6B76"]{border-color:#D6303F!important}
+.light [style*="solid #3DD598"]{border-color:#157A52!important}
+.light [style*="color:#FF6B76"]{color:#D6303F!important}
+.light [style*="color:#3DD598"]{color:#157A52!important}
+.light [style*="background:#FF6B76"]{background:#D6303F!important}
+.light [style*="background:#3DD598"]{background:#157A52!important}
+.light [style*="border-radius:56px"]{box-shadow:0 30px 70px rgba(12,59,46,.18)}
 `;
 
 const fitScript = `
@@ -58,8 +83,8 @@ const fitScript = `
   document.body.dataset.ready='1';
 })();`;
 
-const page = (cfg, inner) => `<!doctype html><html lang="fr"><head><meta charset="utf-8"><style>${baseCss(cfg.brand)}</style></head><body>
-<div class="canvas">${inner}</div><script>${fitScript}</script></body></html>`;
+const page = (cfg, inner) => `<!doctype html><html lang="fr"><head><meta charset="utf-8"><style>${baseCss(cfg.brand)}${THEME === "light" ? lightCss(cfg.brand) : ""}</style></head><body>
+<div class="canvas ${THEME}">${inner}</div><script>${fitScript}</script></body></html>`;
 
 const header = (cfg, tag) => `<div class="head"><div class="brand">${LOGO.replace('width="64" height="64"', 'width="60" height="60"')}<span>${esc(cfg.brand.name)}</span></div><div class="tag">${esc(tag)}</div></div>`;
 const footer = (cfg) => `<div class="foot"><div class="cta">Crée ton CV · ${esc(cfg.brand.url)}</div></div>`;
@@ -121,7 +146,7 @@ function question(cfg, item) {
   const opts = item.options
     .map(
       (o, i) => `<div class="card" style="height:120px;display:flex;align-items:center;gap:28px;padding:0 34px;border-radius:999px">
-      <div style="flex:none;width:70px;height:70px;border-radius:50%;background:${cfg.brand.orange};font-family:SG;font-weight:700;font-size:38px;display:flex;align-items:center;justify-content:center">${letters[i]}</div>
+      <div style="flex:none;width:70px;height:70px;border-radius:50%;background:${cfg.brand.orange};font-family:SG;font-weight:700;font-size:38px;color:#fff;display:flex;align-items:center;justify-content:center">${letters[i]}</div>
       <div data-fit="26" style="flex:1;height:84px;overflow:hidden;display:flex;align-items:center;font-weight:600;font-size:40px;line-height:1.1">${esc(o)}</div></div>`
     )
     .join("");
@@ -178,7 +203,8 @@ function offer(cfg) {
 
 const TEMPLATES = { tip, dodont, question, rule, offer };
 
-function renderPostHtml(cfg, type, item) {
+function renderPostHtml(cfg, type, item, opts = {}) {
+  THEME = opts.theme === "light" ? "light" : "forest";
   const fn = TEMPLATES[type];
   if (!fn) throw new Error(`Modèle inconnu : ${type}`);
   return fn(cfg, item);

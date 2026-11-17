@@ -12,13 +12,14 @@ const { launch, screenshotHtml } = require("./browser.cjs");
   const out = path.join(root, "out", "preview");
   fs.mkdirSync(out, { recursive: true });
   const only = process.argv[2]; // ex. "tip" pour ne rendre qu'un type
+  const theme = process.argv[3] || "forest"; // "light" pour le thème clair
   const browser = await launch();
   const jobs = [];
   for (const [type, items] of Object.entries(bank)) if (!only || only === type) for (const it of items) jobs.push([type, it]);
   if (!only || only === "offer") jobs.push(["offer", { id: "offer" }]);
   for (const [type, item] of jobs) {
-    const file = path.join(out, `${type}-${item.id}.png`);
-    await screenshotHtml(browser, renderPostHtml(cfg, type, item), file, { width: 1080, height: 1350 });
+    const file = path.join(out, `${theme}-${type}-${item.id}.png`);
+    await screenshotHtml(browser, renderPostHtml(cfg, type, item, { theme }), file, { width: 1080, height: 1350 });
     console.log("ok", path.relative(root, file));
   }
   await browser.close();
