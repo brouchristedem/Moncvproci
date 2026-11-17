@@ -27,10 +27,8 @@ const isDone = (h) => typeof h.instagram === "string" && h.instagram.startsWith(
 
   // Vérifie le jeton avant de produire quoi que ce soit.
   if (!dry) {
-    const r = await fetch(`https://graph.instagram.com/v23.0/me?fields=user_id,username&access_token=${process.env.INSTAGRAM_ACCESS_TOKEN}`);
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok || j.error) throw new Error("Jeton Instagram refusé : " + (j.error?.message || r.status));
-    console.log("Compte connecté :", j.username, j.user_id);
+    const j = await ig.whoami().catch((e) => { throw new Error("Jeton Instagram refusé : " + e.message); });
+    console.log("Compte connecté :", j.username);
   }
 
   // Ordre = ordre du fichier (chronologique). Tri stable par date au cas où.

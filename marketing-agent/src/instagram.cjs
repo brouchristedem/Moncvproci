@@ -5,7 +5,9 @@
 const fs = require("fs");
 
 const V = process.env.GRAPH_VERSION || "v23.0";
-const G = `https://graph.instagram.com/${V}`;
+// Config « connexion unifiée » (jeton utilisateur système) -> serveur graph.facebook.com.
+// Pour un jeton « Instagram Login » classique : INSTAGRAM_API_HOST=graph.instagram.com
+const G = `https://${process.env.INSTAGRAM_API_HOST || "graph.facebook.com"}/${V}`;
 const token = () => process.env.INSTAGRAM_ACCESS_TOKEN;
 const uid = () => process.env.INSTAGRAM_USER_ID;
 const enabled = () => Boolean(token() && uid());
@@ -73,4 +75,6 @@ async function postReel(file, caption) {
   return publish(c.id);
 }
 
-module.exports = { enabled, hostInRepo, postImage, postReel };
+const whoami = () => gj(`${G}/${uid()}?fields=username&access_token=${token()}`);
+
+module.exports = { enabled, hostInRepo, postImage, postReel, whoami };
