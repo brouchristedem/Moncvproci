@@ -13,7 +13,7 @@
     "id": "dd-titre",
     "key": "Le titre de ton CV",
     "source": "banque",
-    "instagram": "désactivé"
+    "instagram": "publié (affiche + reel) — rattrapage"
   },
   {
     "date": "2026-11-12",
@@ -21,7 +21,7 @@
     "id": "q-blocage",
     "key": "Ton plus gros blocage pour faire ton CV ?",
     "source": "banque",
-    "instagram": "désactivé"
+    "instagram": "publié (affiche + reel) — rattrapage"
   },
   {
     "date": "2026-11-13",
@@ -29,7 +29,7 @@
     "id": "r-objectif",
     "key": "Un CV, un objectif.",
     "source": "banque",
-    "instagram": "désactivé"
+    "instagram": "publié (affiche + reel) — rattrapage"
   },
   {
     "date": "2026-11-14",
@@ -37,7 +37,7 @@
     "id": "tip-haut",
     "key": "Que mettre en haut de ton CV ?",
     "source": "banque",
-    "instagram": "désactivé"
+    "instagram": "publié (affiche + reel) — rattrapage"
   },
   {
     "date": "2026-11-15",
@@ -45,7 +45,7 @@
     "id": "dd-profil",
     "key": "Ton profil",
     "source": "banque",
-    "instagram": "désactivé"
+    "instagram": "publié (affiche + reel) — rattrapage"
   },
   {
     "date": "2026-11-16",
@@ -53,6 +53,6 @@
     "id": "offer",
     "key": "offre",
     "source": "banque",
-    "instagram": "désactivé"
+    "instagram": "publié (affiche + reel) — rattrapage"
   }
 ]
