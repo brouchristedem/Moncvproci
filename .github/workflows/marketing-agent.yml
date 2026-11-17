@@ -17,6 +17,11 @@ on:
 permissions:
   contents: write
 
+# Même groupe que le rattrapage Instagram : jamais en même temps (ordre chronologique garanti).
+concurrency:
+  group: instagram-publish
+  cancel-in-progress: false
+
 jobs:
   post:
     runs-on: ubuntu-latest
