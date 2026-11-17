@@ -8,6 +8,7 @@ const { renderVideo } = require("./video.cjs");
 const content = require("./content.cjs");
 const tg = require("./telegram.cjs");
 const ig = require("./instagram.cjs");
+const insights = require("./insights.cjs");
 
 (async () => {
   const root = path.join(__dirname, "..");
@@ -20,7 +21,23 @@ const ig = require("./instagram.cjs");
   const histFile = path.join(root, "history.json");
   const history = JSON.parse(fs.readFileSync(histFile, "utf8"));
 
-  const type = content.pickType(cfg, history, forced);
+  let type = content.pickType(cfg, history, forced);
+  // Auto-amélioration : on lit les vrais chiffres d'Instagram et on pousse un peu plus les types qui marchent.
+  let perf = null;
+  if (!forced && ig.enabled()) {
+    try {
+      const media = await insights.fetchMedia();
+      perf = { media, stats: insights.byType(media, history, cfg) };
+      console.log(`Statistiques Instagram : ${media.length} médias lus ·`, JSON.stringify(Object.fromEntries(Object.entries(perf.stats).map(([t, s]) => [t, { n: s.n, avg: +s.avg.toFixed(1) }]))));
+      const best = insights.bestType(perf.stats);
+      if (best && best !== type && type !== "offer" && history.length >= 14 && Math.random() < 0.4) {
+        console.log(`Auto-amélioration : « ${best} » performe le mieux, on le choisit à la place de « ${type} ».`);
+        type = best;
+      }
+    } catch (e) {
+      console.warn("Statistiques Instagram indisponibles :", e.message);
+    }
+  }
   let item = type === "offer" ? { id: "offer" } : null;
   let source = "banque";
   if (!item && !noAI) {
@@ -78,6 +95,15 @@ const ig = require("./instagram.cjs");
       await tg.sendMessage("⚠️ Instagram : " + e.message + "\nTu peux publier à la main avec les fichiers ci-dessus. Si c'est un souci de jeton, génère-en un nouveau (valable 60 jours).").catch(() => {});
     }
     if (igStatus.startsWith("publié")) await tg.sendMessage("✅ Instagram : " + igStatus).catch(() => {});
+  }
+
+  // Bilan hebdomadaire (le lundi) : abonnés + types de posts qui marchent, envoyé sur Telegram.
+  if (perf && new Date().getUTCDay() === 1) {
+    try {
+      await tg.sendMessage(await insights.weeklyReport(root, cfg, history, perf.media, perf.stats));
+    } catch (e) {
+      console.warn("Bilan hebdomadaire impossible :", e.message);
+    }
   }
 
   history.push({ date: new Date().toISOString().slice(0, 10), type, id: item.id, key: content.itemKey(type, item), source, instagram: igStatus });
