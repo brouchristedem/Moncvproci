@@ -69,16 +69,21 @@ Règles strictes : français simple, tutoiement, phrases courtes, conseil concre
 INTERDIT : pourcentages, statistiques, études, chiffres précis sur les recruteurs, promesses (« garanti », « tu seras embauché »), témoignages, noms de personnes ou d'entreprises.
 Ne répète pas ces idées déjà publiées : ${recent || "aucune"}.`;
   try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
-        temperature: 0.8,
-        response_format: { type: "json_object" },
-        messages: [{ role: "user", content: prompt }],
-      }),
-    });
+    const ask = (model) =>
+      fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model, temperature: 0.8, response_format: { type: "json_object" }, messages: [{ role: "user", content: prompt }] }),
+      });
+    let res = await ask(process.env.GROQ_MODEL || "llama-3.3-70b-versatile");
+    if (res.status === 404 || res.status === 400) {
+      // Modèle retiré : on prend automatiquement un modèle de chat disponible chez Groq.
+      const list = await fetch("https://api.groq.com/openai/v1/models", { headers: { Authorization: `Bearer ${key}` } }).then((r) => r.json()).catch(() => ({}));
+      const ids = (list.data || []).map((m) => m.id).filter((id) => !/whisper|guard|tts|orpheus|playai|safeguard|distil/i.test(id));
+      const pick = ids.find((id) => /llama.*(70b|versatile)/i.test(id)) || ids.find((id) => /gpt-oss|qwen|llama/i.test(id));
+      console.warn("Modèle Groq indisponible. Disponibles :", ids.join(", ") || "aucun", "→ essai :", pick || "-");
+      if (pick) res = await ask(pick);
+    }
     if (!res.ok) throw new Error("Groq HTTP " + res.status);
     const data = await res.json();
     const obj = JSON.parse(data.choices[0].message.content);
