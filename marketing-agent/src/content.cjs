@@ -64,7 +64,8 @@ async function generateWithAI(cfg, type, history) {
   const prompt = `Tu écris du contenu pour des affiches Instagram/TikTok du site MON CV PRO CI (créateur de CV et lettres de motivation pour les jeunes en Côte d'Ivoire : étudiants, stagiaires, premiers emplois).
 Sujet du jour : ${topic}.
 Type : ${type}. Réponds UNIQUEMENT avec un objet JSON de cette forme : ${SCHEMAS[type]}
-Règles strictes : français simple, tutoiement, phrases courtes, conseil concret et vrai, utile pour un CV en Côte d'Ivoire.
+Style : l'accroche doit donner envie de s'arrêter (curiosité, erreur courante, situation vécue par un étudiant ivoirien : candidature par WhatsApp, premier stage, recherche d'emploi à Abidjan), puis livrer un conseil concret.
+Règles strictes : français simple, tutoiement, phrases courtes, conseil concret et vrai, utile pour un CV en Côte d'Ivoire. Accroche accrocheuse mais honnête : aucune exagération ni fausse promesse.
 INTERDIT : pourcentages, statistiques, études, chiffres précis sur les recruteurs, promesses (« garanti », « tu seras embauché »), témoignages, noms de personnes ou d'entreprises.
 Ne répète pas ces idées déjà publiées : ${recent || "aucune"}.`;
   try {

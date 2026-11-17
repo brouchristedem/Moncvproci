@@ -20,8 +20,27 @@
       "15 modèles, aperçu avant de payer"
     ]
   },
-  "rotation": ["tip", "dodont", "question", "rule", "tip", "dodont", "offer"],
-  "hashtags": ["#CV", "#CVprofessionnel", "#emploi", "#stage", "#CotedIvoire", "#Abidjan", "#conseilscarriere", "#lettredemotivation", "#etudiants", "#moncvproci"],
+  "rotation": [
+    "tip",
+    "dodont",
+    "question",
+    "rule",
+    "tip",
+    "dodont",
+    "offer"
+  ],
+  "hashtags": [
+    "#CV",
+    "#CVprofessionnel",
+    "#emploi",
+    "#stage",
+    "#CotedIvoire",
+    "#Abidjan",
+    "#conseilscarriere",
+    "#lettredemotivation",
+    "#etudiants",
+    "#moncvproci"
+  ],
   "aiTopics": [
     "la mise en page du CV",
     "la rubrique compétences",
@@ -32,6 +51,12 @@
     "envoyer sa candidature par email ou WhatsApp",
     "se préparer avant un entretien",
     "relire et corriger son CV",
-    "adapter son CV à l'offre"
+    "adapter son CV à l'offre",
+    "candidater sur WhatsApp ou par email avec un message professionnel",
+    "que mettre quand on n'a pas encore d'expérience",
+    "les phrases creuses à remplacer par des faits",
+    "préparer son CV pour un premier stage",
+    "la photo et les informations personnelles sur le CV",
+    "le nom et le format du fichier envoyé"
   ]
 }

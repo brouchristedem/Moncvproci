@@ -48,6 +48,9 @@ jobs:
           pip install piper-tts
           python -m piper.download_voices fr_FR-siwis-medium --data-dir voices
           ls -la voices
+      - name: Installer la voix neuronale (Edge TTS, gratuit)
+        continue-on-error: true
+        run: pip install edge-tts
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Créer et envoyer le post

@@ -1,52 +1,346 @@
 {
   "tip": [
-    { "id": "tip-erreurs", "title": "3 erreurs qui plombent ton CV", "points": [
-      { "h": "Un CV trop long", "t": "Pour un stage ou un premier emploi, vise 1 page." },
-      { "h": "Des fautes d'orthographe", "t": "Relis-toi à voix haute, ou fais relire par un ami." },
-      { "h": "Pas de poste visé", "t": "Mets en haut le poste que tu cherches." } ] },
-    { "id": "tip-haut", "title": "Que mettre en haut de ton CV ?", "points": [
-      { "h": "Ton nom et ton titre", "t": "Le poste visé, en une seule ligne." },
-      { "h": "Tes contacts", "t": "Un téléphone qui répond et un email sérieux." },
-      { "h": "Un court profil", "t": "2 à 3 lignes sur ce que tu sais faire." } ] },
-    { "id": "tip-avant-envoi", "title": "Avant d'envoyer ton CV, vérifie", "points": [
-      { "h": "Le nom du fichier", "t": "Prenom-Nom-CV.pdf plutôt que « CV final 2 »." },
-      { "h": "Ton adresse email", "t": "Simple et professionnelle, avec ton nom." },
-      { "h": "Le format", "t": "Envoie un PDF : la mise en page ne bouge pas." } ] },
-    { "id": "tip-experience", "title": "Bien décrire une expérience", "points": [
-      { "h": "Un verbe d'action", "t": "« J'ai géré », « J'ai organisé », « J'ai vendu »…" },
-      { "h": "Le résultat", "t": "Dis ce que ton travail a changé." },
-      { "h": "Court et clair", "t": "2 à 4 lignes par expérience suffisent." } ] },
-    { "id": "tip-debutant", "title": "Pas encore d'expérience ?", "points": [
-      { "h": "Parle de tes stages", "t": "Même courts, ils comptent." },
-      { "h": "Ajoute tes projets", "t": "Un exposé, un événement, une association." },
-      { "h": "Montre tes compétences", "t": "Outils, langues, qualités utiles au poste." } ] },
-    { "id": "tip-lettre", "title": "Une lettre de motivation qui se lit", "points": [
-      { "h": "Pourquoi cette entreprise", "t": "Montre que tu as lu l'annonce." },
-      { "h": "Ce que tu apportes", "t": "2 qualités et 1 exemple concret." },
-      { "h": "Une seule page", "t": "Courte, claire, sans fautes." } ] }
+    {
+      "id": "tip-erreurs",
+      "title": "3 erreurs qui plombent ton CV",
+      "points": [
+        {
+          "h": "Un CV trop long",
+          "t": "Pour un stage ou un premier emploi, vise 1 page."
+        },
+        {
+          "h": "Des fautes d'orthographe",
+          "t": "Relis-toi à voix haute, ou fais relire par un ami."
+        },
+        {
+          "h": "Pas de poste visé",
+          "t": "Mets en haut le poste que tu cherches."
+        }
+      ]
+    },
+    {
+      "id": "tip-haut",
+      "title": "Que mettre en haut de ton CV ?",
+      "points": [
+        {
+          "h": "Ton nom et ton titre",
+          "t": "Le poste visé, en une seule ligne."
+        },
+        {
+          "h": "Tes contacts",
+          "t": "Un téléphone qui répond et un email sérieux."
+        },
+        {
+          "h": "Un court profil",
+          "t": "2 à 3 lignes sur ce que tu sais faire."
+        }
+      ]
+    },
+    {
+      "id": "tip-avant-envoi",
+      "title": "Avant d'envoyer ton CV, vérifie",
+      "points": [
+        {
+          "h": "Le nom du fichier",
+          "t": "Prenom-Nom-CV.pdf plutôt que « CV final 2 »."
+        },
+        {
+          "h": "Ton adresse email",
+          "t": "Simple et professionnelle, avec ton nom."
+        },
+        {
+          "h": "Le format",
+          "t": "Envoie un PDF : la mise en page ne bouge pas."
+        }
+      ]
+    },
+    {
+      "id": "tip-experience",
+      "title": "Bien décrire une expérience",
+      "points": [
+        {
+          "h": "Un verbe d'action",
+          "t": "« J'ai géré », « J'ai organisé », « J'ai vendu »…"
+        },
+        {
+          "h": "Le résultat",
+          "t": "Dis ce que ton travail a changé."
+        },
+        {
+          "h": "Court et clair",
+          "t": "2 à 4 lignes par expérience suffisent."
+        }
+      ]
+    },
+    {
+      "id": "tip-debutant",
+      "title": "Pas encore d'expérience ?",
+      "points": [
+        {
+          "h": "Parle de tes stages",
+          "t": "Même courts, ils comptent."
+        },
+        {
+          "h": "Ajoute tes projets",
+          "t": "Un exposé, un événement, une association."
+        },
+        {
+          "h": "Montre tes compétences",
+          "t": "Outils, langues, qualités utiles au poste."
+        }
+      ]
+    },
+    {
+      "id": "tip-lettre",
+      "title": "Une lettre de motivation qui se lit",
+      "points": [
+        {
+          "h": "Pourquoi cette entreprise",
+          "t": "Montre que tu as lu l'annonce."
+        },
+        {
+          "h": "Ce que tu apportes",
+          "t": "2 qualités et 1 exemple concret."
+        },
+        {
+          "h": "Une seule page",
+          "t": "Courte, claire, sans fautes."
+        }
+      ]
+    },
+    {
+      "id": "tip-phrases-bannies",
+      "title": "3 phrases à bannir de ton CV",
+      "points": [
+        {
+          "h": "« Bon esprit d'équipe »",
+          "t": "Prouve-le avec un exemple, pas avec un adjectif."
+        },
+        {
+          "h": "« Sérieux et motivé »",
+          "t": "Tout le monde l'écrit. Montre-le avec ce que tu as fait."
+        },
+        {
+          "h": "« Références sur demande »",
+          "t": "Inutile : gagne de la place pour l'essentiel."
+        }
+      ]
+    },
+    {
+      "id": "tip-sans-experience",
+      "title": "Pas d'expérience ? Montre ça",
+      "points": [
+        {
+          "h": "Tes projets",
+          "t": "Un exposé, un travail de groupe : ça compte."
+        },
+        {
+          "h": "Tes petits jobs",
+          "t": "Job d'été, aide en boutique : tu y as appris."
+        },
+        {
+          "h": "Tes activités",
+          "t": "Club, association, bénévolat : décris ce que tu y as fait."
+        }
+      ]
+    },
+    {
+      "id": "tip-whatsapp",
+      "title": "Envoyer ton CV sur WhatsApp",
+      "points": [
+        {
+          "h": "Envoie un PDF",
+          "t": "Pas une photo : le PDF reste net et lisible."
+        },
+        {
+          "h": "Nomme le fichier",
+          "t": "CV_Prenom_Nom : on te retrouve vite dans la liste."
+        },
+        {
+          "h": "Ajoute 2 lignes",
+          "t": "Un message poli avec le poste visé."
+        }
+      ]
+    }
   ],
   "dodont": [
-    { "id": "dd-titre", "title": "Le titre de ton CV", "bad": "Étudiant motivé cherche opportunité", "good": "Assistant logistique : stage de 3 mois" },
-    { "id": "dd-profil", "title": "Ton profil", "bad": "Je suis sérieux et motivé.", "good": "Étudiant en logistique, j'ai organisé les stocks d'un événement étudiant." },
-    { "id": "dd-email", "title": "Ton adresse email", "bad": "superboy225@mail.com", "good": "prenom.nom@mail.com" },
-    { "id": "dd-fichier", "title": "Le nom de ton fichier", "bad": "CV final final 2.pdf", "good": "Prenom-Nom-CV.pdf" },
-    { "id": "dd-experience", "title": "Une expérience", "bad": "Responsable de la caisse.", "good": "Gestion de la caisse : encaissement et suivi des ventes du jour." },
-    { "id": "dd-photo", "title": "Ta photo", "bad": "Une photo de soirée ou de vacances", "good": "Une photo nette, fond simple, tenue propre" }
+    {
+      "id": "dd-titre",
+      "title": "Le titre de ton CV",
+      "bad": "Étudiant motivé cherche opportunité",
+      "good": "Assistant logistique : stage de 3 mois"
+    },
+    {
+      "id": "dd-profil",
+      "title": "Ton profil",
+      "bad": "Je suis sérieux et motivé.",
+      "good": "Étudiant en logistique, j'ai organisé les stocks d'un événement étudiant."
+    },
+    {
+      "id": "dd-email",
+      "title": "Ton adresse email",
+      "bad": "superboy225@mail.com",
+      "good": "prenom.nom@mail.com"
+    },
+    {
+      "id": "dd-fichier",
+      "title": "Le nom de ton fichier",
+      "bad": "CV final final 2.pdf",
+      "good": "Prenom-Nom-CV.pdf"
+    },
+    {
+      "id": "dd-experience",
+      "title": "Une expérience",
+      "bad": "Responsable de la caisse.",
+      "good": "Gestion de la caisse : encaissement et suivi des ventes du jour."
+    },
+    {
+      "id": "dd-photo",
+      "title": "Ta photo",
+      "bad": "Une photo de soirée ou de vacances",
+      "good": "Une photo nette, fond simple, tenue propre"
+    },
+    {
+      "id": "dd-message",
+      "title": "Ton message de candidature",
+      "bad": "Bonjour, voici mon CV.",
+      "good": "Bonjour, je candidate au poste de comptable. Mon CV est ci-joint."
+    },
+    {
+      "id": "dd-competences",
+      "title": "Tes compétences",
+      "bad": "Dynamique, sérieux, bon communicant",
+      "good": "Excel, saisie rapide, accueil client"
+    },
+    {
+      "id": "dd-nomfichier",
+      "title": "Le nom du fichier",
+      "bad": "CV final final 2.pdf",
+      "good": "CV_Prenom_Nom.pdf"
+    }
   ],
   "question": [
-    { "id": "q-blocage", "question": "Ton plus gros blocage pour faire ton CV ?", "options": ["Je ne sais pas quoi écrire", "Je n'ai pas d'expérience", "La mise en page"] },
-    { "id": "q-format", "question": "Tu envoies ton CV en quel format ?", "options": ["PDF", "Word", "Je ne sais pas"] },
-    { "id": "q-lettre", "question": "Ta lettre de motivation, tu la fais…", "options": ["Tout seul", "Avec de l'aide", "Je n'en fais pas"] },
-    { "id": "q-recherche", "question": "Tu cherches quoi en ce moment ?", "options": ["Un stage", "Un premier emploi", "Un meilleur poste"] },
-    { "id": "q-pages", "question": "Ton CV tient sur combien de pages ?", "options": ["1 page", "2 pages", "Plus de 2 pages"] },
-    { "id": "q-relecture", "question": "Qui relit ton CV avant l'envoi ?", "options": ["Un ami", "Un professeur", "Personne"] }
+    {
+      "id": "q-blocage",
+      "question": "Ton plus gros blocage pour faire ton CV ?",
+      "options": [
+        "Je ne sais pas quoi écrire",
+        "Je n'ai pas d'expérience",
+        "La mise en page"
+      ]
+    },
+    {
+      "id": "q-format",
+      "question": "Tu envoies ton CV en quel format ?",
+      "options": [
+        "PDF",
+        "Word",
+        "Je ne sais pas"
+      ]
+    },
+    {
+      "id": "q-lettre",
+      "question": "Ta lettre de motivation, tu la fais…",
+      "options": [
+        "Tout seul",
+        "Avec de l'aide",
+        "Je n'en fais pas"
+      ]
+    },
+    {
+      "id": "q-recherche",
+      "question": "Tu cherches quoi en ce moment ?",
+      "options": [
+        "Un stage",
+        "Un premier emploi",
+        "Un meilleur poste"
+      ]
+    },
+    {
+      "id": "q-pages",
+      "question": "Ton CV tient sur combien de pages ?",
+      "options": [
+        "1 page",
+        "2 pages",
+        "Plus de 2 pages"
+      ]
+    },
+    {
+      "id": "q-relecture",
+      "question": "Qui relit ton CV avant l'envoi ?",
+      "options": [
+        "Un ami",
+        "Un professeur",
+        "Personne"
+      ]
+    },
+    {
+      "id": "q-cherche",
+      "question": "Tu cherches quoi en ce moment ?",
+      "options": [
+        "Un stage",
+        "Un premier emploi",
+        "Autre chose"
+      ]
+    },
+    {
+      "id": "q-envoi",
+      "question": "Tu envoies ton CV comment ?",
+      "options": [
+        "Par email",
+        "Sur WhatsApp",
+        "En main propre"
+      ]
+    }
   ],
   "rule": [
-    { "id": "r-objectif", "kicker": "Règle n°1", "rule": "Un CV, un objectif.", "why": "Adapte ton CV au poste visé, pas à tous les postes." },
-    { "id": "r-vite", "kicker": "À retenir", "rule": "Ton CV doit se lire vite.", "why": "Mets l'essentiel en haut : poste visé, expériences récentes, compétences clés." },
-    { "id": "r-montre", "kicker": "Astuce", "rule": "Montre, ne dis pas.", "why": "Remplace « sérieux et motivé » par un exemple de ce que tu as déjà fait." },
-    { "id": "r-relis", "kicker": "Avant d'envoyer", "rule": "Relis. Puis relis encore.", "why": "Une seule faute d'orthographe peut donner une mauvaise image." },
-    { "id": "r-lettre", "kicker": "Candidature", "rule": "Une lettre par entreprise.", "why": "Adapter ta lettre montre que tu t'intéresses vraiment au poste." },
-    { "id": "r-pdf", "kicker": "Format", "rule": "Envoie ton CV en PDF.", "why": "La mise en page reste intacte, sur téléphone comme sur ordinateur." }
+    {
+      "id": "r-objectif",
+      "kicker": "Règle n°1",
+      "rule": "Un CV, un objectif.",
+      "why": "Adapte ton CV au poste visé, pas à tous les postes."
+    },
+    {
+      "id": "r-vite",
+      "kicker": "À retenir",
+      "rule": "Ton CV doit se lire vite.",
+      "why": "Mets l'essentiel en haut : poste visé, expériences récentes, compétences clés."
+    },
+    {
+      "id": "r-montre",
+      "kicker": "Astuce",
+      "rule": "Montre, ne dis pas.",
+      "why": "Remplace « sérieux et motivé » par un exemple de ce que tu as déjà fait."
+    },
+    {
+      "id": "r-relis",
+      "kicker": "Avant d'envoyer",
+      "rule": "Relis. Puis relis encore.",
+      "why": "Une seule faute d'orthographe peut donner une mauvaise image."
+    },
+    {
+      "id": "r-lettre",
+      "kicker": "Candidature",
+      "rule": "Une lettre par entreprise.",
+      "why": "Adapter ta lettre montre que tu t'intéresses vraiment au poste."
+    },
+    {
+      "id": "r-pdf",
+      "kicker": "Format",
+      "rule": "Envoie ton CV en PDF.",
+      "why": "La mise en page reste intacte, sur téléphone comme sur ordinateur."
+    },
+    {
+      "id": "r-lisible",
+      "kicker": "Règle n°7",
+      "rule": "Lisible avant joli.",
+      "why": "Une police simple et des titres clairs valent mieux que dix couleurs."
+    },
+    {
+      "id": "r-fait",
+      "kicker": "Règle n°8",
+      "rule": "Un fait vaut mieux qu'un adjectif.",
+      "why": "Écris ce que tu as fait, pas seulement ce que tu es."
+    }
   ]
 }

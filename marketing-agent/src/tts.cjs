@@ -9,6 +9,10 @@ const { spawnSync } = require("child_process");
 const VOICE = process.env.PIPER_VOICE || "fr_FR-siwis-medium";
 const DATA = process.env.PIPER_DATA || path.join(__dirname, "..", "voices");
 const PY = process.env.PIPER_PY || "python3";
+// Voix neuronale gratuite (Edge TTS) en priorité ; Piper reste le plan B si le service est indisponible.
+const EDGE_VOICE = process.env.EDGE_VOICE || "fr-FR-VivienneMultilingualNeural";
+const EDGE_RATE = process.env.EDGE_RATE || "-4%";
+const useEdge = () => process.env.TTS_ENGINE !== "piper" && spawnSync(PY, ["-c", "import edge_tts"], { stdio: "ignore" }).status === 0;
 
 // Texte « prononçable » : sigles épelés, prix en toutes lettres, URL lue à voix haute.
 function clean(t) {
@@ -27,7 +31,7 @@ function clean(t) {
 function available() {
   if (process.env.TTS_FAKE) return true;
   const r = spawnSync(PY, ["-c", "import piper"], { stdio: "ignore" });
-  return r.status === 0 && fs.existsSync(path.join(DATA, VOICE + ".onnx"));
+  return useEdge() || (r.status === 0 && fs.existsSync(path.join(DATA, VOICE + ".onnx")));
 }
 
 function duration(file) {
@@ -42,6 +46,16 @@ function synth(text, outWav) {
     const d = Math.max(1, spoken.length * 0.065);
     spawnSync("ffmpeg", ["-y", "-loglevel", "error", "-f", "lavfi", "-i", `sine=f=300:d=${d.toFixed(2)}`, "-ar", "22050", outWav]);
     return { file: outWav, seconds: duration(outWav) };
+  }
+  if (useEdge()) {
+    const txt = outWav + ".txt", mp3 = outWav + ".mp3";
+    fs.writeFileSync(txt, spoken);
+    const e = spawnSync(PY, ["-m", "edge_tts", "--voice", EDGE_VOICE, `--rate=${EDGE_RATE}`, "--file", txt, "--write-media", mp3], { encoding: "utf8", timeout: 60000 });
+    if (e.status === 0 && fs.existsSync(mp3) && fs.statSync(mp3).size > 1000) {
+      const c = spawnSync("ffmpeg", ["-y", "-loglevel", "error", "-i", mp3, "-ar", "22050", "-ac", "1", outWav]);
+      if (c.status === 0 && fs.existsSync(outWav)) return { file: outWav, seconds: duration(outWav) };
+    }
+    console.warn("Voix neuronale indisponible, bascule sur Piper :", (e.stderr || "").split("\n").slice(-2).join(" "));
   }
   const r = spawnSync(PY, ["-m", "piper", "-m", VOICE, "--data-dir", DATA, "-f", outWav], { input: spoken, encoding: "utf8" });
   if (r.status !== 0 || !fs.existsSync(outWav)) {
