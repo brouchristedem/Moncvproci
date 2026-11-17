@@ -31,7 +31,7 @@ export default function AvisForm() {
         nom: nom.trim().slice(0, 60),
         texte: texte.trim().slice(0, 500),
         note,
-        displayed: false,
+        displayed: true,
         createdAt: serverTimestamp(),
       });
       setEnvoye(true);

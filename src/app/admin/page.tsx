@@ -17,7 +17,7 @@ import {
 } from "firebase/firestore";
 import { TEMPLATE_LIST } from "@/lib/templateRegistry";
 import AdminCVDownload from "@/components/admin/AdminCVDownload";
-import { Trash2, Plus, Search, Users, Wallet, Star } from "lucide-react";
+import { Trash2, Plus, Search, Users, Wallet, Star, Pencil } from "lucide-react";
 
 const PRICE = Number(process.env.NEXT_PUBLIC_PRICE_NEXT || 1000);
 
@@ -66,6 +66,9 @@ export default function AdminPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [editingReview, setEditingReview] = useState<string | null>(null);
+  const [editNom, setEditNom] = useState("");
+  const [editTexte, setEditTexte] = useState("");
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) router.replace("/");
@@ -238,6 +241,20 @@ export default function AdminPage() {
     await setDoc(doc(db, "reviews", id), { displayed: !displayed }, { merge: true });
   };
 
+  const startEditReview = (r: Review) => {
+    setEditingReview(r.id);
+    setEditNom(r.nom);
+    setEditTexte(r.texte);
+  };
+
+  const saveReview = async (id: string) => {
+    const nom = editNom.trim().slice(0, 60);
+    const texte = editTexte.trim().slice(0, 500);
+    if (!nom || !texte) return;
+    await setDoc(doc(db, "reviews", id), { nom, texte }, { merge: true });
+    setEditingReview(null);
+  };
+
   const removeReview = async (id: string) => {
     await deleteDoc(doc(db, "reviews", id));
   };
@@ -382,8 +399,8 @@ export default function AdminPage() {
       <section>
         <h2 className="text-sm font-semibold mb-1">Avis ({reviews.length})</h2>
         <p className="text-xs text-foreground/45 mb-3">
-          Choisissez les avis à afficher sur la page d&apos;accueil. Rien n&apos;est visible
-          publiquement tant que vous ne l&apos;activez pas ici.
+          Tous les avis s&apos;affichent par défaut sur la page d&apos;accueil. Masquez ceux que
+          vous ne voulez pas montrer, ou corrigez-les (crayon) en cas de faute.
         </p>
         <div className="space-y-2 max-h-96 overflow-y-auto">
           {reviews.length === 0 && (
@@ -392,8 +409,17 @@ export default function AdminPage() {
           {reviews.map((r) => (
             <div key={r.id} className="rounded-2xl border border-border p-3 text-xs space-y-1.5">
               <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="font-semibold">{r.nom}</p>
+                <div className="min-w-0 flex-1">
+                  {editingReview === r.id ? (
+                    <input
+                      value={editNom}
+                      onChange={(e) => setEditNom(e.target.value)}
+                      maxLength={60}
+                      className="w-full rounded-xl border border-border bg-background px-2 py-1 text-xs font-semibold"
+                    />
+                  ) : (
+                    <p className="font-semibold">{r.nom}</p>
+                  )}
                   <div className="flex gap-0.5 my-0.5">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
@@ -408,8 +434,42 @@ export default function AdminPage() {
                   {r.createdAt ? new Date(r.createdAt.seconds * 1000).toLocaleDateString("fr-FR") : ""}
                 </span>
               </div>
-              <p className="text-foreground/70 leading-relaxed">{r.texte}</p>
+              {editingReview === r.id ? (
+                <textarea
+                  value={editTexte}
+                  onChange={(e) => setEditTexte(e.target.value)}
+                  maxLength={500}
+                  rows={4}
+                  className="w-full rounded-xl border border-border bg-background px-2 py-1.5 text-xs leading-relaxed resize-y"
+                />
+              ) : (
+                <p className="text-foreground/70 leading-relaxed">{r.texte}</p>
+              )}
               <div className="flex items-center gap-2 pt-1">
+                {editingReview === r.id ? (
+                  <>
+                    <button
+                      onClick={() => saveReview(r.id)}
+                      className="px-2.5 py-1 rounded-full bg-brand-600 text-white"
+                    >
+                      Enregistrer
+                    </button>
+                    <button
+                      onClick={() => setEditingReview(null)}
+                      className="px-2.5 py-1 rounded-full bg-surface-muted text-foreground/60"
+                    >
+                      Annuler
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => startEditReview(r)}
+                    className="text-foreground/50 hover:text-foreground"
+                    aria-label="Modifier l'avis"
+                  >
+                    <Pencil size={13} />
+                  </button>
+                )}
                 <button
                   onClick={() => toggleReview(r.id, r.displayed)}
                   className={`px-2.5 py-1 rounded-full ${
