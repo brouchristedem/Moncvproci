@@ -62,5 +62,13 @@
     "key": "Avant d'envoyer ton CV, vérifie",
     "source": "banque",
     "instagram": "publié (affiche + reel)"
+  },
+  {
+    "date": "2026-11-18",
+    "type": "dodont",
+    "id": "dd-email",
+    "key": "Ton adresse email",
+    "source": "banque",
+    "instagram": "publié (affiche + reel)"
   }
 ]
