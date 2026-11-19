@@ -70,5 +70,13 @@
     "key": "Ton adresse email",
     "source": "banque",
     "instagram": "publié (affiche + reel)"
+  },
+  {
+    "date": "2026-11-19",
+    "type": "question",
+    "id": "ai-1795105793990",
+    "key": "Photo CV : ton arme secrète ?",
+    "source": "ia",
+    "instagram": "publié (affiche + reel)"
   }
 ]
