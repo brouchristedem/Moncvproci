@@ -78,5 +78,13 @@
     "key": "Photo CV : ton arme secrète ?",
     "source": "ia",
     "instagram": "publié (affiche + reel)"
+  },
+  {
+    "date": "2026-11-20",
+    "type": "rule",
+    "id": "ai-1795190549594",
+    "key": "Mets tes projets scolaires",
+    "source": "ia",
+    "instagram": "publié (affiche + reel)"
   }
 ]
