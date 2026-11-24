@@ -110,5 +110,13 @@
     "key": "offre",
     "source": "banque",
     "instagram": "publié (affiche + reel)"
+  },
+  {
+    "date": "2026-11-24",
+    "type": "rule",
+    "id": "ai-1795546158387",
+    "key": "Personnalise le titre selon l'offre",
+    "source": "ia",
+    "instagram": "publié (affiche + reel)"
   }
 ]
