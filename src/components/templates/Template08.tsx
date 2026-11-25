@@ -5,7 +5,8 @@ import { displayName } from "@/lib/displayName";
 import { SectionIcon } from "./SectionIcon";
 import { ContactIcon } from "./ContactIcon";
 import { InfoIcon } from "./InfoIcon";
-import { formatDate } from "@/lib/formatDate";
+import { formatPeriod } from "@/lib/formatDate";
+import { ItemLevel, SidebarExtras, rowLayout } from "./ItemParts";
 
 function photoClass(shape: string) {
   if (shape === "cercle") return "rounded-full";
@@ -77,6 +78,7 @@ export default function Template08({ cv }: { cv: CVData }) {
                   <p className="font-medium">{bulletTitle(section.type, item.titre)}</p>
                   {item.sousTitre && <p className="text-[9.5px] text-slate-400">{item.sousTitre}</p>}
                   {item.niveau && <p className="text-[9.5px] text-slate-400">{item.niveau}</p>}
+                  <SidebarExtras item={item} cv={cv} className="text-[9.5px] text-slate-400" />
                 </div>
               ))}
             </div>
@@ -93,13 +95,14 @@ export default function Template08({ cv }: { cv: CVData }) {
             {section.items.length === 0 && (
               <p className="text-slate-300 italic text-[10.5px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
             )}
-            {section.items.map((item) => (
+            <div className={rowLayout(section)}>
+{section.items.map((item) => (
               <div key={item.id} className="break-inside-avoid mb-1.5">
                 <div className="flex justify-between items-baseline">
                   <span className="font-semibold">{bulletTitle(section.type, item.titre)}</span>
                   {(item.dateDebut || item.dateFin) && (
                     <span className="text-[9.5px] text-slate-400">
-                      {formatDate(item.dateDebut, cv.dateFormat, cv.langue)} — {item.enCours ? (cv.langue === "en" ? "Present" : "Aujourd'hui") : formatDate(item.dateFin, cv.dateFormat, cv.langue)}
+                      {formatPeriod(item, cv.dateFormat, cv.langue)}
                     </span>
                   )}
                 </div>
@@ -109,11 +112,13 @@ export default function Template08({ cv }: { cv: CVData }) {
                     {item.lieu && <span className="italic text-slate-400">{item.sousTitre ? " · " : ""}{item.lieu}</span>}
                   </p>
                 )}
+                <ItemLevel item={item} className="text-[10.5px] text-slate-500" />
                 {item.description && (
                   <p className="text-[10.5px] text-slate-500 whitespace-pre-line">{renderRichText(item.description)}</p>
                 )}
               </div>
             ))}
+</div>
           </div>
         ))}
       </div>

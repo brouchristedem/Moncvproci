@@ -5,7 +5,8 @@ import { displayName } from "@/lib/displayName";
 import { SectionIcon } from "./SectionIcon";
 import { ContactIcon } from "./ContactIcon";
 import { InfoIcon } from "./InfoIcon";
-import { formatDate } from "@/lib/formatDate";
+import { formatPeriod } from "@/lib/formatDate";
+import { ItemLevel, SidebarExtras, rowLayout } from "./ItemParts";
 
 function photoClass(shape: string) {
   if (shape === "cercle") return "rounded-full";
@@ -67,6 +68,7 @@ export default function Template02({ cv }: { cv: CVData }) {
                 <p className="text-[12px] font-medium">{bulletTitle(section.type, item.titre)}</p>
                 {item.sousTitre && <p className="text-[10px] opacity-80">{item.sousTitre}</p>}
                 {item.niveau && <p className="text-[10px] opacity-80">{item.niveau}</p>}
+                <SidebarExtras item={item} cv={cv} className="text-[10px] opacity-80" />
               </div>
             ))}
           </div>
@@ -89,7 +91,7 @@ export default function Template02({ cv }: { cv: CVData }) {
                     <span className="font-semibold">{bulletTitle(section.type, item.titre)}</span>
                     {(item.dateDebut || item.dateFin) && (
                       <span className="text-[11px] text-slate-500">
-                        {formatDate(item.dateDebut, cv.dateFormat, cv.langue)} — {item.enCours ? (cv.langue === "en" ? "Present" : "Aujourd'hui") : formatDate(item.dateFin, cv.dateFormat, cv.langue)}
+                        {formatPeriod(item, cv.dateFormat, cv.langue)}
                       </span>
                     )}
                   </div>
@@ -99,6 +101,7 @@ export default function Template02({ cv }: { cv: CVData }) {
                       {item.lieu && <span className="italic text-slate-400"> · {item.lieu}</span>}
                     </p>
                   )}
+                  <ItemLevel item={item} className="text-[12px] text-slate-500" />
                   {item.description && (
                     <p className="text-[12px] text-slate-600 mt-0.5 whitespace-pre-line">
                       {renderRichText(item.description)}

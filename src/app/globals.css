@@ -189,6 +189,28 @@ span:has(> svg.cv-icon) {
     break-before: auto !important;
     break-after: auto !important;
   }
+  /* Mode flux (CV de plus d'une page) : hauteur libre, et pages suivantes
+     avec une marge haute/basse pour que le texte ne colle pas au bord du
+     papier. Page nommée : la 1re page reste pleine page (marge 0) comme les
+     modèles le prévoient ; la lettre de motivation n'est pas concernée. */
+  #cv-print-area[data-flow="true"] {
+    height: auto !important;
+    page: cvflow;
+  }
+  /* En mode flux, une rubrique entière (ex. Expérience) plus haute que le
+     reste de la page 1 ne doit pas être repoussée en bloc : seuls ses
+     éléments individuels restent insécables. */
+  #cv-print-area[data-flow="true"] .break-inside-avoid:has(> h2) {
+    break-inside: auto !important;
+  }
+  @page cvflow {
+    size: A4;
+    margin: 12mm 0;
+  }
+  @page cvflow:first {
+    size: A4;
+    margin: 0;
+  }
   #cv-print-area-lettre {
     width: 210mm;
     height: 297mm;

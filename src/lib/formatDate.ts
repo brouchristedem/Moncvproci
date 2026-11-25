@@ -31,3 +31,25 @@ export function formatDate(
   const monthLabel = months[monthIndex] || month;
   return `${monthLabel} ${year}`;
 }
+
+/**
+ * Période d'un élément ("Jan 2022 — Aujourd'hui"). Centralisée pour que tous
+ * les modèles affichent exactement la même chose, dans la langue du CV.
+ * Retourne une chaîne vide s'il n'y a aucune date.
+ */
+export function formatPeriod(
+  item: { dateDebut?: string; dateFin?: string; enCours?: boolean },
+  format: "texte" | "numerique",
+  langue: "fr" | "en",
+  separator: string = "—"
+): string {
+  if (!item.dateDebut && !item.dateFin && !item.enCours) return "";
+  const debut = formatDate(item.dateDebut, format, langue);
+  const fin = item.enCours
+    ? langue === "en"
+      ? "Present"
+      : "Aujourd'hui"
+    : formatDate(item.dateFin, format, langue);
+  if (debut && fin) return `${debut} ${separator} ${fin}`;
+  return debut || fin;
+}
