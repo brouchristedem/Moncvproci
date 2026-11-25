@@ -5,7 +5,8 @@ import { displayName } from "@/lib/displayName";
 import { SectionIcon } from "./SectionIcon";
 import { ContactIcon } from "./ContactIcon";
 import { InfoIcon } from "./InfoIcon";
-import { formatDate } from "@/lib/formatDate";
+import { formatPeriod } from "@/lib/formatDate";
+import { ItemLevel, SidebarExtras } from "./ItemParts";
 
 function photoClass(shape: string) {
   if (shape === "cercle") return "rounded-full";
@@ -70,7 +71,7 @@ export default function Template06({ cv }: { cv: CVData }) {
                     <span className="font-semibold">{bulletTitle(section.type, item.titre)}</span>
                     {(item.dateDebut || item.dateFin) && (
                       <span className="text-[10px] text-slate-400 font-mono">
-                        {formatDate(item.dateDebut, cv.dateFormat, cv.langue)} - {item.enCours ? (cv.langue === "en" ? "present" : "présent") : formatDate(item.dateFin, cv.dateFormat, cv.langue)}
+                        {formatPeriod(item, cv.dateFormat, cv.langue, "-")}
                       </span>
                     )}
                   </div>
@@ -80,6 +81,7 @@ export default function Template06({ cv }: { cv: CVData }) {
                     {item.lieu && <span className="italic text-slate-400">{item.sousTitre ? " · " : ""}{item.lieu}</span>}
                   </p>
                 )}
+                  <ItemLevel item={item} className="text-[12px] text-slate-500" />
                   {item.description && (
                     <p className="text-[12px] text-slate-500 mt-0.5 whitespace-pre-line">
                       {renderRichText(item.description)}
@@ -108,20 +110,36 @@ export default function Template06({ cv }: { cv: CVData }) {
               <h2 className="text-[11px] font-bold uppercase tracking-wide mb-2 font-mono" style={{ color }}>
                 <SectionIcon type={section.type} cv={cv} />{section.titre}
               </h2>
-              <div className="flex flex-wrap gap-1.5">
-                {section.items.length === 0 && <p className="text-[11px] text-slate-300 italic">—</p>}
-                {section.items.map((item) => (
-                  <span
-                    key={item.id}
-                    className="text-[10px] px-2 py-1 rounded font-mono bg-white border"
-                    style={{ borderColor: `${color}40`, color }}
-                    title={item.niveau}
-                  >
-                    {bulletTitle(section.type, item.titre)}
-                    {item.sousTitre && <span className="opacity-70"> · {item.sousTitre}</span>}
-                  </span>
-                ))}
-              </div>
+              {["langues", "competences", "interets"].includes(section.type) ? (
+                <div className={section.affichage === "liste" ? "flex flex-col gap-1.5 items-start" : "flex flex-wrap gap-1.5"}>
+                  {section.items.length === 0 && <p className="text-[11px] text-slate-300 italic">—</p>}
+                  {section.items.map((item) => (
+                    <span
+                      key={item.id}
+                      className="text-[10px] px-2 py-1 rounded font-mono bg-white border"
+                      style={{ borderColor: `${color}40`, color }}
+                    >
+                      {bulletTitle(section.type, item.titre)}
+                      {item.sousTitre && <span className="opacity-70"> · {item.sousTitre}</span>}
+                      {item.niveau && <span className="opacity-70"> · {item.niveau}</span>}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {section.items.length === 0 && <p className="text-[11px] text-slate-300 italic">—</p>}
+                  {section.items.map((item) => (
+                    <div key={item.id} className="break-inside-avoid">
+                      <p className="text-[11px] font-semibold font-mono" style={{ color }}>
+                        {bulletTitle(section.type, item.titre)}
+                      </p>
+                      {item.sousTitre && <p className="text-[10px] text-slate-500">{item.sousTitre}</p>}
+                      {item.niveau && <p className="text-[10px] text-slate-500">{item.niveau}</p>}
+                      <SidebarExtras item={item} cv={cv} className="text-[10px] text-slate-500" />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </aside>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CVData } from "@/lib/types";
 import CVRenderer from "./CVRenderer";
@@ -10,6 +10,7 @@ import { useCompactFit } from "@/lib/useCompactFit";
 import { maskCvForPreview } from "@/lib/previewMask";
 
 const PAGE_HEIGHT_RATIO = 297 / 210;
+const PAGE_HEIGHT_PX = 1122.5; // 297 mm à 96 dpi
 
 export default function CVPreviewFit({
   cv,
@@ -65,8 +66,33 @@ export default function CVPreviewFit({
           .join(",")}`
     )
     .join("|")}`;
-  const { measureRef, compactScale } = useCompactFit(!!cv.modeCompact, baseZoom, watchKey);
+  const { measureRef, compactScale, tooLong } = useCompactFit(!!cv.modeCompact, baseZoom, watchKey);
   const finalZoom = baseZoom * compactScale;
+
+  // Hors mode compact : on mesure si le CV dépasse une page. Avant, la zone
+  // d'impression avait une hauteur fixe (297 mm) avec `overflow: hidden` :
+  // tout ce qui dépassait la page 1 était COUPÉ à l'impression (expériences,
+  // formations... perdues sans avertissement). Si ça dépasse, on passe en
+  // "mode flux" : le CV s'écoule normalement sur plusieurs pages.
+  const flowRef = useRef<HTMLDivElement>(null);
+  const [overflows, setOverflows] = useState(false);
+  useEffect(() => {
+    if (cv.modeCompact) return;
+    let id1 = 0;
+    let id2 = 0;
+    id1 = requestAnimationFrame(() => {
+      id2 = requestAnimationFrame(() => {
+        const el = flowRef.current;
+        if (!el) return;
+        setOverflows(el.scrollHeight > PAGE_HEIGHT_PX + 2);
+      });
+    });
+    return () => {
+      cancelAnimationFrame(id1);
+      cancelAnimationFrame(id2);
+    };
+  }, [cv.modeCompact, baseZoom, watchKey]);
+  const flowMode = cv.modeCompact ? tooLong : overflows;
 
   // Version masquée du CV, utilisée UNIQUEMENT dans la zone d'impression
   // quand le filigrane "Aperçu gratuit" est actif : coordonnées de contact
@@ -151,6 +177,17 @@ export default function CVPreviewFit({
         </div>
       )}
 
+      {!cv.modeCompact && (
+        <div
+          aria-hidden
+          style={{ position: "fixed", top: 0, left: -99999, width: 794, pointerEvents: "none" }}
+        >
+          <div ref={flowRef} style={{ zoom: baseZoom, width: `${100 / baseZoom}%` }}>
+            <CVRenderer cv={cv} />
+          </div>
+        </div>
+      )}
+
       {/* Zone dédiée à l'impression : rendue via un portail directement dans
           <body>, en dehors de l'arborescence de l'application. Le reste de
           l'app (masqué en CSS via visibility) occupait quand même sa place
@@ -175,10 +212,11 @@ export default function CVPreviewFit({
           <div id="cv-print-portal">
             <div
               id="cv-print-area"
-              data-scaled={finalZoom < 0.999 ? "true" : "false"}
+              data-scaled={finalZoom < 0.999 && !flowMode ? "true" : "false"}
+              data-flow={flowMode ? "true" : "false"}
               style={{
                 width: "210mm",
-                height: "297mm",
+                height: flowMode ? "auto" : "297mm",
                 minHeight: "297mm",
                 boxSizing: "border-box",
                 position: "relative",
@@ -213,6 +251,20 @@ export default function CVPreviewFit({
                   ponctuellement la page (le mode compact vise déjà 98,5% de
                   la hauteur d'une page, donc ce cas ne devrait pas arriver
                   en pratique). */}
+              {flowMode ? (
+                /* Mode flux : le CV continue sur la page suivante au lieu
+                   d'être coupé. `zoom` (et non transform) pour que la
+                   pagination suive la mise en page réellement réduite. */
+                <div
+                  style={{
+                    zoom: finalZoom,
+                    width: `calc(210mm / ${finalZoom})`,
+                    minHeight: `calc(297mm / ${finalZoom})`,
+                  }}
+                >
+                  <CVRenderer cv={printCv} />
+                </div>
+              ) : (
               <div
                 style={{
                   width: "210mm",
@@ -255,6 +307,7 @@ export default function CVPreviewFit({
                   </div>
                 )}
               </div>
+              )}
 
               {/* Filigrane de sécurité pour l'aperçu gratuit ("Test Gratuit"
                   avant paiement). Rendu par-dessus le CV, texte répété en

@@ -5,7 +5,7 @@ import { displayName } from "@/lib/displayName";
 import { SectionIcon } from "./SectionIcon";
 import { ContactIcon } from "./ContactIcon";
 import { InfoIcon } from "./InfoIcon";
-import { formatDate } from "@/lib/formatDate";
+import { formatPeriod } from "@/lib/formatDate";
 
 function sortedVisible(cv: CVData) {
   return [...cv.sections].filter((s) => s.visible).sort((a, b) => a.ordre - b.ordre);
@@ -24,6 +24,13 @@ export default function Template09({ cv }: { cv: CVData }) {
   return (
     <div className="w-full min-h-full text-slate-800 p-10 font-sans text-[13px] leading-relaxed" style={{ background: cv.couleurFond }}>
       <div className="text-center pb-5 mb-6 border-b-4 double" style={{ borderColor: color }}>
+        {p.showPhoto && p.photoUrl && (
+          <img
+            src={p.photoUrl}
+            alt=""
+            className={`w-20 h-20 object-cover mx-auto mb-3 ${photoClass(p.photoShape)}`}
+          />
+        )}
         <h1 className="text-2xl font-bold uppercase tracking-wide">
           {displayName(cv, "Prénom", "Nom")}
         </h1>
@@ -60,7 +67,7 @@ export default function Template09({ cv }: { cv: CVData }) {
                     <span className="font-semibold">{bulletTitle(section.type, item.titre)}</span>
                     {(item.dateDebut || item.dateFin) && (
                       <span className="text-[11px] text-slate-500 italic">
-                        {formatDate(item.dateDebut, cv.dateFormat, cv.langue)} — {item.enCours ? (cv.langue === "en" ? "Present" : "Aujourd'hui") : formatDate(item.dateFin, cv.dateFormat, cv.langue)}
+                        {formatPeriod(item, cv.dateFormat, cv.langue)}
                       </span>
                     )}
                   </div>

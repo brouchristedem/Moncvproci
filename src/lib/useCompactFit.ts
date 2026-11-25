@@ -34,6 +34,10 @@ const CONVERGENCE_THRESHOLD = 0.004;
 export function useCompactFit(enabled: boolean, baseZoom: number, watch: string) {
   const measureRef = useRef<HTMLDivElement>(null);
   const [compactScale, setCompactScale] = useState(1);
+  // Vrai quand, même à l'échelle minimale, le contenu dépasse encore une
+  // page : l'appelant doit alors laisser le CV déborder sur une 2e page
+  // plutôt que de couper silencieusement la fin.
+  const [tooLong, setTooLong] = useState(false);
 
   useEffect(() => {
     if (!enabled) {
@@ -71,6 +75,7 @@ export function useCompactFit(enabled: boolean, baseZoom: number, watch: string)
               }
             }
             setCompactScale(currentScale);
+            setTooLong(false);
             return;
           }
 
@@ -80,8 +85,15 @@ export function useCompactFit(enabled: boolean, baseZoom: number, watch: string)
           const nextScale = Math.max(MIN_COMPACT_SCALE, currentScale * factor);
           setCompactScale(nextScale);
 
+          // À l'échelle minimale et toujours trop long : on ne peut plus
+          // réduire, le contenu doit continuer sur une 2e page.
+          if (currentScale <= MIN_COMPACT_SCALE + 1e-6) {
+            setTooLong(true);
+            return;
+          }
+
           const improving = Math.abs(nextScale - currentScale) > CONVERGENCE_THRESHOLD;
-          if (pass < MAX_PASSES && improving && nextScale > MIN_COMPACT_SCALE) {
+          if (pass < MAX_PASSES && (improving || nextScale <= MIN_COMPACT_SCALE + 1e-6)) {
             measure(pass + 1, nextScale);
           }
         });
@@ -100,5 +112,5 @@ export function useCompactFit(enabled: boolean, baseZoom: number, watch: string)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, baseZoom, watch]);
 
-  return { measureRef, compactScale };
+  return { measureRef, compactScale, tooLong: enabled && tooLong };
 }
