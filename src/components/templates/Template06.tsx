@@ -34,7 +34,7 @@ export default function Template06({ cv }: { cv: CVData }) {
         <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
         <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
         <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
-        <span className="ml-2 text-[10px] font-mono text-slate-400">profil.json</span>
+        <span className="ml-2 text-[10px] font-mono text-slate-600">profil.json</span>
       </div>
 
       <div className="flex items-center gap-4 mx-6 mt-3 mb-6 pb-4 border-b-2" style={{ borderColor: color }}>
@@ -49,7 +49,7 @@ export default function Template06({ cv }: { cv: CVData }) {
           <h1 className="text-xl font-bold font-mono" style={{ color }}>
             {displayName(cv, "Prénom", "Nom")}
           </h1>
-          <p className="text-[12px] text-slate-500 font-mono">
+          <p className="text-[12px] text-slate-700 font-mono">
             {"<"}{p.titre || (cv.langue === "en" ? "Job Title" : "Titre du poste")}{" />"}
           </p>
         </div>
@@ -63,27 +63,27 @@ export default function Template06({ cv }: { cv: CVData }) {
                 <SectionIcon type={section.type} cv={cv} />{section.titre}
               </h2>
               {section.items.length === 0 && (
-                <p className="text-slate-300 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
+                <p className="text-slate-600 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
               )}
               {section.items.map((item) => (
                 <div key={item.id} className="break-inside-avoid mb-2 pl-3 border-l-2 border-slate-100">
                   <div className="flex justify-between items-baseline">
                     <span className="font-semibold">{bulletTitle(section.type, item.titre)}</span>
                     {(item.dateDebut || item.dateFin) && (
-                      <span className="text-[10px] text-slate-400 font-mono">
+                      <span className="text-[10px] text-slate-600 font-mono">
                         {formatPeriod(item, cv.dateFormat, cv.langue, "-")}
                       </span>
                     )}
                   </div>
                   {(item.sousTitre || item.lieu) && (
-                  <p className="text-[12px] text-slate-500">
+                  <p className="text-[12px] text-slate-700">
                     {item.sousTitre && <span className="font-medium">{item.sousTitre}</span>}
-                    {item.lieu && <span className="italic text-slate-400">{item.sousTitre ? " · " : ""}{item.lieu}</span>}
+                    {item.lieu && <span className="italic text-slate-600">{item.sousTitre ? " · " : ""}{item.lieu}</span>}
                   </p>
                 )}
-                  <ItemLevel item={item} className="text-[12px] text-slate-500" />
+                  <ItemLevel item={item} className="text-[12px] text-slate-700" />
                   {item.description && (
-                    <p className="text-[12px] text-slate-500 mt-0.5 whitespace-pre-line">
+                    <p className="text-[12px] text-slate-700 mt-0.5 whitespace-pre-line">
                       {renderRichText(item.description)}
                     </p>
                   )}
@@ -112,7 +112,7 @@ export default function Template06({ cv }: { cv: CVData }) {
               </h2>
               {["langues", "competences", "interets"].includes(section.type) ? (
                 <div className={section.affichage === "liste" ? "flex flex-col gap-1.5 items-start" : "flex flex-wrap gap-1.5"}>
-                  {section.items.length === 0 && <p className="text-[11px] text-slate-300 italic">—</p>}
+                  {section.items.length === 0 && <p className="text-[11px] text-slate-600 italic">—</p>}
                   {section.items.map((item) => (
                     <span
                       key={item.id}
@@ -127,15 +127,15 @@ export default function Template06({ cv }: { cv: CVData }) {
                 </div>
               ) : (
                 <div className="space-y-1.5">
-                  {section.items.length === 0 && <p className="text-[11px] text-slate-300 italic">—</p>}
+                  {section.items.length === 0 && <p className="text-[11px] text-slate-600 italic">—</p>}
                   {section.items.map((item) => (
                     <div key={item.id} className="break-inside-avoid">
                       <p className="text-[11px] font-semibold font-mono" style={{ color }}>
                         {bulletTitle(section.type, item.titre)}
                       </p>
-                      {item.sousTitre && <p className="text-[10px] text-slate-500">{item.sousTitre}</p>}
-                      {item.niveau && <p className="text-[10px] text-slate-500">{item.niveau}</p>}
-                      <SidebarExtras item={item} cv={cv} className="text-[10px] text-slate-500" />
+                      {item.sousTitre && <p className="text-[10px] text-slate-700">{item.sousTitre}</p>}
+                      {item.niveau && <p className="text-[10px] text-slate-700">{item.niveau}</p>}
+                      <SidebarExtras item={item} cv={cv} className="text-[10px] text-slate-700" />
                     </div>
                   ))}
                 </div>

@@ -83,14 +83,14 @@ export default function Template02({ cv }: { cv: CVData }) {
             </h2>
             <div className={["langues", "competences", "interets"].includes(section.type) && section.affichage === "ligne" ? "flex flex-wrap gap-x-3 gap-y-1 items-baseline" : "space-y-2"}>
               {section.items.length === 0 && (
-                <p className="text-slate-400 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
+                <p className="text-slate-600 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
               )}
               {section.items.map((item) => (
                 <div key={item.id} className="break-inside-avoid">
                   <div className="flex justify-between items-baseline">
                     <span className="font-semibold">{bulletTitle(section.type, item.titre)}</span>
                     {(item.dateDebut || item.dateFin) && (
-                      <span className="text-[11px] text-slate-500">
+                      <span className="text-[11px] text-slate-700">
                         {formatPeriod(item, cv.dateFormat, cv.langue)}
                       </span>
                     )}
@@ -98,10 +98,10 @@ export default function Template02({ cv }: { cv: CVData }) {
                   {item.sousTitre && (
                     <p className="text-[12px] text-slate-600">
                       <span className="font-medium">{item.sousTitre}</span>
-                      {item.lieu && <span className="italic text-slate-400"> · {item.lieu}</span>}
+                      {item.lieu && <span className="italic text-slate-600"> · {item.lieu}</span>}
                     </p>
                   )}
-                  <ItemLevel item={item} className="text-[12px] text-slate-500" />
+                  <ItemLevel item={item} className="text-[12px] text-slate-700" />
                   {item.description && (
                     <p className="text-[12px] text-slate-600 mt-0.5 whitespace-pre-line">
                       {renderRichText(item.description)}

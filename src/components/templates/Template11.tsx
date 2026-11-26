@@ -41,15 +41,15 @@ export default function Template11({ cv }: { cv: CVData }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-3 text-[10.5px] text-slate-500 mb-8 pb-4 border-b border-slate-200">
-        {p.email && <div><p className="text-[9px] uppercase text-slate-400">Email</p>{p.email}</div>}
-        {p.telephone && <div><p className="text-[9px] uppercase text-slate-400">Téléphone</p>{p.telephone}</div>}
-        {p.adresse && <div><p className="text-[9px] uppercase text-slate-400">Adresse</p>{p.adresse}</div>}
-        {p.permis && <div><p className="text-[9px] uppercase text-slate-400">{cv.langue === "en" ? "Licence" : "Permis"}</p>{p.permis}</div>}
-        {p.linkedin && <div><p className="text-[9px] uppercase text-slate-400">LinkedIn</p>{p.linkedin}</div>}
-        {p.siteWeb && <div><p className="text-[9px] uppercase text-slate-400">Web</p>{p.siteWeb}</div>}
+      <div className="grid grid-cols-4 gap-3 text-[10.5px] text-slate-700 mb-8 pb-4 border-b border-slate-200">
+        {p.email && <div><p className="text-[9px] uppercase text-slate-600">Email</p>{p.email}</div>}
+        {p.telephone && <div><p className="text-[9px] uppercase text-slate-600">Téléphone</p>{p.telephone}</div>}
+        {p.adresse && <div><p className="text-[9px] uppercase text-slate-600">Adresse</p>{p.adresse}</div>}
+        {p.permis && <div><p className="text-[9px] uppercase text-slate-600">{cv.langue === "en" ? "Licence" : "Permis"}</p>{p.permis}</div>}
+        {p.linkedin && <div><p className="text-[9px] uppercase text-slate-600">LinkedIn</p>{p.linkedin}</div>}
+        {p.siteWeb && <div><p className="text-[9px] uppercase text-slate-600">Web</p>{p.siteWeb}</div>}
         {cv.personalInfo.autresInfos.map((info) => (
-          <div key={info.id}><p className="text-[9px] uppercase text-slate-400">{info.label}</p>{info.valeur}</div>
+          <div key={info.id}><p className="text-[9px] uppercase text-slate-600">{info.label}</p>{info.valeur}</div>
         ))}
       </div>
 
@@ -63,27 +63,27 @@ export default function Template11({ cv }: { cv: CVData }) {
               <h2 className="text-[12px] font-bold uppercase tracking-wide mb-2"><SectionIcon type={section.type} cv={cv} />{section.titre}</h2>
               <div className={["langues", "competences", "interets"].includes(section.type) && section.affichage === "ligne" ? "flex flex-wrap gap-x-3 gap-y-1 items-baseline" : "space-y-2"}>
                 {section.items.length === 0 && (
-                  <p className="text-slate-300 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
+                  <p className="text-slate-600 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
                 )}
                 {section.items.map((item) => (
                   <div key={item.id} className="break-inside-avoid">
                     <div className="flex justify-between items-baseline">
                       <span className="font-semibold">{bulletTitle(section.type, item.titre)}</span>
                       {(item.dateDebut || item.dateFin) && (
-                        <span className="text-[11px] text-slate-400">
+                        <span className="text-[11px] text-slate-600">
                           {formatPeriod(item, cv.dateFormat, cv.langue)}
                         </span>
                       )}
                     </div>
                     {(item.sousTitre || item.lieu) && (
-                  <p className="text-[12px] text-slate-500">
+                  <p className="text-[12px] text-slate-700">
                     {item.sousTitre && <span className="font-medium">{item.sousTitre}</span>}
-                    {item.lieu && <span className="italic text-slate-400">{item.sousTitre ? " · " : ""}{item.lieu}</span>}
+                    {item.lieu && <span className="italic text-slate-600">{item.sousTitre ? " · " : ""}{item.lieu}</span>}
                   </p>
                 )}
-                    {item.niveau && <p className="text-[12px] text-slate-400">{item.niveau}</p>}
+                    {item.niveau && <p className="text-[12px] text-slate-600">{item.niveau}</p>}
                     {item.description && (
-                      <p className="text-[12px] text-slate-500 mt-0.5 whitespace-pre-line">
+                      <p className="text-[12px] text-slate-700 mt-0.5 whitespace-pre-line">
                         {renderRichText(item.description)}
                       </p>
                     )}

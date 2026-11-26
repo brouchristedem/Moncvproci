@@ -43,10 +43,10 @@ export default function Template08({ cv }: { cv: CVData }) {
             <h1 className="text-lg font-bold" style={{ color }}>
               {displayName(cv, "Prénom", "Nom")}
             </h1>
-            <p className="text-[11px] text-slate-500">{p.titre || (cv.langue === "en" ? "Job Title" : "Titre du poste")}</p>
+            <p className="text-[11px] text-slate-700">{p.titre || (cv.langue === "en" ? "Job Title" : "Titre du poste")}</p>
           </div>
         </div>
-        <div className="text-[10px] text-slate-500 space-y-0.5">
+        <div className="text-[10px] text-slate-700 space-y-0.5">
           {p.email && <p><ContactIcon type="email" cv={cv} />{p.email}</p>}
           {p.telephone && <p><ContactIcon type="telephone" cv={cv} />{p.telephone}</p>}
           {p.adresse && <p><ContactIcon type="adresse" cv={cv} />{p.adresse}</p>}
@@ -65,7 +65,7 @@ export default function Template08({ cv }: { cv: CVData }) {
             >
               <SectionIcon type={section.type} cv={cv} />{section.titre}
             </h2>
-            {section.items.length === 0 && <p className="text-slate-300 italic text-[10px]">—</p>}
+            {section.items.length === 0 && <p className="text-slate-600 italic text-[10px]">—</p>}
             <div
               className={
                 ["langues", "competences", "interets"].includes(section.type) && section.affichage === "ligne"
@@ -76,9 +76,9 @@ export default function Template08({ cv }: { cv: CVData }) {
               {section.items.map((item) => (
                 <div key={item.id} className="break-inside-avoid mb-1">
                   <p className="font-medium">{bulletTitle(section.type, item.titre)}</p>
-                  {item.sousTitre && <p className="text-[9.5px] text-slate-400">{item.sousTitre}</p>}
-                  {item.niveau && <p className="text-[9.5px] text-slate-400">{item.niveau}</p>}
-                  <SidebarExtras item={item} cv={cv} className="text-[9.5px] text-slate-400" />
+                  {item.sousTitre && <p className="text-[9.5px] text-slate-600">{item.sousTitre}</p>}
+                  {item.niveau && <p className="text-[9.5px] text-slate-600">{item.niveau}</p>}
+                  <SidebarExtras item={item} cv={cv} className="text-[9.5px] text-slate-600" />
                 </div>
               ))}
             </div>
@@ -93,7 +93,7 @@ export default function Template08({ cv }: { cv: CVData }) {
               <SectionIcon type={section.type} cv={cv} />{section.titre}
             </h2>
             {section.items.length === 0 && (
-              <p className="text-slate-300 italic text-[10.5px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
+              <p className="text-slate-600 italic text-[10.5px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
             )}
             <div className={rowLayout(section)}>
 {section.items.map((item) => (
@@ -101,20 +101,20 @@ export default function Template08({ cv }: { cv: CVData }) {
                 <div className="flex justify-between items-baseline">
                   <span className="font-semibold">{bulletTitle(section.type, item.titre)}</span>
                   {(item.dateDebut || item.dateFin) && (
-                    <span className="text-[9.5px] text-slate-400">
+                    <span className="text-[9.5px] text-slate-600">
                       {formatPeriod(item, cv.dateFormat, cv.langue)}
                     </span>
                   )}
                 </div>
                 {(item.sousTitre || item.lieu) && (
-                  <p className="text-[10.5px] text-slate-500">
+                  <p className="text-[10.5px] text-slate-700">
                     {item.sousTitre && <span className="font-medium">{item.sousTitre}</span>}
-                    {item.lieu && <span className="italic text-slate-400">{item.sousTitre ? " · " : ""}{item.lieu}</span>}
+                    {item.lieu && <span className="italic text-slate-600">{item.sousTitre ? " · " : ""}{item.lieu}</span>}
                   </p>
                 )}
-                <ItemLevel item={item} className="text-[10.5px] text-slate-500" />
+                <ItemLevel item={item} className="text-[10.5px] text-slate-700" />
                 {item.description && (
-                  <p className="text-[10.5px] text-slate-500 whitespace-pre-line">{renderRichText(item.description)}</p>
+                  <p className="text-[10.5px] text-slate-700 whitespace-pre-line">{renderRichText(item.description)}</p>
                 )}
               </div>
             ))}

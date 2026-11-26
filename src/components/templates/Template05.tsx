@@ -42,7 +42,7 @@ export default function Template05({ cv }: { cv: CVData }) {
             <h1 className="text-3xl font-extrabold text-slate-800 -mt-1">
               {cv.ordreNom === "nom-prenom" ? (p.prenom || "Prénom") : (p.nom || "Nom")}
             </h1>
-            <p className="text-sm text-slate-500 mt-1">{p.titre || (cv.langue === "en" ? "Job Title" : "Titre du poste")}</p>
+            <p className="text-sm text-slate-700 mt-1">{p.titre || (cv.langue === "en" ? "Job Title" : "Titre du poste")}</p>
           </div>
         </div>
 
@@ -79,27 +79,27 @@ export default function Template05({ cv }: { cv: CVData }) {
               </h2>
               <div className={["langues", "competences", "interets"].includes(section.type) && section.affichage === "ligne" ? "flex flex-wrap gap-x-3 gap-y-1 items-baseline" : "space-y-2 pl-4"}>
                 {section.items.length === 0 && (
-                  <p className="text-slate-300 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
+                  <p className="text-slate-600 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
                 )}
                 {section.items.map((item) => (
                   <div key={item.id} className="break-inside-avoid">
                     <div className="flex justify-between items-baseline">
                       <span className="font-semibold">{bulletTitle(section.type, item.titre)}</span>
                       {(item.dateDebut || item.dateFin) && (
-                        <span className="text-[11px] text-slate-400">
+                        <span className="text-[11px] text-slate-600">
                           {formatPeriod(item, cv.dateFormat, cv.langue)}
                         </span>
                       )}
                     </div>
                     {(item.sousTitre || item.lieu) && (
-                  <p className="text-[12px] text-slate-500">
+                  <p className="text-[12px] text-slate-700">
                     {item.sousTitre && <span className="font-medium">{item.sousTitre}</span>}
-                    {item.lieu && <span className="italic text-slate-400">{item.sousTitre ? " · " : ""}{item.lieu}</span>}
+                    {item.lieu && <span className="italic text-slate-600">{item.sousTitre ? " · " : ""}{item.lieu}</span>}
                   </p>
                 )}
-                    {item.niveau && <p className="text-[12px] text-slate-400">{item.niveau}</p>}
+                    {item.niveau && <p className="text-[12px] text-slate-600">{item.niveau}</p>}
                     {item.description && (
-                      <p className="text-[12px] text-slate-500 mt-0.5 whitespace-pre-line">
+                      <p className="text-[12px] text-slate-700 mt-0.5 whitespace-pre-line">
                         {renderRichText(item.description)}
                       </p>
                     )}

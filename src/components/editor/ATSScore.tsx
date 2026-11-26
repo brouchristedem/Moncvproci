@@ -27,7 +27,7 @@ export default function ATSScore() {
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center justify-between text-left"
       >
-        <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-foreground/40">
+        <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-foreground/70">
           <ShieldCheck size={11} />
           {t.atsScore}
         </span>
@@ -69,9 +69,9 @@ export default function ATSScore() {
                 {c.done ? (
                   <CheckCircle2 size={13} className="flex-shrink-0 text-green-600" />
                 ) : (
-                  <Circle size={13} className="flex-shrink-0 text-foreground/25" />
+                  <Circle size={13} className="flex-shrink-0 text-foreground/50" />
                 )}
-                <span className={c.done ? "text-foreground/60" : "text-foreground/45"}>
+                <span className={c.done ? "text-foreground" : "text-foreground/80"}>
                   {t[c.labelKey as keyof typeof t]}
                 </span>
               </div>

@@ -48,7 +48,7 @@ export default function Template10({ cv }: { cv: CVData }) {
           {p.titre || (cv.langue === "en" ? "Job Title" : "Titre du poste")}
         </p>
 
-        <div className="mt-5 text-[10.5px] text-slate-500 space-y-1 break-words">
+        <div className="mt-5 text-[10.5px] text-slate-700 space-y-1 break-words">
           {p.email && <p><ContactIcon type="email" cv={cv} />{p.email}</p>}
           {p.telephone && <p><ContactIcon type="telephone" cv={cv} />{p.telephone}</p>}
           {p.adresse && <p><ContactIcon type="adresse" cv={cv} />{p.adresse}</p>}
@@ -78,9 +78,9 @@ export default function Template10({ cv }: { cv: CVData }) {
               {section.items.map((item) => (
                 <div key={item.id} className="break-inside-avoid mb-1.5">
                   <p className="text-[11px] text-center">{bulletTitle(section.type, item.titre)}</p>
-                  {item.sousTitre && <p className="text-[9.5px] text-slate-400 text-center">{item.sousTitre}</p>}
-                  {item.niveau && <p className="text-[9.5px] text-slate-400 text-center">{item.niveau}</p>}
-                  <SidebarExtras item={item} cv={cv} className="text-[9.5px] text-slate-400" align="text-center" />
+                  {item.sousTitre && <p className="text-[9.5px] text-slate-600 text-center">{item.sousTitre}</p>}
+                  {item.niveau && <p className="text-[9.5px] text-slate-600 text-center">{item.niveau}</p>}
+                  <SidebarExtras item={item} cv={cv} className="text-[9.5px] text-slate-600" align="text-center" />
                 </div>
               ))}
             </div>
@@ -95,7 +95,7 @@ export default function Template10({ cv }: { cv: CVData }) {
               <SectionIcon type={section.type} cv={cv} />{section.titre}
             </h2>
             {section.items.length === 0 && (
-              <p className="text-slate-400 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
+              <p className="text-slate-600 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
             )}
             <div className={rowLayout(section)}>
 {section.items.map((item) => (
@@ -107,7 +107,7 @@ export default function Template10({ cv }: { cv: CVData }) {
                 <div className="flex justify-between items-baseline">
                   <span className="font-semibold">{bulletTitle(section.type, item.titre)}</span>
                   {(item.dateDebut || item.dateFin) && (
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[11px] text-slate-700">
                       {formatPeriod(item, cv.dateFormat, cv.langue)}
                     </span>
                   )}
@@ -115,10 +115,10 @@ export default function Template10({ cv }: { cv: CVData }) {
                 {(item.sousTitre || item.lieu) && (
                   <p className="text-[12px] text-slate-600">
                     {item.sousTitre && <span className="font-medium">{item.sousTitre}</span>}
-                    {item.lieu && <span className="italic text-slate-400">{item.sousTitre ? " · " : ""}{item.lieu}</span>}
+                    {item.lieu && <span className="italic text-slate-600">{item.sousTitre ? " · " : ""}{item.lieu}</span>}
                   </p>
                 )}
-                <ItemLevel item={item} className="text-[12px] text-slate-500" />
+                <ItemLevel item={item} className="text-[12px] text-slate-700" />
                 {item.description && (
                   <p className="text-[12px] text-slate-600 mt-0.5 whitespace-pre-line">
                     {renderRichText(item.description)}

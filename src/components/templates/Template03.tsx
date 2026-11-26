@@ -41,10 +41,10 @@ export default function Template03({ cv }: { cv: CVData }) {
             </>
           )}
         </h1>
-        <p className="text-sm text-slate-500 mt-1 uppercase tracking-widest" style={{ color }}>
+        <p className="text-sm text-slate-700 mt-1 uppercase tracking-widest" style={{ color }}>
           {p.titre || (cv.langue === "en" ? "Job Title" : "Titre du poste")}
         </p>
-        <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mt-3 text-[11px] text-slate-400">
+        <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mt-3 text-[11px] text-slate-600">
           {p.email && <span><ContactIcon type="email" cv={cv} />{p.email}</span>}
           {p.telephone && <span><ContactIcon type="telephone" cv={cv} />{p.telephone}</span>}
           {p.adresse && <span><ContactIcon type="adresse" cv={cv} />{p.adresse}</span>}
@@ -68,27 +68,27 @@ export default function Template03({ cv }: { cv: CVData }) {
             </div>
             <div className={["langues", "competences", "interets"].includes(section.type) && section.affichage === "ligne" ? "flex flex-wrap gap-x-3 gap-y-1 items-baseline" : "space-y-3"}>
               {section.items.length === 0 && (
-                <p className="text-slate-300 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
+                <p className="text-slate-600 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
               )}
               {section.items.map((item) => (
                 <div key={item.id} className="break-inside-avoid">
                   <div className="flex justify-between items-baseline">
                     <span className="font-medium">{bulletTitle(section.type, item.titre)}</span>
                     {(item.dateDebut || item.dateFin) && (
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-slate-600">
                         {formatPeriod(item, cv.dateFormat, cv.langue)}
                       </span>
                     )}
                   </div>
                   {item.sousTitre && (
-                    <p className="text-[12px] text-slate-500 italic">
+                    <p className="text-[12px] text-slate-700 italic">
                       <span className="font-medium">{item.sousTitre}</span>
-                      {item.lieu && <span className="italic text-slate-400">, {item.lieu}</span>}
+                      {item.lieu && <span className="italic text-slate-600">, {item.lieu}</span>}
                     </p>
                   )}
-                  {item.niveau && <p className="text-[12px] text-slate-400">{item.niveau}</p>}
+                  {item.niveau && <p className="text-[12px] text-slate-600">{item.niveau}</p>}
                   {item.description && (
-                    <p className="text-[12px] text-slate-500 mt-1 whitespace-pre-line">
+                    <p className="text-[12px] text-slate-700 mt-1 whitespace-pre-line">
                       {renderRichText(item.description)}
                     </p>
                   )}

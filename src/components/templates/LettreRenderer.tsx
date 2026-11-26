@@ -37,7 +37,7 @@ export default function LettreRenderer({ cv }: { cv: CVData }) {
             {displayName(cv, isEn ? "First name" : "Prénom", isEn ? "Last name" : "Nom")}
           </h1>
           <p className="text-sm text-slate-600 mt-1">{p.titre}</p>
-          <div className="flex flex-col gap-0.5 mt-2 text-[11px] text-slate-500">
+          <div className="flex flex-col gap-0.5 mt-2 text-[11px] text-slate-700">
             {p.email && (
               <span>
                 <ContactIcon type="email" cv={cv} />
@@ -58,7 +58,7 @@ export default function LettreRenderer({ cv }: { cv: CVData }) {
             )}
           </div>
         </div>
-        <div className="text-right text-[11px] text-slate-500 whitespace-nowrap">
+        <div className="text-right text-[11px] text-slate-700 whitespace-nowrap">
           {(l?.ville || "") + (l?.ville ? ", " : "") + dateStr}
         </div>
       </div>
@@ -78,7 +78,7 @@ export default function LettreRenderer({ cv }: { cv: CVData }) {
         </p>
       )}
 
-      <div className="mb-8 text-[11px] text-slate-500">
+      <div className="mb-6 text-[13px] font-medium text-slate-900">
         {isEn ? "Dear Sir/Madam," : "Madame, Monsieur,"}
       </div>
 

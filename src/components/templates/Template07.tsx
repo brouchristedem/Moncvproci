@@ -28,7 +28,7 @@ export default function Template07({ cv }: { cv: CVData }) {
           <h1 className="text-4xl font-serif tracking-tight">
             {displayName(cv, "Prénom", "Nom")}
           </h1>
-          <p className="text-[13px] tracking-[0.3em] uppercase text-slate-400 mt-2">
+          <p className="text-[13px] tracking-[0.3em] uppercase text-slate-600 mt-2">
             {p.titre || (cv.langue === "en" ? "Job Title" : "Titre du poste")}
           </p>
         </div>
@@ -44,7 +44,7 @@ export default function Template07({ cv }: { cv: CVData }) {
         className="h-[2px] w-full my-5"
         style={{ background: `linear-gradient(to right, ${color}, transparent)` }}
       />
-      <div className="flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-slate-500 mb-8">
+      <div className="flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-slate-700 mb-8">
         {p.email && <span><ContactIcon type="email" cv={cv} />{p.email}</span>}
         {p.telephone && <span><ContactIcon type="telephone" cv={cv} />{p.telephone}</span>}
         {p.adresse && <span><ContactIcon type="adresse" cv={cv} />{p.adresse}</span>}
@@ -64,27 +64,27 @@ export default function Template07({ cv }: { cv: CVData }) {
             </h2>
             <div className={["langues", "competences", "interets"].includes(section.type) && section.affichage === "ligne" ? "flex flex-wrap gap-x-3 gap-y-1 items-baseline" : "space-y-3"}>
               {section.items.length === 0 && (
-                <p className="text-slate-300 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
+                <p className="text-slate-600 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
               )}
               {section.items.map((item) => (
                 <div key={item.id} className="break-inside-avoid">
                   <div className="flex justify-between items-baseline">
                     <span className="font-semibold text-[13px]">{bulletTitle(section.type, item.titre)}</span>
                     {(item.dateDebut || item.dateFin) && (
-                      <span className="text-[10px] text-slate-400 uppercase tracking-wide">
+                      <span className="text-[10px] text-slate-600 uppercase tracking-wide">
                         {formatPeriod(item, cv.dateFormat, cv.langue)}
                       </span>
                     )}
                   </div>
                   {item.sousTitre && (
-                    <p className="text-[12px] text-slate-500">
+                    <p className="text-[12px] text-slate-700">
                       <span className="font-medium">{item.sousTitre}</span>
-                      {item.lieu && <span className="italic text-slate-400">, {item.lieu}</span>}
+                      {item.lieu && <span className="italic text-slate-600">, {item.lieu}</span>}
                     </p>
                   )}
-                  {item.niveau && <p className="text-[12px] text-slate-400">{item.niveau}</p>}
+                  {item.niveau && <p className="text-[12px] text-slate-600">{item.niveau}</p>}
                   {item.description && (
-                    <p className="text-[12px] text-slate-500 mt-1 whitespace-pre-line">
+                    <p className="text-[12px] text-slate-700 mt-1 whitespace-pre-line">
                       {renderRichText(item.description)}
                     </p>
                   )}

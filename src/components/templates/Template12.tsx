@@ -46,10 +46,10 @@ export default function Template12({ cv }: { cv: CVData }) {
               <>{p.prenom || "Prénom"} {p.nom || "NOM"}</>
             )}
             </h1>
-            <p className="text-[12px] text-slate-500">{p.titre || (cv.langue === "en" ? "Job Title" : "Titre du poste")}</p>
+            <p className="text-[12px] text-slate-700">{p.titre || (cv.langue === "en" ? "Job Title" : "Titre du poste")}</p>
           </div>
         </div>
-        <div className="text-right text-[10.5px] text-slate-500">
+        <div className="text-right text-[10.5px] text-slate-700">
           {p.email && <p><ContactIcon type="email" cv={cv} />{p.email}</p>}
           {p.telephone && <p><ContactIcon type="telephone" cv={cv} />{p.telephone}</p>}
           {p.adresse && <p><ContactIcon type="adresse" cv={cv} />{p.adresse}</p>}
@@ -72,7 +72,7 @@ export default function Template12({ cv }: { cv: CVData }) {
                 <SectionIcon type={section.type} cv={cv} />{section.titre}
               </h2>
               {section.items.length === 0 && (
-                <p className="text-slate-300 italic text-[11.5px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
+                <p className="text-slate-600 italic text-[11.5px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
               )}
               <div className={rowLayout(section)}>
 {section.items.map((item) => (
@@ -80,20 +80,20 @@ export default function Template12({ cv }: { cv: CVData }) {
                   <div>
                     <p className="font-semibold">{bulletTitle(section.type, item.titre)}</p>
                     {(item.sousTitre || item.lieu) && (
-                  <p className="text-[11.5px] text-slate-500">
+                  <p className="text-[11.5px] text-slate-700">
                     {item.sousTitre && <span className="font-medium">{item.sousTitre}</span>}
-                    {item.lieu && <span className="italic text-slate-400">{item.sousTitre ? " · " : ""}{item.lieu}</span>}
+                    {item.lieu && <span className="italic text-slate-600">{item.sousTitre ? " · " : ""}{item.lieu}</span>}
                   </p>
                 )}
-                    <ItemLevel item={item} className="text-[11.5px] text-slate-500" />
+                    <ItemLevel item={item} className="text-[11.5px] text-slate-700" />
                     {item.description && (
-                      <p className="text-[11.5px] text-slate-500 mt-0.5 whitespace-pre-line">
+                      <p className="text-[11.5px] text-slate-700 mt-0.5 whitespace-pre-line">
                         {renderRichText(item.description)}
                       </p>
                     )}
                   </div>
                   {(item.dateDebut || item.dateFin) && (
-                    <span className="text-[10.5px] text-slate-400 whitespace-nowrap">
+                    <span className="text-[10.5px] text-slate-600 whitespace-nowrap">
                       {formatPeriod(item, cv.dateFormat, cv.langue, "-")}
                     </span>
                   )}
@@ -122,9 +122,9 @@ export default function Template12({ cv }: { cv: CVData }) {
                 {section.items.map((item) => (
                   <div key={item.id} className="break-inside-avoid mb-1">
                     <p className="font-medium text-[11.5px]">{bulletTitle(section.type, item.titre)}</p>
-                    {item.sousTitre && <p className="text-[10.5px] text-slate-400">{item.sousTitre}</p>}
-                    {item.niveau && <p className="text-[10.5px] text-slate-400">{item.niveau}</p>}
-                    <SidebarExtras item={item} cv={cv} className="text-[10.5px] text-slate-400" />
+                    {item.sousTitre && <p className="text-[10.5px] text-slate-600">{item.sousTitre}</p>}
+                    {item.niveau && <p className="text-[10.5px] text-slate-600">{item.niveau}</p>}
+                    <SidebarExtras item={item} cv={cv} className="text-[10.5px] text-slate-600" />
                   </div>
                 ))}
               </div>

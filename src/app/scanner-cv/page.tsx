@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   Circle,
   FileUp,
+  FileWarning,
   Loader2,
   Pencil,
   ShieldCheck,
@@ -40,12 +41,25 @@ export default function ScannerCvPage() {
   const [consent, setConsent] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  // Le document ne ressemble pas à un CV : on n'affiche pas de score, sauf si
+  // la personne confirme que c'est bien un CV (mise en page atypique).
+  const [forceShow, setForceShow] = useState(false);
+
+  const resetScan = () => {
+    setStatus("idle");
+    setResult(null);
+    setFileName(null);
+    setConsent(false);
+    setForceShow(false);
+    fileRef.current = null;
+  };
 
   const handleFile = useCallback(async (file: File) => {
     setError(null);
     setResult(null);
     setImportError(null);
     setConsent(false);
+    setForceShow(false);
     fileRef.current = null;
     setFileName(file.name);
 
@@ -161,7 +175,7 @@ export default function ScannerCvPage() {
           <h1 className="text-2xl sm:text-3xl font-bold mb-3">
             Testez la compatibilité ATS de votre CV
           </h1>
-          <p className="text-sm sm:text-base text-foreground/60 mb-8">
+          <p className="text-sm sm:text-base text-foreground/80 mb-8">
             Déposez votre CV actuel au format PDF. L&apos;analyse se fait directement dans votre
             navigateur — rien n&apos;est envoyé ni stocké sur un serveur, sauf si vous choisissez
             ensuite d&apos;importer votre CV dans l&apos;éditeur.
@@ -177,13 +191,13 @@ export default function ScannerCvPage() {
               {status === "reading" ? (
                 <>
                   <Loader2 size={28} className="text-brand-600 animate-spin" />
-                  <p className="text-sm text-foreground/60">Analyse de {fileName}…</p>
+                  <p className="text-sm text-foreground/80">Analyse de {fileName}…</p>
                 </>
               ) : (
                 <>
                   <FileUp size={28} className="text-brand-600" />
                   <p className="text-sm font-medium">Cliquez ou déposez votre CV (PDF)</p>
-                  <p className="text-xs text-foreground/40">10 Mo maximum</p>
+                  <p className="text-xs text-foreground/70">10 Mo maximum</p>
                 </>
               )}
             </label>
@@ -193,10 +207,43 @@ export default function ScannerCvPage() {
             <p className="mt-4 text-sm text-red-600 bg-red-600/10 rounded-2xl px-4 py-3">{error}</p>
           )}
 
-          {status === "done" && result && (
+          {status === "done" && result && !result.isCv && !forceShow && (
+            <div className="text-left rounded-2xl border border-amber-500/50 bg-amber-500/10 p-6 mt-2">
+              <h2 className="flex items-center gap-2 text-base font-bold text-foreground mb-2">
+                <FileWarning size={18} className="text-amber-600" />
+                {result.docType === "lettre" ? "Ce document ressemble à une lettre" : "Ce document ne ressemble pas à un CV"}
+              </h2>
+              <p className="text-sm text-foreground leading-relaxed mb-3">
+                {result.docType === "lettre"
+                  ? "On y a repéré des formules de lettre de motivation (« Madame, Monsieur », « Cordialement »…) et pas assez de rubriques de CV."
+                  : "On n'y a pas trouvé assez de rubriques typiques d'un CV (Expérience, Formation, Compétences, Langues, Profil…) ni de dates de parcours."}{" "}
+                Un score ATS n&apos;aurait aucun sens ici, donc on ne l&apos;affiche pas.
+              </p>
+              <p className="text-xs text-foreground/80 mb-4">
+                Rubriques de CV reconnues :{" "}
+                <strong>{result.foundSections.length ? result.foundSections.join(", ") : "aucune"}</strong>
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={resetScan}
+                  className="flex-1 rounded-2xl bg-brand-600 text-white px-5 py-3 text-sm font-semibold hover:bg-brand-700 transition"
+                >
+                  Tester un autre fichier
+                </button>
+                <button
+                  onClick={() => setForceShow(true)}
+                  className="flex-1 rounded-2xl border border-border px-5 py-3 text-sm font-medium text-foreground hover:border-foreground/40 transition"
+                >
+                  C&apos;est bien mon CV, analyser quand même
+                </button>
+              </div>
+            </div>
+          )}
+
+          {status === "done" && result && (result.isCv || forceShow) && (
             <div className="text-left rounded-2xl border border-border bg-surface p-6 mt-2">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
+                <span className="text-xs font-semibold uppercase tracking-wide text-foreground/70">
                   Score ATS · {fileName}
                 </span>
                 <span className="flex items-center gap-1.5 text-sm font-semibold tabular-nums">
@@ -218,7 +265,7 @@ export default function ScannerCvPage() {
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-accent-700 mb-0.5">
                       Prochaine amélioration
                     </p>
-                    <p className="text-sm text-foreground/70 leading-snug">{result.nextTip}</p>
+                    <p className="text-sm text-foreground leading-snug">{result.nextTip}</p>
                   </div>
                 </div>
               )}
@@ -229,9 +276,9 @@ export default function ScannerCvPage() {
                     {c.done ? (
                       <CheckCircle2 size={15} className="flex-shrink-0 mt-0.5 text-green-600" />
                     ) : (
-                      <Circle size={15} className="flex-shrink-0 mt-0.5 text-foreground/25" />
+                      <Circle size={15} className="flex-shrink-0 mt-0.5 text-foreground/50" />
                     )}
-                    <span className={c.done ? "text-foreground/60" : "text-foreground/45"}>{c.label}</span>
+                    <span className={c.done ? "text-foreground" : "text-foreground/80"}>{c.label}</span>
                   </div>
                 ))}
               </div>
@@ -241,7 +288,7 @@ export default function ScannerCvPage() {
                   <h2 className="flex items-center gap-1.5 text-sm font-semibold">
                     <Pencil size={15} /> Améliorez ce CV dans l&apos;éditeur
                   </h2>
-                  <p className="mt-1 text-xs text-foreground/60 leading-relaxed">
+                  <p className="mt-1 text-xs text-foreground/80 leading-relaxed">
                     On reprend ce même CV : vos expériences, formations et compétences sont placées
                     automatiquement dans l&apos;éditeur. Vous choisissez un modèle, corrigez les points
                     ci-dessus et suivez votre score ATS en direct.
@@ -272,7 +319,7 @@ export default function ScannerCvPage() {
                   Importer ce CV et l&apos;améliorer
                 </button>
                 {importError && <p className="text-xs text-red-600">{importError}</p>}
-                <p className="text-[11px] text-foreground/45">
+                <p className="text-[11px] text-foreground/70">
                   Un compte gratuit est demandé pour l&apos;import. Le téléchargement du CV final se fait
                   dans l&apos;éditeur, avec aperçu avant paiement.
                 </p>
@@ -287,13 +334,7 @@ export default function ScannerCvPage() {
                   Repartir d&apos;un CV vide
                 </Link>
                 <button
-                  onClick={() => {
-                    setStatus("idle");
-                    setResult(null);
-                    setFileName(null);
-                    setConsent(false);
-                    fileRef.current = null;
-                  }}
+                  onClick={resetScan}
                   className="px-5 py-3 text-sm font-medium border border-border rounded-2xl hover:border-foreground/30 transition"
                 >
                   Tester un autre CV
@@ -302,7 +343,7 @@ export default function ScannerCvPage() {
             </div>
           )}
 
-          <p className="text-xs text-foreground/35 mt-6">
+          <p className="text-xs text-foreground/70 mt-6">
             Analyse heuristique locale, à titre indicatif — elle ne reproduit pas un logiciel ATS
             précis mais repère les points que la plupart d&apos;entre eux vérifient.
           </p>

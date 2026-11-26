@@ -47,7 +47,7 @@ export default function Template04({ cv }: { cv: CVData }) {
           <p className="text-white/80 text-sm">{p.titre || (cv.langue === "en" ? "Job Title" : "Titre du poste")}</p>
         </div>
       </div>
-      <div className="flex justify-end gap-4 px-8 py-2 text-[11px] text-slate-500 border-b border-slate-100">
+      <div className="flex justify-end gap-4 px-8 py-2 text-[11px] text-slate-700 border-b border-slate-100">
         {p.email && <span><ContactIcon type="email" cv={cv} />{p.email}</span>}
         {p.telephone && <span><ContactIcon type="telephone" cv={cv} />{p.telephone}</span>}
         {p.adresse && <span><ContactIcon type="adresse" cv={cv} />{p.adresse}</span>}
@@ -67,7 +67,7 @@ export default function Template04({ cv }: { cv: CVData }) {
                 <SectionIcon type={section.type} cv={cv} />{section.titre}
               </h2>
               {section.items.length === 0 && (
-                <p className="text-slate-400 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
+                <p className="text-slate-600 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
               )}
               <div className={rowLayout(section)}>
 {section.items.map((item) => (
@@ -75,7 +75,7 @@ export default function Template04({ cv }: { cv: CVData }) {
                   <div className="flex justify-between items-baseline">
                     <span className="font-semibold">{bulletTitle(section.type, item.titre)}</span>
                     {(item.dateDebut || item.dateFin) && (
-                      <span className="text-[11px] text-slate-500">
+                      <span className="text-[11px] text-slate-700">
                         {formatPeriod(item, cv.dateFormat, cv.langue)}
                       </span>
                     )}
@@ -83,10 +83,10 @@ export default function Template04({ cv }: { cv: CVData }) {
                   {item.sousTitre && (
                     <p className="text-[12px] text-slate-600">
                       <span className="font-medium">{item.sousTitre}</span>
-                      {item.lieu && <span className="italic text-slate-400"> · {item.lieu}</span>}
+                      {item.lieu && <span className="italic text-slate-600"> · {item.lieu}</span>}
                     </p>
                   )}
-                  <ItemLevel item={item} className="text-[12px] text-slate-500" />
+                  <ItemLevel item={item} className="text-[12px] text-slate-700" />
                   {item.description && (
                     <p className="text-[12px] text-slate-600 mt-0.5 whitespace-pre-line">
                       {renderRichText(item.description)}
@@ -105,7 +105,7 @@ export default function Template04({ cv }: { cv: CVData }) {
                 <SectionIcon type={section.type} cv={cv} />{section.titre}
               </h2>
               {section.items.length === 0 && (
-                <p className="text-slate-300 italic text-[11px]">—</p>
+                <p className="text-slate-600 italic text-[11px]">—</p>
               )}
               <div
                 className={
@@ -117,9 +117,9 @@ export default function Template04({ cv }: { cv: CVData }) {
                 {section.items.map((item) => (
                   <div key={item.id} className="break-inside-avoid mb-1.5">
                     <p className="text-[12px] font-medium">{bulletTitle(section.type, item.titre)}</p>
-                    {item.sousTitre && <p className="text-[10px] text-slate-500">{item.sousTitre}</p>}
-                    {item.niveau && <p className="text-[10px] text-slate-500">{item.niveau}</p>}
-                    <SidebarExtras item={item} cv={cv} className="text-[10px] text-slate-500" />
+                    {item.sousTitre && <p className="text-[10px] text-slate-700">{item.sousTitre}</p>}
+                    {item.niveau && <p className="text-[10px] text-slate-700">{item.niveau}</p>}
+                    <SidebarExtras item={item} cv={cv} className="text-[10px] text-slate-700" />
                   </div>
                 ))}
               </div>

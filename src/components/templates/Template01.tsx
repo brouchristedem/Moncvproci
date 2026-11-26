@@ -36,7 +36,7 @@ export default function Template01({ cv }: { cv: CVData }) {
             {displayName(cv, "Prénom", "Nom")}
           </h1>
           <p className="text-base text-slate-600 mt-1">{p.titre || (cv.langue === "en" ? "Job Title" : "Titre du poste")}</p>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[11px] text-slate-500">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[11px] text-slate-700">
             {p.email && <span><ContactIcon type="email" cv={cv} />{p.email}</span>}
             {p.telephone && <span><ContactIcon type="telephone" cv={cv} />{p.telephone}</span>}
             {p.adresse && <span><ContactIcon type="adresse" cv={cv} />{p.adresse}</span>}
@@ -61,14 +61,14 @@ export default function Template01({ cv }: { cv: CVData }) {
             </h2>
             <div className={["langues", "competences", "interets"].includes(section.type) && section.affichage === "ligne" ? "flex flex-wrap gap-x-3 gap-y-1 items-baseline" : "space-y-2"}>
               {section.items.length === 0 && (
-                <p className="text-slate-400 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
+                <p className="text-slate-600 italic text-[12px]">{cv.langue === "en" ? "No information added" : "Aucune information ajoutée"}</p>
               )}
               {section.items.map((item) => (
                 <div key={item.id} className="break-inside-avoid">
                   <div className="flex justify-between items-baseline">
                     <span className="font-semibold">{bulletTitle(section.type, item.titre)}</span>
                     {(item.dateDebut || item.dateFin) && (
-                      <span className="text-[11px] text-slate-500">
+                      <span className="text-[11px] text-slate-700">
                         {formatPeriod(item, cv.dateFormat, cv.langue)}
                       </span>
                     )}
@@ -76,10 +76,10 @@ export default function Template01({ cv }: { cv: CVData }) {
                   {item.sousTitre && (
                     <p className="text-[12px] text-slate-600">
                       <span className="font-medium">{item.sousTitre}</span>
-                      {item.lieu && <span className="italic text-slate-400"> · {item.lieu}</span>}
+                      {item.lieu && <span className="italic text-slate-600"> · {item.lieu}</span>}
                     </p>
                   )}
-                  {item.niveau && <p className="text-[12px] text-slate-500">{item.niveau}</p>}
+                  {item.niveau && <p className="text-[12px] text-slate-700">{item.niveau}</p>}
                   {item.description && (
                     <p className="text-[12px] text-slate-600 mt-0.5 whitespace-pre-line">
                       {renderRichText(item.description)}
