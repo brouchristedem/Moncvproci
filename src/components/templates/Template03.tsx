@@ -61,7 +61,7 @@ export default function Template03({ cv }: { cv: CVData }) {
         {sortedVisible(cv).map((section) => (
           <div key={section.id} className="break-inside-avoid">
             <div className="flex items-center gap-3 mb-3">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color }}>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color }}>
                 <SectionIcon type={section.type} cv={cv} />{section.titre}
               </span>
               <div className="flex-1 h-px bg-slate-200" />

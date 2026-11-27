@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -13,8 +13,11 @@ import {
   Pencil,
   ShieldCheck,
   ArrowLeft,
+  CircleDot,
+  Target,
 } from "lucide-react";
-import { analyzeRawCvText, RawATSResult } from "@/lib/atsScoreRaw";
+import { analyzePdfLayout, SECTION_LABEL } from "@/lib/atsEngine";
+import { layoutFromPdf, PdfLayout } from "@/lib/pdfLayout";
 import { ENTRY_GATE_KEY } from "@/lib/entryGate";
 import { extractPdfText } from "@/lib/pdfText";
 import { saveScannerHandoff } from "@/lib/cvImportCore";
@@ -32,7 +35,11 @@ type Status = "idle" | "reading" | "error" | "done";
 export default function ScannerCvPage() {
   const [status, setStatus] = useState<Status>("idle");
   const [fileName, setFileName] = useState<string | null>(null);
-  const [result, setResult] = useState<RawATSResult | null>(null);
+  // Le PDF lu avec la position de chaque morceau de texte ; le score se recalcule
+  // à partir de lui (ex. quand on colle une offre d'emploi) sans redemander le fichier.
+  const [layout, setLayout] = useState<PdfLayout | null>(null);
+  const [jobText, setJobText] = useState("");
+  const result = useMemo(() => (layout ? analyzePdfLayout(layout, { jobText }) : null), [layout, jobText]);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   // Le fichier analysé est gardé pour pouvoir l'importer dans l'éditeur sans
@@ -47,7 +54,8 @@ export default function ScannerCvPage() {
 
   const resetScan = () => {
     setStatus("idle");
-    setResult(null);
+    setLayout(null);
+    setJobText("");
     setFileName(null);
     setConsent(false);
     setForceShow(false);
@@ -56,7 +64,8 @@ export default function ScannerCvPage() {
 
   const handleFile = useCallback(async (file: File) => {
     setError(null);
-    setResult(null);
+    setLayout(null);
+    setJobText("");
     setImportError(null);
     setConsent(false);
     setForceShow(false);
@@ -82,24 +91,19 @@ export default function ScannerCvPage() {
       const buffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
 
-      let fullText = "";
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        fullText += content.items.map((it) => ("str" in it ? it.str : "")).join(" ") + " ";
-      }
+      const lay = await layoutFromPdf(pdf);
+      const chars = lay.pages.reduce((n, pg) => n + pg.items.reduce((m, it) => m + it.str.trim().length, 0), 0);
 
-      if (fullText.trim().length < 20) {
+      if (chars < 20) {
         setStatus("error");
         setError(
-          "Impossible d'extraire le texte de ce PDF (probablement un scan/image). Essayez un CV exporté directement depuis un traitement de texte."
+          "Impossible d'extraire le texte de ce PDF (probablement un scan/image). C'est exactement ce qu'un ATS ne sait pas lire : exportez votre CV directement en PDF texte depuis l'éditeur ou un traitement de texte."
         );
         return;
       }
 
-      const analysis = analyzeRawCvText(fullText);
       fileRef.current = file;
-      setResult(analysis);
+      setLayout(lay);
       setStatus("done");
     } catch {
       setStatus("error");
@@ -221,7 +225,9 @@ export default function ScannerCvPage() {
               </p>
               <p className="text-xs text-foreground/80 mb-4">
                 Rubriques de CV reconnues :{" "}
-                <strong>{result.foundSections.length ? result.foundSections.join(", ") : "aucune"}</strong>
+                <strong>
+                  {result.parsed.sectionKinds.length ? result.parsed.sectionKinds.map((k) => SECTION_LABEL.fr[k]).join(", ") : "aucune"}
+                </strong>
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
@@ -270,17 +276,108 @@ export default function ScannerCvPage() {
                 </div>
               )}
 
-              <div className="space-y-1.5 mb-6">
-                {result.criteria.map((c) => (
-                  <div key={c.label} className="flex items-start gap-2 text-sm">
-                    {c.done ? (
-                      <CheckCircle2 size={15} className="flex-shrink-0 mt-0.5 text-green-600" />
-                    ) : (
-                      <Circle size={15} className="flex-shrink-0 mt-0.5 text-foreground/50" />
-                    )}
-                    <span className={c.done ? "text-foreground" : "text-foreground/80"}>{c.label}</span>
+              {result.capReason && (
+                <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-500/10 rounded-2xl px-3 py-2 mb-4">
+                  Score plafonné : {result.capReason}
+                </p>
+              )}
+
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-5">
+                {result.groups.map((g) => (
+                  <div key={g.id}>
+                    <div className="flex justify-between text-[11px] text-foreground/80 mb-1">
+                      <span>{g.label}</span>
+                      <span className="tabular-nums">{g.percent}%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-surface-muted overflow-hidden">
+                      <div className="h-full rounded-full bg-brand-600" style={{ width: `${g.percent}%` }} />
+                    </div>
                   </div>
                 ))}
+              </div>
+
+              <div className="space-y-2 mb-6">
+                {result.criteria.map((c) => (
+                  <div key={c.id} className="flex items-start gap-2 text-sm">
+                    {c.status === "ok" ? (
+                      <CheckCircle2 size={15} className="flex-shrink-0 mt-0.5 text-green-600" />
+                    ) : c.status === "partial" ? (
+                      <CircleDot size={15} className="flex-shrink-0 mt-0.5 text-amber-600" />
+                    ) : (
+                      <Circle size={15} className="flex-shrink-0 mt-0.5 text-red-500" />
+                    )}
+                    <div>
+                      <span className="text-foreground">{c.label}</span>
+                      <span className="text-foreground/70"> — {c.detail}</span>
+                      {c.status !== "ok" && <p className="text-xs text-foreground/80 mt-0.5">{c.tip}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <details className="rounded-2xl border border-border p-4 mb-4 text-sm">
+                <summary className="cursor-pointer font-semibold">Ce que l&apos;ATS a lu dans votre CV</summary>
+                <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
+                  <dt className="text-foreground/70">Nom</dt>
+                  <dd>{result.parsed.name || "— non trouvé"}</dd>
+                  <dt className="text-foreground/70">Email</dt>
+                  <dd>{result.parsed.email || "— non trouvé"}</dd>
+                  <dt className="text-foreground/70">Téléphone</dt>
+                  <dd>{result.parsed.phone || "— non trouvé"}</dd>
+                  <dt className="text-foreground/70">Localisation</dt>
+                  <dd>{result.parsed.location || "— non trouvée"}</dd>
+                  <dt className="text-foreground/70">Rubriques</dt>
+                  <dd>{result.parsed.sectionKinds.map((k) => SECTION_LABEL.fr[k]).join(", ") || "— aucune"}</dd>
+                  <dt className="text-foreground/70">Expériences</dt>
+                  <dd>{result.parsed.experiences.length}</dd>
+                  <dt className="text-foreground/70">Formations</dt>
+                  <dd>{result.parsed.educations.length}</dd>
+                  <dt className="text-foreground/70">Compétences</dt>
+                  <dd>{result.parsed.skills.length}</dd>
+                  <dt className="text-foreground/70">Mise en page</dt>
+                  <dd>
+                    {result.parsed.columns} colonne{result.parsed.columns > 1 ? "s" : ""} · {result.parsed.pageCount} page
+                    {result.parsed.pageCount > 1 ? "s" : ""}
+                  </dd>
+                </dl>
+              </details>
+
+              <div className="rounded-2xl border border-border p-4 mb-6">
+                <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+                  <Target size={15} /> Comparer à une offre d&apos;emploi (facultatif)
+                </h2>
+                <p className="text-xs text-foreground/80 mt-1 mb-2">
+                  Collez l&apos;offre : on vérifie, comme un ATS, quels mots-clés importants de l&apos;offre figurent dans votre CV. Le
+                  texte reste dans votre navigateur.
+                </p>
+                <textarea
+                  value={jobText}
+                  onChange={(e) => setJobText(e.target.value)}
+                  rows={4}
+                  placeholder="Collez ici le texte de l'offre…"
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
+                />
+                {result.keywords && result.keywords.keywords.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-sm font-semibold mb-2">
+                      Correspondance : <span className="tabular-nums">{result.keywords.matchPercent}%</span>
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {result.keywords.keywords.map((k) => (
+                        <span
+                          key={k.term}
+                          className={`text-xs rounded-full px-2.5 py-1 border ${
+                            k.present
+                              ? "border-green-600/40 bg-green-600/10 text-foreground"
+                              : "border-amber-600/50 bg-amber-500/10 text-foreground"
+                          }`}
+                        >
+                          {k.present ? "✓" : "✗"} {k.term}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="rounded-2xl border border-brand-600/40 bg-brand-600/5 p-4 space-y-3">

@@ -1,18 +1,19 @@
-import { Mail, CalendarCheck, TrendingUp, Zap, GraduationCap, Tags, ListChecks, AlignLeft } from "lucide-react";
+import { FileText, Columns2, Mail, Heading, CalendarCheck, GraduationCap, Tags, TrendingUp } from "lucide-react";
 import Reveal from "./Reveal";
 
-// Les 8 critères réellement évalués par le module de scoring ATS local
-// (voir src/lib/atsScore.ts), présentés ici pour informer la personne de ce
-// qui est vérifié avant même qu'elle n'ouvre l'éditeur.
+// Les familles de critères réellement évaluées par le moteur ATS local
+// (voir src/lib/atsEngine.ts) : lecture du fichier, mise en page, coordonnées,
+// rubriques, dates, formation, compétences et contenu. Le même moteur sert au
+// scanner (PDF) et à l'éditeur.
 const CRITERIA = [
-  { icon: Mail, titre: "Coordonnées complètes", texte: "Email, téléphone, titre de poste." },
-  { icon: CalendarCheck, titre: "Dates d'expérience", texte: "Une date de début par poste." },
-  { icon: TrendingUp, titre: "Résultats chiffrés", texte: "Réalisations appuyées par des chiffres." },
-  { icon: Zap, titre: "Verbes d'action", texte: "« Géré », « développé », « optimisé »…" },
-  { icon: GraduationCap, titre: "Formation renseignée", texte: "Une section formation complète." },
-  { icon: Tags, titre: "Mots-clés / compétences", texte: "Au moins 5 compétences listées." },
-  { icon: ListChecks, titre: "Aucune section vide", texte: "Rubriques activées, jamais vides." },
-  { icon: AlignLeft, titre: "Longueur suffisante", texte: "Assez de contenu pour être évalué." },
+  { icon: FileText, titre: "Texte lisible", texte: "Pas une image, pas de caractères illisibles." },
+  { icon: Columns2, titre: "Mise en page", texte: "Colonnes, nombre de pages, ordre de lecture." },
+  { icon: Mail, titre: "Coordonnées lues", texte: "Nom, email, téléphone, ville en haut du CV." },
+  { icon: Heading, titre: "Rubriques reconnues", texte: "Expérience, Formation, Compétences, Langues…" },
+  { icon: CalendarCheck, titre: "Postes et dates", texte: "Intitulé, employeur et période pour chaque poste." },
+  { icon: GraduationCap, titre: "Formation", texte: "Diplôme, établissement et année." },
+  { icon: Tags, titre: "Compétences", texte: "Mots-clés listés, comparables à une offre d'emploi." },
+  { icon: TrendingUp, titre: "Contenu", texte: "Verbes d'action, résultats chiffrés, longueur utile." },
 ];
 
 export default function AtsCriteriaGrid() {

@@ -11,6 +11,9 @@ import { maskCvForPreview } from "@/lib/previewMask";
 
 const PAGE_HEIGHT_RATIO = 297 / 210;
 const PAGE_HEIGHT_PX = 1122.5; // 297 mm à 96 dpi
+// Dépassement maximal (en fraction de page) rattrapé automatiquement par une légère réduction.
+const AUTO_FIT_MAX_RATIO = 1.2;
+const PAGE_WIDTH_PX = 793.7; // 210 mm à 96 dpi
 
 export default function CVPreviewFit({
   cv,
@@ -66,9 +69,6 @@ export default function CVPreviewFit({
           .join(",")}`
     )
     .join("|")}`;
-  const { measureRef, compactScale, tooLong } = useCompactFit(!!cv.modeCompact, baseZoom, watchKey);
-  const finalZoom = baseZoom * compactScale;
-
   // Hors mode compact : on mesure si le CV dépasse une page. Avant, la zone
   // d'impression avait une hauteur fixe (297 mm) avec `overflow: hidden` :
   // tout ce qui dépassait la page 1 était COUPÉ à l'impression (expériences,
@@ -76,6 +76,7 @@ export default function CVPreviewFit({
   // "mode flux" : le CV s'écoule normalement sur plusieurs pages.
   const flowRef = useRef<HTMLDivElement>(null);
   const [overflows, setOverflows] = useState(false);
+  const [overflowRatio, setOverflowRatio] = useState(1);
   useEffect(() => {
     if (cv.modeCompact) return;
     let id1 = 0;
@@ -84,7 +85,13 @@ export default function CVPreviewFit({
       id2 = requestAnimationFrame(() => {
         const el = flowRef.current;
         if (!el) return;
-        setOverflows(el.scrollHeight > PAGE_HEIGHT_PX + 2);
+        // getBoundingClientRect : hauteur réelle à l'écran, zoom inclus
+        // (scrollHeight l'ignore dans les Chrome récents → contenu coupé quand
+        // la taille de texte dépasse 13 pt).
+        // Mesuré sans zoom (largeur « page / zoom »), puis ramené à l'échelle.
+        const h = el.getBoundingClientRect().height * baseZoom;
+        setOverflows(h > PAGE_HEIGHT_PX + 2);
+        setOverflowRatio(h / PAGE_HEIGHT_PX);
       });
     });
     return () => {
@@ -92,7 +99,16 @@ export default function CVPreviewFit({
       cancelAnimationFrame(id2);
     };
   }, [cv.modeCompact, baseZoom, watchKey]);
-  const flowMode = cv.modeCompact ? tooLong : overflows;
+
+  // Ajustement automatique : un CV qui dépasse d'à peine quelques lignes (≤ 20 %
+  // d'une page) laissait une 2e page presque vide avec une seule rubrique
+  // orpheline. On le réduit alors légèrement (comme le mode compact) pour qu'il
+  // tienne sur une page ; au-delà, il continue normalement sur la page suivante.
+  const autoFit = !cv.modeCompact && overflows && overflowRatio <= AUTO_FIT_MAX_RATIO;
+  const effectiveCompact = !!cv.modeCompact || autoFit;
+  const { measureRef, compactScale, tooLong } = useCompactFit(effectiveCompact, baseZoom, watchKey);
+  const finalZoom = baseZoom * compactScale;
+  const flowMode = effectiveCompact ? tooLong : overflows;
 
   // Version masquée du CV, utilisée UNIQUEMENT dans la zone d'impression
   // quand le filigrane "Aperçu gratuit" est actif : coordonnées de contact
@@ -128,7 +144,7 @@ export default function CVPreviewFit({
         >
           <div style={{ width: scaledWidth, height: scaledHeight, flexShrink: 0 }}>
             <div
-              className="bg-white shadow-xl cv-protected"
+              className="bg-white shadow-xl cv-protected cv-wrap"
               style={{
                 width: contentWidth,
                 height: contentWidth * PAGE_HEIGHT_RATIO,
@@ -160,7 +176,7 @@ export default function CVPreviewFit({
           candidate (finalZoom), pour savoir si le contenu déborde d'une page
           à cette taille et affiner le facteur de réduction sur plusieurs
           passes si besoin — voir useCompactFit. */}
-      {cv.modeCompact && (
+      {effectiveCompact && (
         <div
           aria-hidden
           style={{
@@ -171,7 +187,7 @@ export default function CVPreviewFit({
             pointerEvents: "none",
           }}
         >
-          <div ref={measureRef} style={{ zoom: finalZoom, width: `${100 / finalZoom}%` }}>
+          <div ref={measureRef} className="cv-wrap" style={{ width: `${PAGE_WIDTH_PX / finalZoom}px` }}>
             <CVRenderer cv={cv} />
           </div>
         </div>
@@ -182,7 +198,7 @@ export default function CVPreviewFit({
           aria-hidden
           style={{ position: "fixed", top: 0, left: -99999, width: 794, pointerEvents: "none" }}
         >
-          <div ref={flowRef} style={{ zoom: baseZoom, width: `${100 / baseZoom}%` }}>
+          <div ref={flowRef} className="cv-wrap" style={{ width: `${PAGE_WIDTH_PX / baseZoom}px` }}>
             <CVRenderer cv={cv} />
           </div>
         </div>
@@ -212,6 +228,7 @@ export default function CVPreviewFit({
           <div id="cv-print-portal">
             <div
               id="cv-print-area"
+              className="cv-wrap"
               data-scaled={finalZoom < 0.999 && !flowMode ? "true" : "false"}
               data-flow={flowMode ? "true" : "false"}
               style={{
@@ -352,9 +369,13 @@ export default function CVPreviewFit({
             {cv.lettreMotivation?.activee && (
               <div
                 id="cv-print-area-lettre"
+                className="cv-wrap"
                 style={{
                   width: "210mm",
-                  height: "297mm",
+                  // Hauteur libre : une lettre plus longue qu'une page continue
+                  // sur la page suivante (avant : 297 mm fixes, la suite
+                  // débordait sans marge haute).
+                  height: "auto",
                   minHeight: "297mm",
                   boxSizing: "border-box",
                   position: "relative",

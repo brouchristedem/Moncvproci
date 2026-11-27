@@ -11,7 +11,7 @@ const YEAR_RANGE_RE = /^(?:(?:19|20)\d{2}[\s.,/-]*)+$/;
 
 function isPhone(candidate: string): boolean {
   const digits = candidate.replace(/\D/g, "");
-  return digits.length >= 8 && digits.length <= 15 && !YEAR_RANGE_RE.test(candidate.trim());
+  return digits.length >= 8 && digits.length <= 15 && !YEAR_RANGE_RE.test(candidate.trim()) && !/(?:19|20)\d{2}\s*[-–—/]\s*(?:19|20)\d{2}/.test(candidate);
 }
 
 export function maskPersonalData(text: string): string {

@@ -26,8 +26,16 @@ export default function LettreRenderer({ cv }: { cv: CVData }) {
 
   return (
     <div
-      className="w-full min-h-full text-slate-800 p-10 font-sans text-[13px] leading-relaxed"
-      style={{ background: cv.couleurFond }}
+      className="w-full text-slate-800 p-10 font-sans text-[13px] leading-relaxed"
+      style={{
+        background: cv.couleurFond,
+        minHeight: "297mm",
+        boxSizing: "border-box",
+        // Lettre de plus d'une page : le padding (marges) et le fond sont
+        // répétés sur chaque page au lieu de coller au bord du papier.
+        boxDecorationBreak: "clone",
+        WebkitBoxDecorationBreak: "clone",
+      }}
     >
       {/* En-tête : identique en esprit à l'en-tête du CV, pour que les deux
           documents se lisent comme un même dossier. */}

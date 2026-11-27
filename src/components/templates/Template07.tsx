@@ -28,7 +28,7 @@ export default function Template07({ cv }: { cv: CVData }) {
           <h1 className="text-4xl font-serif tracking-tight">
             {displayName(cv, "Prénom", "Nom")}
           </h1>
-          <p className="text-[13px] tracking-[0.3em] uppercase text-slate-600 mt-2">
+          <p className="text-[13px] tracking-[0.12em] uppercase text-slate-600 mt-2">
             {p.titre || (cv.langue === "en" ? "Job Title" : "Titre du poste")}
           </p>
         </div>

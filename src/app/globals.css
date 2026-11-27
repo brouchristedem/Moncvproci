@@ -104,6 +104,16 @@ span:has(> svg.cv-icon) {
   display: none;
 }
 
+/* Un mot ou une adresse très long (email, lien LinkedIn, URL, intitulé sans
+   espace) ne doit jamais dépasser du CV ni de la page : il passe à la ligne.
+   `anywhere` (et pas `break-word`) pour que la largeur minimale des colonnes
+   flex/grille en tienne compte, sinon la colonne reste élargie. */
+.cv-wrap,
+.cv-wrap * {
+  overflow-wrap: anywhere;
+}
+
+
 /* Filigrane de sécurité affiché sur l'aperçu gratuit ("Test Gratuit") avant
    paiement. Positionné en surcouche du CV, agrandi au-delà des bords puis
    pivoté pour ne laisser aucun coin découvert une fois la rotation
@@ -213,7 +223,7 @@ span:has(> svg.cv-icon) {
   }
   #cv-print-area-lettre {
     width: 210mm;
-    height: 297mm;
+    height: auto;
     min-height: 297mm;
     margin: 0;
     box-shadow: none !important;

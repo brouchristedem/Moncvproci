@@ -58,7 +58,13 @@ export function useCompactFit(enabled: boolean, baseZoom: number, watch: string)
           const el = measureRef.current;
           if (!el) return;
 
-          const naturalHeight = el.scrollHeight;
+          // Le conteneur de mesure n'utilise PAS `zoom` : il est mis en page à la
+          // largeur « page / échelle » (comme la zone d'impression, qui réduit
+          // par transform), sa hauteur locale est donc multipliée par l'échelle
+          // candidate pour obtenir la hauteur réellement imprimée. (`zoom` +
+          // largeur en % se comporte différemment selon les versions de Chrome
+          // et faisait mesurer une page trop large, donc trop courte.)
+          const naturalHeight = el.getBoundingClientRect().height * baseZoom * currentScale;
           const target = PAGE_HEIGHT_PX * SAFETY_MARGIN;
 
           if (naturalHeight <= target) {
