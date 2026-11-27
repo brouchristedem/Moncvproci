@@ -134,5 +134,13 @@
     "key": "WhatsApp pour envoyer ton CV : erreur ou astuce ?",
     "source": "ia",
     "instagram": "publié (affiche + reel)"
+  },
+  {
+    "date": "2026-11-27",
+    "type": "rule",
+    "id": "ai-1795800267115",
+    "key": "Indique ton niveau d'anglais en clair",
+    "source": "ia",
+    "instagram": "publié (affiche + reel)"
   }
 ]
