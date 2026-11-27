@@ -9,6 +9,7 @@ import { UI } from "@/lib/i18n";
 import LettreMotivationForm from "./LettreMotivationForm";
 import { isTwaContext } from "@/lib/isTwa";
 import { PASS_PRICE, PASS_DAYS } from "@/lib/pricing";
+import { usePaymentMode, WAVE_LINK, isPlausibleWaveReference, type PaymentMode } from "@/lib/paymentMode";
 import {
   checkoutReturnParam,
   clearPendingPayment,
@@ -37,6 +38,11 @@ function PaymentFlow({
   isTwa,
   gpLoading,
   onGeniusPay,
+  mode,
+  waveReference,
+  setWaveReference,
+  confirming,
+  onConfirmWave,
 }: {
   t: (typeof UI)["fr"] | (typeof UI)["en"];
   langue: "fr" | "en";
@@ -49,7 +55,13 @@ function PaymentFlow({
   isTwa: boolean;
   gpLoading: boolean;
   onGeniusPay: () => void;
+  mode: PaymentMode;
+  waveReference: string;
+  setWaveReference: (v: string) => void;
+  confirming: boolean;
+  onConfirmWave: () => void;
 }) {
+  const [waveClicked, setWaveClicked] = useState(false);
   const priceInfoText =
     langue === "en"
       ? `Application Pass: ${price} FCFA — CV + cover letter, unlimited edits and downloads for ${PASS_DAYS} days.`
@@ -93,20 +105,62 @@ function PaymentFlow({
           </div>
         )}
 
-        <button
-          onClick={onGeniusPay}
-          disabled={gpLoading}
-          className="flex items-center justify-center gap-2 w-full rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 text-sm transition disabled:opacity-60"
-        >
-          {gpLoading ? <Loader2 className="animate-spin" size={16} /> : <ExternalLink size={14} />}
-          {langue === "en" ? `Pay ${price} FCFA` : `Payer ${price} FCFA`}
-        </button>
+        {mode === "wave" ? (
+          <>
+            <a
+              href={WAVE_LINK || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setWaveClicked(true)}
+              className="flex items-center justify-center gap-2 w-full rounded-2xl bg-[#1DC8CD] hover:opacity-90 text-white font-semibold py-3 text-sm transition"
+            >
+              {langue === "en" ? `Pay ${price} FCFA via Wave` : `Payer ${price} FCFA via Wave`} <ExternalLink size={14} />
+            </a>
+            <p className="text-[11px] text-foreground/60">
+              {langue === "en"
+                ? "After paying, copy the transaction ID shown on your Wave receipt and enter it below."
+                : "Après le paiement, copiez l'ID de transaction affiché sur votre reçu Wave et saisissez-le ci-dessous."}
+            </p>
+            {waveClicked && (
+              <div className="space-y-2 pt-1 border-t border-border">
+                <label className="text-[11px] text-foreground/60 block">
+                  {langue === "en" ? "Wave transaction ID (shown after payment)" : "ID de transaction Wave (affiché après paiement)"}
+                </label>
+                <input
+                  value={waveReference}
+                  onChange={(e) => setWaveReference(e.target.value)}
+                  placeholder="ex : T_2SKTWTSDZMCN24YV"
+                  className="w-full rounded-2xl border border-border bg-surface px-2.5 py-1.5 text-xs outline-none"
+                />
+                <button
+                  onClick={onConfirmWave}
+                  disabled={confirming}
+                  className="w-full flex items-center justify-center gap-2 rounded-2xl bg-slate-800 hover:bg-slate-900 text-white font-medium py-2.5 text-sm transition disabled:opacity-60"
+                >
+                  {confirming ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
+                  {langue === "en" ? "I've completed my Wave payment" : "J'ai terminé mon paiement Wave"}
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <button
+              onClick={onGeniusPay}
+              disabled={gpLoading}
+              className="flex items-center justify-center gap-2 w-full rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 text-sm transition disabled:opacity-60"
+            >
+              {gpLoading ? <Loader2 className="animate-spin" size={16} /> : <ExternalLink size={14} />}
+              {langue === "en" ? `Pay ${price} FCFA` : `Payer ${price} FCFA`}
+            </button>
 
-        <p className="text-[11px] text-foreground/60">
-          {langue === "en"
-            ? "Wave, Orange Money, MTN, Moov or card. Your download unlocks automatically after payment."
-            : "Wave, Orange Money, MTN, Moov ou carte. Votre téléchargement se débloque automatiquement après le paiement."}
-        </p>
+            <p className="text-[11px] text-foreground/60">
+              {langue === "en"
+                ? "Wave, Orange Money, MTN, Moov or card. Your download unlocks automatically after payment."
+                : "Wave, Orange Money, MTN, Moov ou carte. Votre téléchargement se débloque automatiquement après le paiement."}
+            </p>
+          </>
+        )}
       </div>
 
       <a
@@ -153,6 +207,9 @@ export default function DownloadPanel({
   const [isIOSSafari, setIsIOSSafari] = useState(false);
   const [isTwa, setIsTwa] = useState(false);
   const [gpLoading, setGpLoading] = useState(false);
+  const paymentMode = usePaymentMode();
+  const [waveReference, setWaveReference] = useState("");
+  const [confirming, setConfirming] = useState(false);
   // État visible du paiement GeniusPay au retour du checkout.
   const [gpStatus, setGpStatus] = useState<"idle" | "checking" | "paid" | "pending" | "failed">("idle");
   const [gpCheckNonce, setGpCheckNonce] = useState(0);
@@ -340,6 +397,35 @@ export default function DownloadPanel({
     }
   };
 
+  // --- Wave classique : l'ID de transaction saisi débloque le Pass ---
+  const confirmWave = async () => {
+    if (!user) return;
+    setUnlockError("");
+    const ref = waveReference.trim().toUpperCase();
+    if (!ref) {
+      setUnlockError(cv.langue === "en" ? "Please enter the Wave transaction ID." : "Merci de saisir l'ID de transaction Wave.");
+      return;
+    }
+    if (!isPlausibleWaveReference(ref)) {
+      setUnlockError(
+        cv.langue === "en"
+          ? "This doesn't look like a valid Wave transaction ID (T_ followed by 16 letters/digits). Check your Wave receipt."
+          : "Cet ID ne ressemble pas à un ID de transaction Wave valide (T_ suivi de 16 lettres/chiffres). Vérifiez votre reçu Wave."
+      );
+      return;
+    }
+    setConfirming(true);
+    try {
+      await confirmPaidDownload(ref, { pack: true, amount: PASS_PRICE, method: "wave" });
+      setWaveReference("");
+      setGpStatus("paid");
+    } catch (err) {
+      setUnlockError(err instanceof Error ? err.message : t.genericError);
+    } finally {
+      setConfirming(false);
+    }
+  };
+
   // --- GeniusPay : création du paiement puis redirection vers le checkout ---
   const startGeniusPay = async () => {
     if (!user) return;
@@ -410,7 +496,7 @@ export default function DownloadPanel({
         // déjà contrôlé dans confirmPaidDownload).
         if (d.paid && (d.userId == null || d.userId === user.uid)) {
           try {
-            await confirmPaidDownload(ref, { pack: true, amount: d.amount });
+            await confirmPaidDownload(ref, { pack: true, amount: d.amount, method: "geniuspay" });
             if (cancelled) return;
             setGpStatus("paid");
           } catch (err) {
@@ -607,6 +693,11 @@ export default function DownloadPanel({
             isTwa={isTwa}
             gpLoading={gpLoading}
             onGeniusPay={startGeniusPay}
+            mode={paymentMode}
+            waveReference={waveReference}
+            setWaveReference={setWaveReference}
+            confirming={confirming}
+            onConfirmWave={confirmWave}
           />
         </>
       )}

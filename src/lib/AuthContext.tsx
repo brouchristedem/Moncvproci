@@ -117,7 +117,7 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
   saveProgress: (cv: CVData) => Promise<void>;
   incrementDownloads: () => Promise<void>;
-  confirmPaidDownload: (paymentReference: string, info?: { pack: boolean; amount: number }) => Promise<void>;
+  confirmPaidDownload: (paymentReference: string, info?: { pack: boolean; amount: number; method?: "wave" | "geniuspay" }) => Promise<void>;
   applyPromoCode: (code: string) => Promise<void>;
   confirmPromoUsage: (code: string) => Promise<void>;
   resetMyUsedPromoCodes: () => Promise<void>;
@@ -368,12 +368,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, downloadsUsed, legacyUnlock]);
 
   const confirmPaidDownload = useCallback(
-    async (paymentReference: string, info?: { pack: boolean; amount: number }) => {
+    async (paymentReference: string, info?: { pack: boolean; amount: number; method?: "wave" | "geniuspay" }) => {
       if (!user) return;
       const existing = await getDocs(
         query(collection(db, "paymentClaims"), where("reference", "==", paymentReference))
       );
-      if (!existing.empty) {
+      // Anciennes déclarations Wave (avant GeniusPay) : champ "waveReference".
+      const existingOld = await getDocs(
+        query(collection(db, "paymentClaims"), where("waveReference", "==", paymentReference))
+      );
+      if (!existing.empty || !existingOld.empty) {
         throw new Error(
           "Ce paiement a déjà été utilisé pour un autre téléchargement."
         );
@@ -396,6 +400,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           reference: paymentReference,
           // Type d'achat (CV seul ou Pack CV + lettre) et montant attendu, pour le suivi des ventes.
           ...(info ? { pack: info.pack, amount: info.amount } : {}),
+          ...(info?.method ? { method: info.method } : {}),
           createdAt: serverTimestamp(),
         });
       } catch {

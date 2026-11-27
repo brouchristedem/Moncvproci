@@ -17,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { TEMPLATE_LIST } from "@/lib/templateRegistry";
 import AdminCVDownload from "@/components/admin/AdminCVDownload";
+import { usePaymentMode, PAYMENT_SETTINGS_PATH, WAVE_LINK, type PaymentMode } from "@/lib/paymentMode";
 import { Trash2, Plus, Search, Users, Wallet, Star, Pencil } from "lucide-react";
 
 const PRICE = Number(process.env.NEXT_PUBLIC_PRICE_NEXT || 1000);
@@ -31,6 +32,7 @@ interface PaymentClaim {
   id: string;
   email: string;
   reference?: string;
+  method?: "wave" | "geniuspay";
   /** Ancien champ (paiements Wave manuels d'avant Geniuspay) */
   waveReference?: string;
   createdAt?: { seconds: number };
@@ -69,6 +71,18 @@ export default function AdminPage() {
   const [editingReview, setEditingReview] = useState<string | null>(null);
   const [editNom, setEditNom] = useState("");
   const [editTexte, setEditTexte] = useState("");
+  const paymentMode = usePaymentMode();
+  const [modeSaving, setModeSaving] = useState(false);
+
+  const changePaymentMode = async (mode: PaymentMode) => {
+    if (mode === paymentMode) return;
+    setModeSaving(true);
+    try {
+      await setDoc(doc(db, ...PAYMENT_SETTINGS_PATH), { mode, updatedAt: Date.now() }, { merge: true });
+    } finally {
+      setModeSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) router.replace("/");
@@ -289,6 +303,41 @@ export default function AdminPage() {
       </section>
 
       <section>
+        <h2 className="text-sm font-semibold mb-1">Mode de paiement</h2>
+        <p className="text-[11px] text-foreground/50 mb-2">
+          Dans les deux cas, le client reçoit le Pass 5 jours. Le changement est immédiat sur le site.
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {([
+            ["geniuspay", "GeniusPay", "Automatique (Wave, Orange, MTN, Moov, carte)"],
+            ["wave", "ID de transaction Wave", "Le client colle l'ID de son reçu Wave"],
+          ] as const).map(([value, label, hint]) => (
+            <button
+              key={value}
+              onClick={() => changePaymentMode(value)}
+              disabled={modeSaving}
+              className={`rounded-2xl border p-3 text-left text-xs transition disabled:opacity-60 ${
+                paymentMode === value
+                  ? "border-brand-600 bg-brand-50 text-brand-700"
+                  : "border-border hover:bg-surface-muted"
+              }`}
+            >
+              <span className="block font-semibold">
+                {label}
+                {paymentMode === value ? " ✓ actif" : ""}
+              </span>
+              <span className="block text-[11px] opacity-70 mt-0.5">{hint}</span>
+            </button>
+          ))}
+        </div>
+        {paymentMode === "wave" && !WAVE_LINK && (
+          <p className="text-[11px] text-red-500 mt-2">
+            Lien Wave manquant : ajoute NEXT_PUBLIC_WAVE_LINK_PACK (lien à 1 500 F) dans Vercel, puis redéploie.
+          </p>
+        )}
+      </section>
+
+      <section>
         <h2 className="text-sm font-semibold mb-1">Journal des paiements</h2>
         <div className="relative mb-2">
           <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground/40" />
@@ -311,7 +360,7 @@ export default function AdminPage() {
             <div key={c.id} className="flex items-center justify-between rounded-2xl border border-border p-2.5 text-xs">
               <div>
                 <p>{c.email}</p>
-                {(c.reference || c.waveReference) && <p className="text-foreground/40 font-mono text-[10px]">Réf : {c.reference || c.waveReference}</p>}
+                {(c.reference || c.waveReference) && <p className="text-foreground/40 font-mono text-[10px]">Réf : {c.reference || c.waveReference}{c.method === "wave" || (!c.method && c.waveReference) ? " · Wave" : c.method === "geniuspay" ? " · GeniusPay" : ""}</p>}
               </div>
               <span className="text-foreground/40">
                 {c.createdAt ? new Date(c.createdAt.seconds * 1000).toLocaleString("fr-FR") : ""}
