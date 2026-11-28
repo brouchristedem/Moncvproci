@@ -26,7 +26,7 @@ import {
 import { auth, googleProvider, db } from "./firebase";
 import { useCVStore, defaultCV, mergeWithDefaults } from "./store";
 import { CVData } from "./types";
-import { PASS_MS } from "./pricing";
+import { OFFERS, type OfferId } from "./pricing";
 
 const GUEST_DRAFT_KEY = "cvpro_guest_draft";
 
@@ -105,6 +105,8 @@ interface AuthContextValue {
   paidUnlocked: boolean;
   // Fin du Pass Candidature (ms depuis 1970) ; 0 = aucun pass acheté.
   paidUntil: number;
+  // La lettre de motivation est-elle incluse dans l'accès en cours ? (non pour l'offre « CV seul »)
+  lettreUnlocked: boolean;
   usedPromoCodes: string[];
   authError: string;
   loadError: string;
@@ -117,7 +119,7 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
   saveProgress: (cv: CVData) => Promise<void>;
   incrementDownloads: () => Promise<void>;
-  confirmPaidDownload: (paymentReference: string, info?: { pack: boolean; amount: number; method?: "wave" | "geniuspay" }) => Promise<void>;
+  confirmPaidDownload: (paymentReference: string, info: { offer: OfferId; amount: number; method?: "wave" | "geniuspay" }) => Promise<void>;
   applyPromoCode: (code: string) => Promise<void>;
   confirmPromoUsage: (code: string) => Promise<void>;
   resetMyUsedPromoCodes: () => Promise<void>;
@@ -167,8 +169,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // comptes qui avaient déjà payé avant le Pass.
   const [paidUntil, setPaidUntil] = useState(0);
   const [legacyUnlock, setLegacyUnlock] = useState(false);
+  // Fin de l'accès à la lettre. Les anciens pass (5 jours) incluaient la lettre :
+  // sans valeur enregistrée, on reprend la fin de leur pass.
+  const [lettreUntil, setLettreUntil] = useState(0);
   const [now, setNow] = useState(() => Date.now());
   const paidUnlocked = legacyUnlock || paidUntil > now;
+  const lettreUnlocked = legacyUnlock || lettreUntil > now;
   const [usedPromoCodes, setUsedPromoCodes] = useState<string[]>([]);
   const [authError, setAuthError] = useState("");
   const [loadError, setLoadError] = useState("");
@@ -192,6 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Repart de zéro à chaque changement de compte : le pass d'un compte
         // ne doit jamais rester actif pour le suivant.
         setPaidUntil(0);
+        setLettreUntil(0);
         setLegacyUnlock(false);
         if (u) {
           setDebugInfo(`uid=${u.uid.slice(0, 8)}... | lecture en cours...`);
@@ -211,6 +218,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setDownloadsUsed(data.downloadsUsed || 0);
             const until = Number(data.paidUntil) || 0;
             setPaidUntil(until);
+            setLettreUntil(typeof data.lettreUntil === "number" ? data.lettreUntil : until);
             setLegacyUnlock(!!data.paidUnlocked && !until);
             setNow(Date.now());
             setUsedPromoCodes(Array.isArray(data.usedPromoCodes) ? data.usedPromoCodes : []);
@@ -264,11 +272,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Rafraîchit l'état au moment précis où le pass expire (page restée ouverte).
   useEffect(() => {
-    const remaining = paidUntil - Date.now();
-    if (remaining <= 0) return;
+    const t = Date.now();
+    const ends = [paidUntil, lettreUntil].filter((e) => e > t);
+    if (ends.length === 0) return;
+    const remaining = Math.min(...ends) - t;
     const id = window.setTimeout(() => setNow(Date.now()), Math.min(remaining, 2 ** 31 - 1) + 500);
     return () => window.clearTimeout(id);
-  }, [paidUntil]);
+  }, [paidUntil, lettreUntil, now]);
 
   const signInWithGoogle = useCallback(async () => {
     try {
@@ -368,7 +378,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, downloadsUsed, legacyUnlock]);
 
   const confirmPaidDownload = useCallback(
-    async (paymentReference: string, info?: { pack: boolean; amount: number; method?: "wave" | "geniuspay" }) => {
+    async (paymentReference: string, info: { offer: OfferId; amount: number; method?: "wave" | "geniuspay" }) => {
       if (!user) return;
       const existing = await getDocs(
         query(collection(db, "paymentClaims"), where("reference", "==", paymentReference))
@@ -382,15 +392,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           "Ce paiement a déjà été utilisé pour un autre téléchargement."
         );
       }
-      // Un nouveau paiement pendant un pass encore actif prolonge la durée.
-      const until = Math.max(Date.now(), paidUntil) + PASS_MS;
+      // Un nouveau paiement pendant un accès encore actif prolonge la durée.
+      // La lettre n'est prolongée que par un pack qui l'inclut.
+      const offer = OFFERS[info.offer];
+      const until = Math.max(Date.now(), paidUntil) + offer.ms;
+      const lettreEnd = offer.lettre ? Math.max(Date.now(), lettreUntil) + offer.ms : lettreUntil;
       setPaidUntil(until);
+      setLettreUntil(lettreEnd);
       setLegacyUnlock(false);
       setNow(Date.now());
       const ref = doc(db, "users", user.uid);
       await setDoc(
         ref,
-        { paidUnlocked: true, paidUntil: until, lastPaymentReference: paymentReference },
+        { paidUnlocked: true, paidUntil: until, lettreUntil: lettreEnd, lastPaymentReference: paymentReference, lastOffer: info.offer },
         { merge: true }
       );
       try {
@@ -399,15 +413,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: user.email,
           reference: paymentReference,
           // Type d'achat (CV seul ou Pack CV + lettre) et montant attendu, pour le suivi des ventes.
-          ...(info ? { pack: info.pack, amount: info.amount } : {}),
-          ...(info?.method ? { method: info.method } : {}),
+          pack: offer.lettre,
+          offer: info.offer,
+          amount: info.amount,
+          ...(info.method ? { method: info.method } : {}),
           createdAt: serverTimestamp(),
         });
       } catch {
         // non bloquant
       }
     },
-    [user, paidUntil]
+    [user, paidUntil, lettreUntil]
   );
 
   // Valide un code promo (existe, actif, pas déjà utilisé par cette
@@ -507,6 +523,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         downloadsUsed,
         paidUnlocked,
         paidUntil,
+        lettreUnlocked,
         usedPromoCodes,
         authError,
         loadError,

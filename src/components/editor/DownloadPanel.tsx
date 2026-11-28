@@ -8,8 +8,8 @@ import { Download, Loader2, CheckCircle2, ExternalLink, AlertCircle, MessageCirc
 import { UI } from "@/lib/i18n";
 import LettreMotivationForm from "./LettreMotivationForm";
 import { isTwaContext } from "@/lib/isTwa";
-import { PASS_PRICE, PASS_DAYS } from "@/lib/pricing";
-import { usePaymentMode, WAVE_LINK, isPlausibleWaveReference, type PaymentMode } from "@/lib/paymentMode";
+import { OFFERS, OFFER_LIST, formatFcfa, type OfferId } from "@/lib/pricing";
+import { usePaymentMode, WAVE_LINKS, isPlausibleWaveReference, type PaymentMode } from "@/lib/paymentMode";
 import {
   checkoutReturnParam,
   clearPendingPayment,
@@ -19,7 +19,7 @@ import {
   stripCheckoutReturnParam,
 } from "@/lib/pendingPayment";
 
-// Offre unique : le Pass Candidature (prix et durée dans lib/pricing.ts).
+// Trois offres (prix et durées dans lib/pricing.ts) : CV seul 24 h, Pack 30 jours, Pack 1 an.
 // Paiement GeniusPay (Wave, Orange, MTN, Moov, carte) : le client est redirigé
 // vers la page de paiement GeniusPay, puis le téléchargement se débloque tout
 // seul à son retour (vérification côté serveur).
@@ -38,6 +38,8 @@ function PaymentFlow({
   isTwa,
   gpLoading,
   onGeniusPay,
+  offer,
+  setOffer,
   mode,
   waveReference,
   setWaveReference,
@@ -55,6 +57,8 @@ function PaymentFlow({
   isTwa: boolean;
   gpLoading: boolean;
   onGeniusPay: () => void;
+  offer: OfferId;
+  setOffer: (o: OfferId) => void;
   mode: PaymentMode;
   waveReference: string;
   setWaveReference: (v: string) => void;
@@ -62,14 +66,37 @@ function PaymentFlow({
   onConfirmWave: () => void;
 }) {
   const [waveClicked, setWaveClicked] = useState(false);
-  const priceInfoText =
-    langue === "en"
-      ? `Application Pass: ${price} FCFA — CV + cover letter, unlimited edits and downloads for ${PASS_DAYS} days.`
-      : `Pass Candidature : ${price} FCFA — CV + lettre de motivation, modifications et téléchargements illimités pendant ${PASS_DAYS} jours.`;
+  const offerText = (id: OfferId) => {
+    const en = langue === "en";
+    if (id === "cv") return en ? "Edits and downloads for 24 h. Cover letter not included." : "Modifications et téléchargements pendant 24 h. Lettre de motivation non incluse.";
+    if (id === "pack30") return en ? "CV + cover letter, unlimited edits and downloads for 30 days." : "CV + lettre de motivation, modifications et téléchargements illimités pendant 30 jours.";
+    return en ? "CV + cover letter, unlimited for 1 year (about 833 FCFA per month)." : "CV + lettre de motivation, illimité pendant 1 an (environ 833 F par mois).";
+  };
+  const offerName = (id: OfferId) => {
+    if (langue !== "en") return OFFERS[id].label;
+    return id === "cv" ? "CV only" : id === "pack30" ? "30-day Pack" : "1-year Pack";
+  };
 
   return (
     <>
-      <p className="text-xs text-foreground/60">{priceInfoText}</p>
+      <div className="space-y-2">
+        {OFFER_LIST.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            onClick={() => setOffer(o.id)}
+            className={`w-full text-left rounded-2xl border p-3 transition ${
+              offer === o.id ? "border-brand-600 bg-brand-50" : "border-border hover:bg-surface-muted"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-semibold">{offerName(o.id)}</span>
+              <span className="text-sm font-bold">{formatFcfa(o.price)} FCFA</span>
+            </div>
+            <p className="text-[11px] text-foreground/60 mt-0.5">{offerText(o.id)}</p>
+          </button>
+        ))}
+      </div>
 
       <div className="flex gap-2">
         <input
@@ -108,7 +135,7 @@ function PaymentFlow({
         {mode === "wave" ? (
           <>
             <a
-              href={WAVE_LINK || "#"}
+              href={WAVE_LINKS[offer] || "#"}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setWaveClicked(true)}
@@ -177,17 +204,21 @@ function PaymentFlow({
 
 export default function DownloadPanel({
   setWatermarkPrint,
+  setExcludeLettre,
 }: {
   // Permet de faire apparaître le filigrane sur le portail d'impression
   // (détenu par la page éditeur) juste avant d'appeler window.print(), pour
   // le flux "Aperçu gratuit". Optionnel pour ne pas casser d'éventuels
   // autres usages du composant qui ne géreraient pas ce filigrane.
   setWatermarkPrint?: (v: boolean) => void;
+  // Retire la lettre du PDF imprimé (offre « CV seul », qui n'inclut pas la lettre).
+  setExcludeLettre?: (v: boolean) => void;
 }) {
   const {
     user,
     paidUnlocked,
     paidUntil,
+    lettreUnlocked,
     isAdmin,
     isFreeDownloadTester,
     incrementDownloads,
@@ -208,6 +239,7 @@ export default function DownloadPanel({
   const [isTwa, setIsTwa] = useState(false);
   const [gpLoading, setGpLoading] = useState(false);
   const paymentMode = usePaymentMode();
+  const [offer, setOffer] = useState<OfferId>("pack30");
   const [waveReference, setWaveReference] = useState("");
   const [confirming, setConfirming] = useState(false);
   // État visible du paiement GeniusPay au retour du checkout.
@@ -229,7 +261,7 @@ export default function DownloadPanel({
 
   const canDownload =
     paidUnlocked || promoApplied || isAdmin || isFreeDownloadTester;
-  const currentPrice = PASS_PRICE;
+  const currentPrice = OFFERS[offer].price;
   // Vrai pass payé (pas un accès admin/test/promo) : on affiche sa date de fin.
   const passEnd =
     paidUnlocked && paidUntil > 0
@@ -273,9 +305,10 @@ export default function DownloadPanel({
   // forcément identiques. La pagination (éviter de couper une rubrique ou
   // une entrée en plein milieu) est gérée par les règles CSS
   // "break-inside: avoid" déjà posées sur chaque bloc du CV.
-  const downloadViaPrint = () => {
+  const runPrint = (excluded: boolean) => {
     if (typeof window === "undefined" || typeof window.print !== "function") {
       setDownloadError(t.printUnsupported);
+      if (excluded) setExcludeLettre?.(false);
       return;
     }
 
@@ -288,7 +321,10 @@ export default function DownloadPanel({
       console.error("Erreur window.print:", err);
       setDownloadError(t.downloadFailed);
     }
-    if (printThrew) return;
+    if (printThrew) {
+      if (excluded) setExcludeLettre?.(false);
+      return;
+    }
 
     setGenerating(true);
 
@@ -330,6 +366,7 @@ export default function DownloadPanel({
       window.removeEventListener("afterprint", finish);
       setPromoApplied(false);
       setGenerating(false);
+      if (excluded) setExcludeLettre?.(false);
     };
 
     window.addEventListener("afterprint", finish);
@@ -338,8 +375,27 @@ export default function DownloadPanel({
         settled = true;
         window.removeEventListener("afterprint", finish);
         setGenerating(false);
+        if (excluded) setExcludeLettre?.(false);
       }
     }, 8000);
+  };
+
+  // Offre « CV seul » : la lettre n'est pas incluse, on la retire du PDF
+  // (deux frames pour que le portail d'impression se mette à jour avant print()).
+  const downloadViaPrint = () => {
+    const needExclude =
+      !!setExcludeLettre &&
+      !!cv.lettreMotivation?.activee &&
+      !lettreUnlocked &&
+      !promoApplied &&
+      !isAdmin &&
+      !isFreeDownloadTester;
+    if (!needExclude) {
+      runPrint(false);
+      return;
+    }
+    setExcludeLettre?.(true);
+    requestAnimationFrame(() => requestAnimationFrame(() => runPrint(true)));
   };
 
   const proceedDownload = () => {
@@ -416,7 +472,7 @@ export default function DownloadPanel({
     }
     setConfirming(true);
     try {
-      await confirmPaidDownload(ref, { pack: true, amount: PASS_PRICE, method: "wave" });
+      await confirmPaidDownload(ref, { offer, amount: OFFERS[offer].price, method: "wave" });
       setWaveReference("");
       setGpStatus("paid");
     } catch (err) {
@@ -439,6 +495,7 @@ export default function DownloadPanel({
           uid: user.uid,
           email: user.email,
           name: user.displayName || "",
+          offer,
         }),
       });
       const data = await res.json();
@@ -496,7 +553,7 @@ export default function DownloadPanel({
         // déjà contrôlé dans confirmPaidDownload).
         if (d.paid && (d.userId == null || d.userId === user.uid)) {
           try {
-            await confirmPaidDownload(ref, { pack: true, amount: d.amount, method: "geniuspay" });
+            await confirmPaidDownload(ref, { offer: d.offer, amount: d.amount, method: "geniuspay" });
             if (cancelled) return;
             setGpStatus("paid");
           } catch (err) {
@@ -561,8 +618,8 @@ export default function DownloadPanel({
         </Link>
         <p className="text-[11px] text-foreground/50 text-center">
           {cv.langue === "en"
-            ? `Application Pass: ${PASS_PRICE} FCFA — CV + cover letter, unlimited edits and downloads for ${PASS_DAYS} days`
-            : `Pass Candidature : ${PASS_PRICE} FCFA — CV + lettre, modifications et téléchargements illimités pendant ${PASS_DAYS} jours`}
+            ? `From ${formatFcfa(OFFERS.cv.price)} FCFA — CV only for 24 h, or a Pack with cover letter (30 days or 1 year)`
+            : `Dès ${formatFcfa(OFFERS.cv.price)} FCFA — CV seul 24 h, ou Pack avec lettre (30 jours ou 1 an)`}
         </p>
       </div>
     );
@@ -587,8 +644,8 @@ export default function DownloadPanel({
           <CheckCircle2 className="flex-shrink-0 mt-0.5" size={14} />
           <span className="font-medium">
             {en
-              ? `Payment confirmed! Your pass is active for ${PASS_DAYS} days: edit and download as often as you like.`
-              : `Paiement confirmé ! Ton pass est actif pendant ${PASS_DAYS} jours : modifie et télécharge autant que tu veux.`}
+              ? "Payment confirmed! Your access is active: edit and download as often as you like."
+              : "Paiement confirmé ! Ton accès est actif : modifie et télécharge autant que tu veux."}
           </span>
         </div>
       )}
@@ -636,12 +693,22 @@ export default function DownloadPanel({
           <CheckCircle2 className="flex-shrink-0 mt-0.5" size={14} />
           <span>
             {en
-              ? `Pass active until ${passEnd}. Edit your CV and letter and download as often as you like.`
-              : `Pass actif jusqu'au ${passEnd}. Modifie ton CV et ta lettre et télécharge autant que tu veux.`}
+              ? `Access active until ${passEnd}. Edit and download as often as you like.`
+              : `Accès actif jusqu'au ${passEnd}. Modifie et télécharge autant que tu veux.`}
           </span>
         </div>
       )}
       <LettreMotivationForm />
+      {paidUnlocked && !lettreUnlocked && !promoApplied && !isAdmin && !isFreeDownloadTester && !!cv.lettreMotivation?.activee && (
+        <div className="flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-800">
+          <Info size={14} className="flex-shrink-0 mt-0.5" />
+          <span>
+            {en
+              ? "Your “CV only” access doesn't include the cover letter: it won't be in the PDF. Get a Pack below to add it."
+              : "Ton accès « CV seul » n'inclut pas la lettre de motivation : elle ne sera pas dans le PDF. Prends un Pack ci-dessous pour l'ajouter."}
+          </span>
+        </div>
+      )}
       {canDownload && (
         <>
           <button
@@ -693,6 +760,8 @@ export default function DownloadPanel({
             isTwa={isTwa}
             gpLoading={gpLoading}
             onGeniusPay={startGeniusPay}
+            offer={offer}
+            setOffer={setOffer}
             mode={paymentMode}
             waveReference={waveReference}
             setWaveReference={setWaveReference}

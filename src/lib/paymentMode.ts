@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import type { OfferId } from "@/lib/pricing";
 
 // Mode de paiement actif, choisi par l'admin depuis /admin (document
 // Firestore settings/payment, champ "mode"). Les règles existantes de
@@ -13,10 +14,13 @@ export type PaymentMode = "geniuspay" | "wave";
 
 export const PAYMENT_SETTINGS_PATH = ["settings", "payment"] as const;
 
-// Lien Wave à montant fixe (celui du Pass). On retombe sur l'ancien lien "NEXT"
-// s'il n'y a pas de lien dédié.
-export const WAVE_LINK =
-  process.env.NEXT_PUBLIC_WAVE_LINK_PACK || process.env.NEXT_PUBLIC_WAVE_LINK_NEXT || "";
+// Un lien Wave à montant fixe par offre (à créer dans Wave Business et à
+// ajouter dans Vercel : NEXT_PUBLIC_WAVE_LINK_CV / _PACK30 / _PACK365).
+export const WAVE_LINKS: Record<OfferId, string> = {
+  cv: process.env.NEXT_PUBLIC_WAVE_LINK_CV || "",
+  pack30: process.env.NEXT_PUBLIC_WAVE_LINK_PACK30 || "",
+  pack365: process.env.NEXT_PUBLIC_WAVE_LINK_PACK365 || "",
+};
 
 // Format d'un ID de transaction Wave : T_ + 16 caractères.
 export const isPlausibleWaveReference = (value: string) =>

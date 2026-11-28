@@ -3,8 +3,8 @@
 export const GP_BASE = "https://geniuspay.ci/api/v1/merchant";
 
 // Le montant est décidé ICI, côté serveur (voir lib/pricing.ts) : le navigateur
-// n'envoie jamais de montant.
-export { PASS_PRICE } from "@/lib/pricing";
+// n'envoie que l'identifiant de l'offre, jamais de montant.
+export { OFFERS, isOfferId, offerFromAmount } from "@/lib/pricing";
 
 export function gpHeaders() {
   const key = process.env.GENIUSPAY_API_KEY;

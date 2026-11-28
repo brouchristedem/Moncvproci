@@ -2,18 +2,16 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { PASS_PRICE, PASS_DAYS, formatFcfa } from "@/lib/pricing";
+import { OFFERS, formatFcfa } from "@/lib/pricing";
 
 // Réponses vérifiées sur le fonctionnement réel du produit (voir DownloadPanel.tsx
-// / AuthContext.tsx). Offre unique : le Pass Candidature donne, après un seul
-// paiement, PASS_DAYS jours de modifications et de téléchargements illimités
+// / AuthContext.tsx). Trois offres : CV seul (24 h), Pack 30 jours et Pack 1 an
 // (CV + lettre de motivation). Un compte gère un CV à la fois (pas de
 // multi-CV pour l'instant).
-const PRICE_TXT = formatFcfa(PASS_PRICE);
 const FAQ = [
   {
     q: "Combien ça coûte ?",
-    a: `${PRICE_TXT} FCFA, une seule fois : c'est le Pass Candidature. Il inclut ton CV et une lettre de motivation assortie, avec modifications et téléchargements illimités pendant ${PASS_DAYS} jours. Pas d'abonnement, pas de renouvellement automatique.`,
+    a: `Trois offres, à payer une seule fois : CV seul ${formatFcfa(OFFERS.cv.price)} FCFA (24 h), Pack 30 jours ${formatFcfa(OFFERS.pack30.price)} FCFA et Pack 1 an ${formatFcfa(OFFERS.pack365.price)} FCFA (CV + lettre de motivation assortie, modifications et téléchargements illimités). Pas d'abonnement, pas de renouvellement automatique.`,
   },
   {
     q: "Comment s'effectue le paiement ?",
@@ -25,7 +23,7 @@ const FAQ = [
   },
   {
     q: "Puis-je modifier mon CV après le paiement ?",
-    a: `Oui. Pendant ${PASS_DAYS} jours après ton paiement, tu peux modifier ton CV et ta lettre et les retélécharger autant de fois que tu veux, sans repayer. Passé ce délai, un nouveau Pass est nécessaire pour télécharger.`,
+    a: "Oui. Pendant la durée de ton offre (24 h, 30 jours ou 1 an), tu peux modifier ton CV et le retélécharger autant de fois que tu veux, sans repayer. Passé ce délai, un nouveau paiement est nécessaire pour télécharger.",
   },
   {
     q: "Comment mes données sont-elles protégées ?",
@@ -45,7 +43,7 @@ const FAQ = [
   },
   {
     q: "Comment obtenir une lettre de motivation ?",
-    a: "En cochant « Ajouter une lettre de motivation » dans l'éditeur : ta lettre au même style que ton CV, dans le même PDF. Elle est incluse dans le Pass, sans supplément.",
+    a: "En cochant « Ajouter une lettre de motivation » dans l'éditeur : ta lettre au même style que ton CV, dans le même PDF. Elle est incluse dans le Pack 30 jours et le Pack 1 an, mais pas dans l'offre « CV seul ».",
   },
   {
     q: "Puis-je importer mon ancien CV ?",

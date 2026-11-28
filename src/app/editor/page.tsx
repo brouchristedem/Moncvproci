@@ -202,6 +202,8 @@ export default function EditorPage() {
   // désactivé une fois l'impression terminée, pour ne jamais apparaître sur
   // un téléchargement réellement payé.
   const [watermarkPrint, setWatermarkPrint] = useState(false);
+  // Retire la lettre du PDF pendant un téléchargement « CV seul ».
+  const [excludeLettrePrint, setExcludeLettrePrint] = useState(false);
   const [importMessage, setImportMessage] = useState("");
 
   // Empêche d'atterrir directement sur l'éditeur (lien externe, favori, URL
@@ -910,7 +912,7 @@ export default function EditorPage() {
             </div>
           </div>
           <div className="w-full max-w-[210mm] mx-auto">
-            <CVPreviewFit cv={cv} printMode zoom={zoom} watermark={watermarkPrint} />
+            <CVPreviewFit cv={cv} printMode zoom={zoom} watermark={watermarkPrint} excludeLettre={excludeLettrePrint} />
           </div>
         </section>
       </main>
@@ -994,7 +996,7 @@ export default function EditorPage() {
                 <X size={16} />
               </button>
             </div>
-            <DownloadPanel setWatermarkPrint={setWatermarkPrint} />
+            <DownloadPanel setWatermarkPrint={setWatermarkPrint} setExcludeLettre={setExcludeLettrePrint} />
           </div>
         </div>
       )}

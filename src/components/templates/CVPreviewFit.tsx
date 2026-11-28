@@ -20,11 +20,14 @@ export default function CVPreviewFit({
   printMode = false,
   zoom = 1,
   watermark = false,
+  excludeLettre = false,
 }: {
   cv: CVData;
   printMode?: boolean;
   zoom?: number;
   watermark?: boolean;
+  // Retire la lettre de la zone d'impression (offre « CV seul »).
+  excludeLettre?: boolean;
 }) {
   const { containerRef, scale, contentWidth } = useFitScale(zoom);
   const scaledHeight = contentWidth * PAGE_HEIGHT_RATIO * scale;
@@ -366,7 +369,7 @@ export default function CVPreviewFit({
                 activée (Pack "Candidature Complète"). break-before: page
                 force le saut de page à l'impression, indépendamment du
                 nombre de pages qu'occupe déjà le CV. */}
-            {cv.lettreMotivation?.activee && (
+            {cv.lettreMotivation?.activee && !excludeLettre && (
               <div
                 id="cv-print-area-lettre"
                 className="cv-wrap"

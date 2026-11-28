@@ -10,7 +10,7 @@ import Reveal from "@/components/landing/Reveal";
 import HeroDemoVideo from "@/components/landing/HeroDemoVideo";
 import { useAuth } from "@/lib/AuthContext";
 import { ENTRY_GATE_KEY } from "@/lib/entryGate";
-import { PASS_PRICE, PASS_DAYS, formatFcfa } from "@/lib/pricing";
+import { OFFERS, formatFcfa } from "@/lib/pricing";
 
 /**
  * ============================================================================
@@ -151,7 +151,7 @@ export default function Home() {
               <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold">15 modèles</span>
               <Link href="/scanner-cv" className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/20 transition">Scanner ATS gratuit</Link>
               <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold">Paiement Mobile Money</span>
-              <span className="rounded-full px-4 py-2 text-sm font-semibold text-white" style={{ background: ORANGE }}>{formatFcfa(PASS_PRICE)} FCFA · CV + lettre</span>
+              <span className="rounded-full px-4 py-2 text-sm font-semibold text-white" style={{ background: ORANGE }}>Dès {formatFcfa(OFFERS.cv.price)} FCFA</span>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
@@ -276,44 +276,71 @@ export default function Home() {
 
       {/* ===================== Tarifs (bloc sombre) ===================== */}
       <section id="tarifs" className="px-4 sm:px-6 py-20 sm:py-24 text-white scroll-mt-4" style={{ background: DARK_BG }} aria-labelledby="tarifs-heading">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <Reveal className="text-center mb-12">
             <h2 id="tarifs-heading" className="font-display font-bold mb-3" style={{ fontSize: "clamp(1.8rem, 4vw, 2.5rem)" }}>
-              Un prix clair, sans abonnement.
+              Trois offres claires, sans abonnement.
             </h2>
-            <p className="text-white/75">Tu vois ton CV avant de payer. Un seul paiement (Mobile Money ou carte), et tu modifies et télécharges autant que tu veux pendant {PASS_DAYS} jours.</p>
+            <p className="text-white/75">Tu vois ton CV avant de payer. Un seul paiement (Mobile Money ou carte), sans abonnement ni renouvellement automatique.</p>
           </Reveal>
 
           <Reveal>
-            <div className="relative mx-auto max-w-md rounded-3xl bg-white p-8" style={{ color: INK, boxShadow: `0 0 0 3px ${ORANGE}` }}>
-              <span className="absolute -top-3.5 left-8 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-white" style={{ background: ORANGE }}>
-                Une seule offre
-              </span>
-              <p className="text-sm font-semibold mb-5" style={{ color: `${INK}99` }}>Pass Candidature</p>
-              <p className="font-display font-bold leading-none mb-1" style={{ color: FOREST, fontSize: "3.2rem" }}>
-                {formatFcfa(PASS_PRICE)}<span className="text-lg font-semibold ml-2" style={{ color: `${INK}80` }}>FCFA</span>
-              </p>
-              <p className="text-sm mb-7" style={{ color: `${INK}80` }}>un seul paiement, valable {PASS_DAYS} jours</p>
-              <ul className="space-y-3 text-[15px]">
-                {[
-                  "CV + lettre de motivation assortie",
-                  `Modifications illimitées pendant ${PASS_DAYS} jours`,
-                  `Téléchargements PDF illimités pendant ${PASS_DAYS} jours`,
-                  "15 modèles, aperçu avant paiement",
-                ].map((t) => (
-                  <li key={t} className="flex items-center gap-3">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full" style={{ background: MINT, color: EMERALD }}><Check size={14} /></span>
-                    {t}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href={ctaHref}
-                className={`mt-8 flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-bold text-white transition hover:brightness-110 ${focus}`}
-                style={{ background: ORANGE, outlineColor: FOREST }}
-              >
-                Créer mon CV <ArrowRight size={16} />
-              </Link>
+            <div className="grid gap-5 md:grid-cols-3">
+              {[
+                {
+                  offer: OFFERS.cv,
+                  name: "CV seul",
+                  unit: "valable 24 h",
+                  items: ["Ton CV en PDF", "Modifications et téléchargements pendant 24 h", "15 modèles, aperçu avant paiement"],
+                  highlight: false,
+                },
+                {
+                  offer: OFFERS.pack30,
+                  name: "Pack 30 jours",
+                  unit: "valable 30 jours",
+                  items: ["CV + lettre de motivation assortie", "Modifications et téléchargements illimités", "15 modèles, aperçu avant paiement"],
+                  highlight: true,
+                },
+                {
+                  offer: OFFERS.pack365,
+                  name: "Pack 1 an",
+                  unit: "valable 1 an, soit environ 833 F par mois",
+                  items: ["CV + lettre de motivation assortie", "Modifications et téléchargements illimités", "Pour postuler toute l'année"],
+                  highlight: false,
+                },
+              ].map((c) => (
+                <div
+                  key={c.offer.id}
+                  className="relative rounded-3xl bg-white p-7 flex flex-col"
+                  style={{ color: INK, boxShadow: c.highlight ? `0 0 0 3px ${ORANGE}` : "none" }}
+                >
+                  {c.highlight && (
+                    <span className="absolute -top-3.5 left-7 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-white" style={{ background: ORANGE }}>
+                      Avec lettre
+                    </span>
+                  )}
+                  <p className="text-sm font-semibold mb-4" style={{ color: `${INK}99` }}>{c.name}</p>
+                  <p className="font-display font-bold leading-none mb-1" style={{ color: FOREST, fontSize: "2.6rem" }}>
+                    {formatFcfa(c.offer.price)}<span className="text-base font-semibold ml-2" style={{ color: `${INK}80` }}>FCFA</span>
+                  </p>
+                  <p className="text-sm mb-6" style={{ color: `${INK}80` }}>un seul paiement, {c.unit}</p>
+                  <ul className="space-y-3 text-[15px] mb-7">
+                    {c.items.map((t) => (
+                      <li key={t} className="flex items-start gap-3">
+                        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full" style={{ background: MINT, color: EMERALD }}><Check size={14} /></span>
+                        {t}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href={ctaHref}
+                    className={`mt-auto flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-bold text-white transition hover:brightness-110 ${focus}`}
+                    style={{ background: c.highlight ? ORANGE : FOREST, outlineColor: FOREST }}
+                  >
+                    Créer mon CV <ArrowRight size={16} />
+                  </Link>
+                </div>
+              ))}
             </div>
           </Reveal>
         </div>
@@ -411,7 +438,7 @@ export default function Home() {
           className="flex items-center justify-center gap-2 rounded-full px-5 py-3.5 text-[15px] font-bold text-white"
           style={{ background: ORANGE }}
         >
-          Pass {PASS_DAYS} jours : {formatFcfa(PASS_PRICE)} FCFA · Créer mon CV <ArrowRight size={16} />
+          Dès {formatFcfa(OFFERS.cv.price)} FCFA · Créer mon CV <ArrowRight size={16} />
         </Link>
       </div>
     </div>

@@ -17,7 +17,8 @@ import {
 } from "firebase/firestore";
 import { TEMPLATE_LIST } from "@/lib/templateRegistry";
 import AdminCVDownload from "@/components/admin/AdminCVDownload";
-import { usePaymentMode, PAYMENT_SETTINGS_PATH, WAVE_LINK, type PaymentMode } from "@/lib/paymentMode";
+import { usePaymentMode, PAYMENT_SETTINGS_PATH, WAVE_LINKS, type PaymentMode } from "@/lib/paymentMode";
+import { OFFER_LIST } from "@/lib/pricing";
 import { Trash2, Plus, Search, Users, Wallet, Star, Pencil } from "lucide-react";
 
 const PRICE = Number(process.env.NEXT_PUBLIC_PRICE_NEXT || 1000);
@@ -305,7 +306,7 @@ export default function AdminPage() {
       <section>
         <h2 className="text-sm font-semibold mb-1">Mode de paiement</h2>
         <p className="text-[11px] text-foreground/50 mb-2">
-          Dans les deux cas, le client reçoit le Pass 5 jours. Le changement est immédiat sur le site.
+          Dans les deux cas, le client reçoit l'offre qu'il a choisie. Le changement est immédiat sur le site.
         </p>
         <div className="grid grid-cols-2 gap-2">
           {([
@@ -330,9 +331,10 @@ export default function AdminPage() {
             </button>
           ))}
         </div>
-        {paymentMode === "wave" && !WAVE_LINK && (
+        {paymentMode === "wave" && OFFER_LIST.some((o) => !WAVE_LINKS[o.id]) && (
           <p className="text-[11px] text-red-500 mt-2">
-            Lien Wave manquant : ajoute NEXT_PUBLIC_WAVE_LINK_PACK (lien à 1 500 F) dans Vercel, puis redéploie.
+            Lien Wave manquant pour : {OFFER_LIST.filter((o) => !WAVE_LINKS[o.id]).map((o) => `${o.label} (${o.price} F)`).join(", ")}.
+            Ajoute NEXT_PUBLIC_WAVE_LINK_CV / _PACK30 / _PACK365 dans Vercel, puis redéploie.
           </p>
         )}
       </section>

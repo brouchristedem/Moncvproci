@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GP_BASE, PASS_PRICE, gpHeaders } from "@/lib/geniuspayServer";
+import { GP_BASE, offerFromAmount, gpHeaders } from "@/lib/geniuspayServer";
 
 // Vérifie auprès de GeniusPay (avec la clé secrète) qu'un paiement est bien
 // terminé. Le navigateur ne peut donc pas "déclarer" un paiement lui-même.
@@ -20,10 +20,12 @@ export async function GET(req: NextRequest) {
     }
     const d = json.data;
     const amount = Number(d.amount);
-    const okAmount = amount === PASS_PRICE;
+    // L'offre se déduit du montant réellement payé (prix distincts).
+    const offer = offerFromAmount(amount);
     return NextResponse.json({
       status: d.status as string,
-      paid: d.status === "completed" && okAmount,
+      paid: d.status === "completed" && offer != null,
+      offer: offer ? offer.id : null,
       amount,
       userId: d.metadata?.user_id ?? null,
     });

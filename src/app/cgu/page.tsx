@@ -47,10 +47,11 @@ export default function CGUPage() {
             proposés, puis d&apos;exporter son CV en PDF. La création et la modification du CV dans
             l&apos;éditeur sont gratuites et illimitées. Un aperçu gratuit filigrané est disponible
             avant tout paiement. Le téléchargement du PDF final (sans filigrane) est payant : un
-            seul paiement, le « Pass Candidature », donne accès pendant 5 jours à la modification
-            du CV et de la lettre de motivation et à leur téléchargement autant de fois que
-            nécessaire. Passé ce délai, un nouveau Pass est nécessaire pour télécharger. Aucun
-            abonnement : c&apos;est un paiement ponctuel, sans renouvellement automatique.
+            seul paiement donne accès, selon l&apos;offre choisie, à la modification du CV et à son
+            téléchargement autant de fois que nécessaire : « CV seul » (1 000 FCFA, 24 heures, sans
+            lettre de motivation), « Pack 30 jours » (2 000 FCFA) ou « Pack 1 an » (10 000 FCFA),
+            ces deux packs incluant la lettre de motivation. Passé ce délai, un nouveau paiement
+            est nécessaire pour télécharger. Aucun abonnement : c&apos;est un paiement ponctuel, sans renouvellement automatique.
           </p>
         </section>
 
@@ -58,10 +59,10 @@ export default function CGUPage() {
           <h2 className="font-semibold text-foreground">3. Paiement</h2>
           <p>
             Le paiement s&apos;effectue en ligne via la plateforme sécurisée Geniuspay (Wave, Orange
-            Money, MTN, Moov ou carte bancaire) et est dû une seule fois pour le Pass Candidature. Vos
+            Money, MTN, Moov ou carte bancaire) et est dû une seule fois pour l'offre choisie. Vos
             identifiants de paiement sont saisis sur la page de Geniuspay et ne sont pas conservés par
-            MON CV PRO CI. Une fois le paiement confirmé, le Pass est actif pendant 5 jours ; passé ce délai,
-            un nouveau Pass est nécessaire pour télécharger.
+            MON CV PRO CI. Une fois le paiement confirmé, l&apos;offre est active pendant sa durée (24 heures, 30 jours ou
+            1 an) ; passé ce délai, un nouveau paiement est nécessaire pour télécharger.
             Un code promotionnel valide peut remplacer un paiement lorsque l&apos;offre est active.
           </p>
         </section>

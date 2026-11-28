@@ -9,7 +9,7 @@ import PwaInstall from "@/components/PwaInstall";
 const siteUrl = "https://moncvproci.com";
 const title = "MON CV PRO CI — Créer un CV professionnel en ligne en Côte d'Ivoire";
 const description =
-  "Créez votre CV professionnel en ligne en Côte d'Ivoire : 15 modèles, aperçu avant paiement, lettre de motivation assortie, pass 5 jours à 1 500 FCFA, modifications et téléchargements illimités. Paiement Mobile Money ou carte, sans abonnement.";
+  "Créez votre CV professionnel en ligne en Côte d'Ivoire : 15 modèles, aperçu avant paiement, lettre de motivation assortie, dès 1 000 FCFA, modifications et téléchargements illimités. Paiement Mobile Money ou carte, sans abonnement.";
 
 // Explicite plutôt que de laisser Next.js déduire un viewport par défaut :
 // certaines versions de Safari iPad appliquent un zoom/scaling incohérent
@@ -119,7 +119,7 @@ export const metadata: Metadata = {
         url: "/og-image-v7.png",
         width: 1200,
         height: 630,
-        alt: "MON CV PRO CI — Ton CV mérite d'être lu. 15 modèles, lettre incluse, 1 500 FCFA pour 5 jours",
+        alt: "MON CV PRO CI — Ton CV mérite d'être lu. 15 modèles, lettre de motivation, dès 1 000 FCFA",
       },
     ],
   },
@@ -166,12 +166,11 @@ export default function RootLayout({
               ],
               keywords:
                 "créer un CV, CV en ligne, CV professionnel, modèle de CV, CV Côte d'Ivoire, CV Abidjan, lettre de motivation, CV compatible ATS",
-              offers: {
-                "@type": "Offer",
-                name: "Pass Candidature 5 jours (CV + lettre de motivation, modifications et téléchargements illimités)",
-                priceCurrency: "XOF",
-                price: "1500",
-              },
+              offers: [
+                { "@type": "Offer", name: "CV seul (24 heures)", priceCurrency: "XOF", price: "1000" },
+                { "@type": "Offer", name: "Pack 30 jours (CV + lettre de motivation)", priceCurrency: "XOF", price: "2000" },
+                { "@type": "Offer", name: "Pack 1 an (CV + lettre de motivation)", priceCurrency: "XOF", price: "10000" },
+              ],
               inLanguage: ["fr", "en"],
             }),
           }}

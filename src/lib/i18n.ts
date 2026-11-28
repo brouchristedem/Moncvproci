@@ -95,11 +95,11 @@ export const UI = {
     statusPaid: "Paiement effectué — vous pouvez télécharger votre CV.",
     downloadCta: "Télécharger le CV",
     downloadCtaPdf: "Télécharger en PDF",
-    firstDownloadInfo: "Un seul paiement : Pass Candidature de 5 jours.",
-    nextDownloadInfo: "Un seul paiement : Pass Candidature de 5 jours.",
-    downloadPriceInfo: "Le Pass Candidature donne 5 jours de modifications et téléchargements illimités.",
+    firstDownloadInfo: "Un seul paiement, sans abonnement.",
+    nextDownloadInfo: "Un seul paiement, sans abonnement.",
+    downloadPriceInfo: "Choisis ton offre : CV seul 24 h, ou Pack avec lettre (30 jours ou 1 an).",
     downloadWarning:
-      "Vérifiez que votre CV est prêt avant de télécharger. Vous pourrez le modifier et le retélécharger à volonté pendant 5 jours.",
+      "Vérifiez que votre CV est prêt avant de télécharger. Vous pourrez le modifier et le retélécharger à volonté pendant la durée de votre offre.",
     beforePayWarning:
       "Avant de payer : vérifiez que votre CV est prêt. Vous serez redirigé vers une page de paiement sécurisée ; à votre retour, le téléchargement se débloque automatiquement.",
     twaPaymentNotice:
@@ -256,11 +256,11 @@ export const UI = {
     statusPaid: "Payment completed — you can download your CV.",
     downloadCta: "Download the CV",
     downloadCtaPdf: "Download as PDF",
-    firstDownloadInfo: "One payment: a 5-day Application Pass.",
-    nextDownloadInfo: "One payment: a 5-day Application Pass.",
-    downloadPriceInfo: "The Application Pass gives 5 days of unlimited edits and downloads.",
+    firstDownloadInfo: "One payment, no subscription.",
+    nextDownloadInfo: "One payment, no subscription.",
+    downloadPriceInfo: "Pick your offer: CV only for 24 h, or a Pack with cover letter (30 days or 1 year).",
     downloadWarning:
-      "Make sure your CV is ready before downloading. You can edit and re-download it as often as you like for 5 days.",
+      "Make sure your CV is ready before downloading. You can edit and re-download it as often as you like for the length of your offer.",
     beforePayWarning:
       "Before paying: make sure your CV is ready. You'll be redirected to a secure payment page; when you come back, your download unlocks automatically.",
     twaPaymentNotice:

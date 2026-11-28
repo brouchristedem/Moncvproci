@@ -54,7 +54,7 @@ export default function AProposPage() {
             MON CV PRO CI est un créateur de CV pensé pour le marché ivoirien : 15 modèles, une version française et anglaise, une lettre de motivation assortie, et un paiement par Mobile Money (Wave, Orange, MTN, Moov) ou par carte.
           </p>
           <p className="text-sm leading-relaxed">
-            Vous remplissez et mettez en page votre CV gratuitement, avec un aperçu avant de payer. Le Pass Candidature donne ensuite des modifications et des téléchargements PDF illimités, avec la lettre de motivation incluse, pendant 5 jours.
+            Vous remplissez et mettez en page votre CV gratuitement, avec un aperçu avant de payer. Trois offres donnent ensuite des modifications et des téléchargements PDF illimités : CV seul (24 h), Pack 30 jours ou Pack 1 an, ces deux packs incluant la lettre de motivation.
           </p>
           <p className="text-sm leading-relaxed">
             Le{" "}
